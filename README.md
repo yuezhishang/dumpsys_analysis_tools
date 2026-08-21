@@ -34,6 +34,20 @@
 
 ---
 
+## 使用截图
+
+| 容器树（Containers） | 窗口图层（Windows） |
+| --- | --- |
+| ![容器树](samples/window_containers.png) | ![窗口图层](samples/windows.png) |
+
+![SF 层级树（Android 14+）](samples/SurfaceFlinger.png)
+
+- **容器树**：`dumpsys activity containers` 的 WindowContainer 层级，支持缩放、搜索、节点折叠与导出图片。
+- **窗口图层**：`dumpsys window` 的每个窗口卡片，按 Z 序（降序）排列，标出焦点窗口与 5 种 `mDrawState`。
+- **SF 层级树**：Android 14+ 整合的 `Layer Hierarchy` 完整层级（可开启「以容器形式展示」折叠窗口子 surface）。
+
+---
+
 ## 目录结构
 
 ```text
@@ -44,6 +58,10 @@ dumpsys-activity-containers-visualizer/
 ├── start-tool.sh       # macOS / Linux / Git Bash 启动器
 ├── node/
 │   └── node.exe        # 便携 Node.js 运行时（v22.x，约 84MB，已随包提供）
+├── samples/            # 使用截图（README 展示用）
+│   ├── window_containers.png
+│   ├── SurfaceFlinger.png
+│   └── windows.png
 ├── README.md
 └── LICENSE
 ```
