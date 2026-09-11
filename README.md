@@ -62,6 +62,7 @@
 | 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
 | --- | --- | --- | --- | --- |
 | `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图，高亮 Resumed / Focused） |
+| `am stack list` | ATMS：**任务栈速览**（Stack → Task 两层，逻辑层摘要） | 每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity | 一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局 | 🗂 **Stack List**（树视图，高亮可见 / 前台 Task） |
 | `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity Containers** |
 | `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树） |
 | `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
@@ -253,7 +254,8 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.33**（当前）：新增 🎯 **Activities**（`dumpsys activity activities`，ATMS 逻辑层）与 🪟 **Window Containers**（`dumpsys window containers`，WMS 原生入口，与 activity containers 同一棵树）两个数据源；新增「ℹ️ 视角/排查」对照面板，标注每条命令的视角与适用排查场景；桥接抓取同步支持 `activities` / `windowcontainers`。
+- **v1.34**（当前）：新增 🗂 **Stack List**（`am stack list`，ATMS 任务栈速览，Activities 轻量版）数据源，还原 `Stack → Task` 两层并高亮可见 / 前台 Task；「视角/排查」面板补充 `am stack list` 条目；桥接抓取同步支持 `amstack`。
+- **v1.33**：新增 🎯 **Activities**（`dumpsys activity activities`，ATMS 逻辑层）与 🪟 **Window Containers**（`dumpsys window containers`，WMS 原生入口，与 activity containers 同一棵树）两个数据源；新增「ℹ️ 视角/排查」对照面板，标注每条命令的视角与适用排查场景；桥接抓取同步支持 `activities` / `windowcontainers`。
 - **v1.32**：新增「dumpsys window」数据源与「窗口图层」视图，可视化 5 种 `mDrawState`；统一多视图交互；桥接改为纯手动控制（启动器 + 便携 Node）。
 - 早期版本（`v1.0` / `v1.10`–`v1.12`）作为封版快照保留。
 

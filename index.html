@@ -724,6 +724,7 @@ select.btn{
   <span class="ds-label">数据源</span>
   <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="dumpsys activity containers｜视角：经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：排查容器父子关系、窗口层级嵌套、谁在谁下面">📦 Activity Containers</button>
   <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。适用：前台 activity 错乱、状态卡 RESUMED/PAUSED/STOPPED、task 栈异常、Intent/进程归属">🎯 Activities</button>
+  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜视角：ATMS 任务栈速览（Stack→Task 两层，Activities 的轻量版）。适用：一眼看清前台是哪个 task、有几个栈、哪个 display、多窗口/分屏/PIP 栈分布">🗂 Stack List</button>
   <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属，与 activity containers 互为印证">🪟 Window Containers</button>
   <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="dumpsys window windows｜视角：每个 Window 的布局与 5 种 mDrawState 绘制状态。适用：窗口绘制卡顿/未上屏、mDrawState 停留在非 HAS_DRAWN">🖼 Window (mDrawState)</button>
   <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="dumpsys SurfaceFlinger｜视角：独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏">🖥 SurfaceFlinger</button>
@@ -905,7 +906,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.33'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。
+const APP_VERSION = 'v1.34'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1577,6 +1578,56 @@ function parseActivitiesDump(text) {
       parsedForest.push(node);
     }
     stack.push({ node, indent });
+  }
+  buildIndex(parsedForest);
+  return parsedForest;
+}
+
+// ── am stack list 解析（ATMS 任务栈速览：Stack → Task 两层，Activities 轻量版）──
+// 输出格式（跨 Android 版本稳定）：
+//   Stack id=0 bounds=[0,0][1080,2400] displayId=0 userId=0
+//     taskId=1: com.android.launcher/.Launcher visible=true topActivity=ComponentInfo{...}
+function parseAmStackList(text) {
+  parsedForest = [];
+  nodeIndex = new Map();
+  nextNodeId = 0;
+  const lines = text.split('\n');
+  let curStack = null;
+  for (const raw of lines) {
+    if (!raw.trim()) continue;
+    const t = raw.trim();
+    // Stack id=0 bounds=[0,0][1080,2400] displayId=0 userId=0
+    const sm = t.match(/^Stack\s+id=(\d+)\s+bounds=([^\s]+)\s+displayId=(\d+)\s+userId=(\d+)/);
+    if (sm) {
+      const node = createNode('Stack id=' + sm[1]);
+      node.type = 'root';
+      node.label = 'Stack id=' + sm[1] + ' (display ' + sm[3] + ')';
+      node.name = node.label;
+      node.props = { stackId: sm[1], bounds: sm[2], displayId: sm[3], userId: sm[4] };
+      node.propList = Object.keys(node.props).map(function (k) { return { key: k, value: node.props[k] }; });
+      node.tags = [];
+      parsedForest.push(node);
+      curStack = node;
+      continue;
+    }
+    // taskId=1: pkg/.Activity visible=true topActivity=ComponentInfo{...}（旧版 topActivity=ActivityRecord{...}）
+    const tm = t.match(/^taskId=(\d+):\s*(\S+)\s+visible=(\w+)\s+topActivity=(.+)$/);
+    if (tm && curStack) {
+      const pkgAct = tm[2];
+      const visible = tm[3];
+      const top = tm[4].trim();
+      const node = createNode('taskId=' + tm[1] + ' ' + pkgAct);
+      node.type = 'activity';
+      node.label = 'taskId=' + tm[1] + ': ' + pkgAct;
+      node.name = pkgAct;
+      node.props = { taskId: tm[1], name: pkgAct, visible: visible, topActivity: top };
+      node.propList = Object.keys(node.props).map(function (k) { return { key: k, value: node.props[k] }; });
+      node.tags = [];
+      if (visible === 'true') node.tags.push({ name: 'visible', class: 'visible' });
+      node.tags.push({ name: 'top', class: 'focused' });
+      curStack.children.push(node);
+      node.parent = curStack;
+    }
   }
   buildIndex(parsedForest);
   return parsedForest;
@@ -2995,6 +3046,25 @@ function parseInput() {
       for (const [id, node] of nodeIndex) { if (node.type === 'display') { firstDisp = node; break; } }
       if (firstDisp) selectNode(firstDisp);
       showToast('解析成功！共 ' + nodeIndex.size + ' 个节点（已高亮 Resumed / Focused）', 'success');
+    } else if (dataSource === 'amstack') {
+      parseAmStackList(text);
+      if (parsedForest.length === 0) {
+        showToast('未检测到有效的 Stack/Task 数据，请确认是 am stack list 输出', 'error');
+        return;
+      }
+      currentView = 'window';
+      zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
+      renderTree(); centerLayout(); renderStats();
+      const vizPanel = document.getElementById('viz-panel');
+      if (vizPanel) vizPanel.classList.add('active');
+      const inputPanel = document.getElementById('input-panel');
+      if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
+      const headerInfo = document.getElementById('header-info');
+      if (headerInfo) headerInfo.textContent = '已解析 ' + nodeIndex.size + ' 个节点';
+      let firstStack = null;
+      for (const [id, node] of nodeIndex) { if (node.type === 'root') { firstStack = node; break; } }
+      if (firstStack) selectNode(firstStack);
+      showToast('解析成功！共 ' + nodeIndex.size + ' 个节点（已高亮可见 / 前台 Task）', 'success');
     } else if (dataSource === 'surfaceflinger') {
       parseSurfaceFlinger(text);
       if (hwcLayers.length === 0 && (sfForest || []).length === 0) {
@@ -3077,16 +3147,19 @@ function loadSelectedSample() {
     ? (SF_SAMPLES[version] || SF_SAMPLES['default'])
     : dataSource === 'window'
       ? (WINDOW_SAMPLES[version] || WINDOW_SAMPLES['default'])
-      : dataSource === 'activities'
-        ? (ACTIVITIES_SAMPLES[version] || ACTIVITIES_SAMPLES['default'])
+    : dataSource === 'activities'
+      ? (ACTIVITIES_SAMPLES[version] || ACTIVITIES_SAMPLES['default'])
+      : dataSource === 'amstack'
+        ? (AMSTACK_SAMPLES[version] || AMSTACK_SAMPLES['default'])
         : dataSource === 'windowcontainers'
           ? (WINDOWCONTAINER_SAMPLES[version] || WINDOWCONTAINER_SAMPLES['default'])
           : (SAMPLES[version] || null);
   if (!sample) {
     showToast(dataSource === 'surfaceflinger' ? '未找到 SurfaceFlinger 示例数据'
       : (dataSource === 'window' ? '未找到 Window 示例数据'
-        : (dataSource === 'activities' ? '未找到 Activities 示例数据'
-          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据' : '请先选择目标 Android 版本'))), 'error');
+    : (dataSource === 'activities' ? '未找到 Activities 示例数据'
+        : (dataSource === 'amstack' ? '未找到 Stack List 示例数据'
+          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据' : '请先选择目标 Android 版本')))), 'error');
     return;
   }
   const ta = document.getElementById('input-textarea');
@@ -3469,7 +3542,19 @@ function resetLayout() {
 }
 
 function findResumedActivity() {
-  if (dataSource !== 'containers' && dataSource !== 'activities') { showToast('「定位 Resumed」仅适用于 Containers / Activities 数据源', 'error'); return; }
+  if (dataSource === 'amstack') {
+    if (currentView !== 'window') switchView('window');
+    const tasks = [];
+    for (const [id, node] of nodeIndex) { if (node.type === 'activity' && node.props && node.props.taskId) tasks.push(node); }
+    if (tasks.length === 0) { showToast('未找到 task 节点（当前数据可能不是 am stack list 输出）', 'error'); return; }
+    let target = tasks.find(function (t) { return t.tags.some(function (x) { return x.name === 'top'; }) && t.props.visible === 'true'; })
+      || tasks.find(function (t) { return t.props.visible === 'true'; })
+      || tasks[tasks.length - 1];
+    expandToNode(target); selectNode(target); centerOnNode(target);
+    showToast('已定位前台 / 可见 Task: ' + target.label, 'success');
+    return;
+  }
+  if (dataSource !== 'containers' && dataSource !== 'activities') { showToast('「定位 Resumed」仅适用于 Containers / Activities / Stack List 数据源', 'error'); return; }
   // Resumed 是窗口层级概念，若在合成图层视图则先切回窗口视图
   if (currentView !== 'window') switchView('window');
   const activities = [];
@@ -4768,6 +4853,18 @@ for (const _k of Object.keys(SAMPLES)) {
 }
 WINDOWCONTAINER_SAMPLES['default'] = WINDOWCONTAINER_SAMPLES['14'] || WINDOWCONTAINER_SAMPLES['13'] || SAMPLES['14'] || '';
 
+// ─── am stack list 示例（任务栈速览，Activities 轻量版；格式跨 Android 版本稳定）───
+const AMSTACK_SAMPLES = {};
+AMSTACK_SAMPLES['default'] = `Stack id=0 bounds=[0,0][1080,2400] displayId=0 userId=0
+  taskId=1: com.android.launcher/.Launcher visible=true topActivity=ComponentInfo{com.android.launcher/com.android.launcher2.Launcher}
+  taskId=2: com.example.app/.MainActivity visible=true topActivity=ComponentInfo{com.example.app/com.example.app.MainActivity}
+Stack id=1 bounds=[0,0][1080,2400] displayId=0 userId=0
+  taskId=3: com.android.systemui/.RecentsActivity visible=true topActivity=ComponentInfo{com.android.systemui/com.android.systemui.RecentsActivity}
+Stack id=2 bounds=[540,0][1080,1200] displayId=0 userId=0
+  taskId=4: com.example.video/.PipActivity visible=true topActivity=ComponentInfo{com.example.video/com.example.video.PipActivity}`;
+// 各版本输出格式一致，统一复用 default
+['9', '10', '11', '12', '13', '14', '15', '16'].forEach(function (v) { AMSTACK_SAMPLES[v] = AMSTACK_SAMPLES['default']; });
+
 function buildContainersHwc() {
   hwcLayers = [];
   layerIndex = new Map();
@@ -4820,12 +4917,14 @@ function updateDataSourceUI() {
   const dwc = document.getElementById('ds-windowcontainers');
   const dw = document.getElementById('ds-window');
   const ds = document.getElementById('ds-surfaceflinger');
+  const dam = document.getElementById('ds-amstack');
   if (dc) dc.classList.toggle('active', dataSource === 'containers');
   if (da) da.classList.toggle('active', dataSource === 'activities');
   if (dwc) dwc.classList.toggle('active', dataSource === 'windowcontainers');
   if (dw) dw.classList.toggle('active', dataSource === 'window');
   if (ds) ds.classList.toggle('active', dataSource === 'surfaceflinger');
-  const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers');
+  if (dam) dam.classList.toggle('active', dataSource === 'amstack');
+  const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers' || dataSource === 'amstack');
   const vw = document.getElementById('view-window');
   const vh = document.getElementById('view-hwc');
   const vst = document.getElementById('view-sftree');
@@ -4888,7 +4987,7 @@ function switchDataSource(ds) {
   currentView = (ds === 'containers' || ds === 'activities' || ds === 'windowcontainers') ? 'window' : (ds === 'window' ? 'windowlist' : 'hwc');
   updateViewToggleUI();
   updateDataSourceUI();
-  showToast('已切换到 ' + (ds === 'containers' ? 'Activity Containers' : (ds === 'activities' ? 'Activities' : (ds === 'windowcontainers' ? 'Window Containers' : (ds === 'window' ? 'Window (mDrawState)' : 'SurfaceFlinger')))) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
+  showToast('已切换到 ' + (ds === 'containers' ? 'Activity Containers' : (ds === 'activities' ? 'Activities' : (ds === 'windowcontainers' ? 'Window Containers' : (ds === 'amstack' ? 'Stack List' : (ds === 'window' ? 'Window (mDrawState)' : 'SurfaceFlinger'))))) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
 }
 
 /* ========================================================================
@@ -6096,11 +6195,13 @@ function dataSourceToAdbCommand(ds) {
   if (ds === 'surfaceflinger') return 'surfaceflinger';
   if (ds === 'window') return 'window';
   if (ds === 'activities') return 'activities';
+  if (ds === 'amstack') return 'amstack';
   if (ds === 'windowcontainers') return 'windowcontainers';
   return 'containers';
 }
 function adbCommandLabel(cmd) {
   if (cmd === 'activities') return 'activity activities';
+  if (cmd === 'amstack') return 'am stack list';
   if (cmd === 'windowcontainers') return 'window containers';
   return cmd === 'surfaceflinger' ? 'SurfaceFlinger' : (cmd === 'window' ? 'window windows' : 'activity containers');
 }
@@ -6457,6 +6558,13 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
           <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
           <td>🎯 <b>Activities</b>（树视图，高亮 Resumed / Focused）</td>
+        </tr>
+        <tr>
+          <td><code>am stack list</code></td>
+          <td>ATMS：<b>任务栈速览</b>（Stack → Task 两层，逻辑层摘要）</td>
+          <td>每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity</td>
+          <td>一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局</td>
+          <td>🗂 <b>Stack List</b>（树视图，高亮可见 / 前台 Task）</td>
         </tr>
         <tr>
           <td><code>dumpsys activity containers</code></td>

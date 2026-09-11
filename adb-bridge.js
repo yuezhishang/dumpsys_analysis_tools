@@ -66,6 +66,7 @@ function gracefulShutdown() {
 const COMMAND_MAP = {
   containers: ['shell', 'dumpsys', 'activity', 'containers'],
   activities: ['shell', 'dumpsys', 'activity', 'activities'],
+  amstack: ['shell', 'am', 'stack', 'list'],
   windowcontainers: ['shell', 'dumpsys', 'window', 'containers'],
   surfaceflinger: ['shell', 'dumpsys', 'SurfaceFlinger'],
   window: ['shell', 'dumpsys', 'window', 'windows']
@@ -235,7 +236,7 @@ const server = http.createServer(async (req, res) => {
       const device = (url.searchParams.get('device') || '').trim();
       const command = (url.searchParams.get('command') || '').trim();
       if (!COMMAND_MAP[command]) {
-        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|windowcontainers|surfaceflinger|window）');
+        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|amstack|windowcontainers|surfaceflinger|window）');
         return;
       }
       const args = device ? ['-s', device].concat(COMMAND_MAP[command]) : COMMAND_MAP[command].slice();
