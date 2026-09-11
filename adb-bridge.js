@@ -10,6 +10,7 @@
  *     GET /ping                                  -> { ok:true, port }
  *     GET /devices                               -> { devices:[{serial,state,model,product,transportId}] }
  *     GET /dump?device=<serial>&command=<cmd>    -> 原始 dumpsys 文本（text/plain）
+ *   cmd 取值：containers | activities | windowcontainers | surfaceflinger | window
  *   cmd 取值：containers | surfaceflinger | window
  *
  * 运行：先确保本机已装 adb 并在 PATH 中，然后：
@@ -64,6 +65,8 @@ function gracefulShutdown() {
 // cmd -> adb 参数
 const COMMAND_MAP = {
   containers: ['shell', 'dumpsys', 'activity', 'containers'],
+  activities: ['shell', 'dumpsys', 'activity', 'activities'],
+  windowcontainers: ['shell', 'dumpsys', 'window', 'containers'],
   surfaceflinger: ['shell', 'dumpsys', 'SurfaceFlinger'],
   window: ['shell', 'dumpsys', 'window', 'windows']
 };
@@ -232,7 +235,7 @@ const server = http.createServer(async (req, res) => {
       const device = (url.searchParams.get('device') || '').trim();
       const command = (url.searchParams.get('command') || '').trim();
       if (!COMMAND_MAP[command]) {
-        sendText(res, 400, '未知 command：' + command + '（应为 containers|surfaceflinger|window）');
+        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|windowcontainers|surfaceflinger|window）');
         return;
       }
       const args = device ? ['-s', device].concat(COMMAND_MAP[command]) : COMMAND_MAP[command].slice();

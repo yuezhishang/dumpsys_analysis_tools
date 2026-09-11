@@ -685,6 +685,15 @@ select.btn{
 }
 .device-modal h3 { margin: 0 0 4px; font-size: 16px; color: var(--text-primary); }
 .device-modal .dm-sub { margin: 0 0 14px; font-size: 12px; color: var(--text-muted); }
+.info-btn { background: var(--bg-tertiary); border-color: var(--border-light); color: var(--text-secondary); }
+.info-btn:hover { border-color: var(--accent); color: var(--accent); }
+.persp-table { width: 100%; border-collapse: collapse; font-size: 12.5px; line-height: 1.5; }
+.persp-table th, .persp-table td { border: 1px solid var(--border-light); padding: 8px 10px; text-align: left; vertical-align: top; }
+.persp-table th { background: var(--bg-tertiary); color: var(--text-primary); white-space: nowrap; }
+.persp-table td code { background: var(--bg-tertiary); padding: 1px 5px; border-radius: 4px; color: var(--accent); font-size: 12px; }
+.persp-table tr:nth-child(even) td { background: rgba(255,255,255,.02); }
+.persp-table b { color: var(--text-primary); }
+.modal-close { margin-top: 14px; text-align: right; }
 .device-row {
   display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 8px;
   background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm);
@@ -713,10 +722,13 @@ select.btn{
 <!-- 数据源常驻切换条（加载数据前即可见，不依赖 viz-panel 激活） -->
 <div class="source-bar" id="source-bar">
   <span class="ds-label">数据源</span>
-  <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="解析 dumpsys activity containers（窗口层级树）">📦 Containers</button>
-  <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="解析 dumpsys SurfaceFlinger（HWC 真实合成预览）">🖥 SurfaceFlinger</button>
-  <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="解析 dumpsys window（窗口图层 + 5 种 mDrawState 绘制状态）">🪟 Windows</button>
+  <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="dumpsys activity containers｜视角：经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：排查容器父子关系、窗口层级嵌套、谁在谁下面">📦 Activity Containers</button>
+  <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。适用：前台 activity 错乱、状态卡 RESUMED/PAUSED/STOPPED、task 栈异常、Intent/进程归属">🎯 Activities</button>
+  <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属，与 activity containers 互为印证">🪟 Window Containers</button>
+  <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="dumpsys window windows｜视角：每个 Window 的布局与 5 种 mDrawState 绘制状态。适用：窗口绘制卡顿/未上屏、mDrawState 停留在非 HAS_DRAWN">🖼 Window (mDrawState)</button>
+  <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="dumpsys SurfaceFlinger｜视角：独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏">🖥 SurfaceFlinger</button>
   <span class="ds-hint">切换数据源后请粘贴对应 dumpsys 输出，或点「加载示例数据」</span>
+  <button class="seg-btn info-btn" id="ds-perspective" onclick="openPerspectiveModal()" title="查看各 dumpsys 命令的视角与排查用途对照">ℹ️ 视角/排查</button>
 </div>
 
 <!-- Input Panel -->
@@ -751,7 +763,7 @@ select.btn{
         <option value="16">Android 16 (Baklava)</option>
       </select>
       <button class="btn" id="load-sample-btn" onclick="loadSelectedSample()" title="根据上方选择的目标版本加载示例 dumpsys 数据">📋 加载示例数据</button>
-      <button class="btn" id="grab-device-btn" onclick="grabFromDevice()" title="通过 adb 桥接从设备抓取当前数据源的 dumpsys（containers→activity containers / SurfaceFlinger→SurfaceFlinger / windows→window windows）。多设备会弹出选择。桥接由 start-tool.sh 启动。">📡 从设备抓取</button>
+      <button class="btn" id="grab-device-btn" onclick="grabFromDevice()" title="通过 adb 桥接从设备抓取当前数据源的 dumpsys（containers→activity containers / activities→activity activities / windowcontainers→window containers / SurfaceFlinger→SurfaceFlinger / windows→window windows）。多设备会弹出选择。桥接由 start-tool.sh 启动。">📡 从设备抓取</button>
       <label class="file-label">
         📁 导入文件
         <input type="file" accept=".txt,.log" onchange="handleFileImport(event)">
@@ -893,7 +905,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.32'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。本工作副本续作 v1.32。v1.32 新增：第四种数据源「dumpsys window」+ 视图「🪟 窗口图层」——解析 `dumpsys window windows` 的每个 Window 块（mDisplayId/mStackId/mViewVisibility/mPolicyVisibility/mAppOpVisibility/mAttachedHidden/mAnimatingExit/Enter/mShown/mHasSurface/mDrawState/mAnimLayer/mBaseLayer/mSubLayer/mOwnerUid/mSession/mFrame/mAttrs 等），卡片化展示并按 Z 降序排列、★标记焦点窗口；右侧面板逐字段解释参数含义，并常驻「5 种 window 绘制状态（WindowStateAnimator.mDrawState）」图例（NO_SURFACE/DRAW_PENDING/COMMIT_DRAW_PENDING/READY_TO_SHOW/HAS_DRAWN，5 色区分）；内置覆盖全部 5 态的代表性示例（WINDOW_SAMPLES）。v1.31 内容：各 Android 版本「加载示例数据」全面特征化。
+const APP_VERSION = 'v1.33'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1516,6 +1528,56 @@ function parseDumpsys(text) {
     stack.push({ node, indent });
   }
 
+  buildIndex(parsedForest);
+  return parsedForest;
+}
+
+// ── dumpsys activity activities 解析（ATMS 逻辑层：同一棵 WindowContainer 树，只到 ActivityRecord）──
+// 与 parseDumpsys 的区别：仅把明确的层级节点（Display / TaskDisplayArea / RootTask / Task / * ActivityRecord）
+// 纳入树，跳过 mResumedActivity / mFocusedApp 等段头与 packageName 等属性行；并据段头 hash 高亮 Resumed / Focused。
+function parseActivitiesDump(text) {
+  parsedForest = [];
+  nodeIndex = new Map();
+  nextNodeId = 0;
+  const lines = text.split('\n');
+  const stack = [];
+  // 捕获顶部 mResumedActivity / mFocusedApp 指向的 ActivityRecord hash，用于高亮
+  const rm = text.match(/mResumedActivity:\s*ActivityRecord\{([0-9a-fA-F]+)/);
+  const fm = text.match(/mFocusedApp:\s*ActivityRecord\{([0-9a-fA-F]+)/);
+  const resumedHash = rm ? rm[1].toLowerCase() : null;
+  const focusedHash = fm ? fm[1].toLowerCase() : null;
+
+  for (const raw of lines) {
+    if (!raw.trim()) continue;
+    let indent = 0;
+    for (let j = 0; j < raw.length; j++) {
+      if (raw[j] === ' ') indent++;
+      else if (raw[j] === '\t') indent += 4;
+      else break;
+    }
+    const trimmed = raw.trim();
+    // 跳过段头与伪行（仅把明确的层级节点纳入树）
+    if (/^(ACTIVITY MANAGER|WINDOW MANAGER)/i.test(trimmed)) continue;
+    if (/^(mResumedActivity|mFocusedApp|mLastPausedActivity|mConfigWillChange|mLastFocusedRootTaskId|taskId=)/i.test(trimmed)) continue;
+    if (!/^(Display #\d|TaskDisplayArea #\d|RootTask #\d|Task #\d|\* ActivityRecord)/i.test(trimmed)) continue;
+
+    const body = trimmed.replace(/^\*\s+/, '');
+    const node = createNode(body);
+    const hm = body.match(/ActivityRecord\{([0-9a-fA-F]+)/);
+    if (hm) {
+      const h = hm[1].toLowerCase();
+      if (resumedHash && h === resumedHash) node.tags.push({ name: 'resumed', class: 'resumed' });
+      if (focusedHash && h === focusedHash) node.tags.push({ name: 'focused', class: 'focused' });
+    }
+    while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
+    if (stack.length > 0) {
+      stack[stack.length - 1].node.children.push(node);
+      node.parent = stack[stack.length - 1].node;
+    } else {
+      parsedForest.push(node);
+    }
+    stack.push({ node, indent });
+  }
   buildIndex(parsedForest);
   return parsedForest;
 }
@@ -2894,7 +2956,7 @@ function parseInput() {
   }
   hasUserData = true;
   try {
-    if (dataSource === 'containers') {
+    if (dataSource === 'containers' || dataSource === 'windowcontainers') {
       parseDumpsys(text);
       if (parsedForest.length === 0) {
         showToast('未检测到有效的容器数据，请确认输入格式', 'error');
@@ -2914,6 +2976,25 @@ function parseInput() {
       for (const [id, node] of nodeIndex) { if (node.type === 'display') { firstDisp = node; break; } }
       if (firstDisp) selectNode(firstDisp);
       showToast('解析成功！共 ' + nodeIndex.size + ' 个窗口节点', 'success');
+    } else if (dataSource === 'activities') {
+      parseActivitiesDump(text);
+      if (parsedForest.length === 0) {
+        showToast('未检测到有效的 Activity 层级数据，请确认是 dumpsys activity activities 输出', 'error');
+        return;
+      }
+      currentView = 'window';
+      zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
+      renderTree(); centerLayout(); renderStats();
+      const vizPanel = document.getElementById('viz-panel');
+      if (vizPanel) vizPanel.classList.add('active');
+      const inputPanel = document.getElementById('input-panel');
+      if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
+      const headerInfo = document.getElementById('header-info');
+      if (headerInfo) headerInfo.textContent = '已解析 ' + nodeIndex.size + ' 个节点';
+      let firstDisp = null;
+      for (const [id, node] of nodeIndex) { if (node.type === 'display') { firstDisp = node; break; } }
+      if (firstDisp) selectNode(firstDisp);
+      showToast('解析成功！共 ' + nodeIndex.size + ' 个节点（已高亮 Resumed / Focused）', 'success');
     } else if (dataSource === 'surfaceflinger') {
       parseSurfaceFlinger(text);
       if (hwcLayers.length === 0 && (sfForest || []).length === 0) {
@@ -2996,9 +3077,16 @@ function loadSelectedSample() {
     ? (SF_SAMPLES[version] || SF_SAMPLES['default'])
     : dataSource === 'window'
       ? (WINDOW_SAMPLES[version] || WINDOW_SAMPLES['default'])
-      : (SAMPLES[version] || null);
+      : dataSource === 'activities'
+        ? (ACTIVITIES_SAMPLES[version] || ACTIVITIES_SAMPLES['default'])
+        : dataSource === 'windowcontainers'
+          ? (WINDOWCONTAINER_SAMPLES[version] || WINDOWCONTAINER_SAMPLES['default'])
+          : (SAMPLES[version] || null);
   if (!sample) {
-    showToast(dataSource === 'surfaceflinger' ? '未找到 SurfaceFlinger 示例数据' : (dataSource === 'window' ? '未找到 Window 示例数据' : '请先选择目标 Android 版本'), 'error');
+    showToast(dataSource === 'surfaceflinger' ? '未找到 SurfaceFlinger 示例数据'
+      : (dataSource === 'window' ? '未找到 Window 示例数据'
+        : (dataSource === 'activities' ? '未找到 Activities 示例数据'
+          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据' : '请先选择目标 Android 版本'))), 'error');
     return;
   }
   const ta = document.getElementById('input-textarea');
@@ -3381,7 +3469,7 @@ function resetLayout() {
 }
 
 function findResumedActivity() {
-  if (dataSource !== 'containers') { showToast('「定位 Resumed」仅适用于 Containers 数据源', 'error'); return; }
+  if (dataSource !== 'containers' && dataSource !== 'activities') { showToast('「定位 Resumed」仅适用于 Containers / Activities 数据源', 'error'); return; }
   // Resumed 是窗口层级概念，若在合成图层视图则先切回窗口视图
   if (currentView !== 'window') switchView('window');
   const activities = [];
@@ -4631,6 +4719,55 @@ function containersRoleDispFrame(role) {
   }
 }
 
+// ─── dumpsys activity activities 示例（ATMS 逻辑层，仅到 ActivityRecord）───
+const ACTIVITIES_SAMPLES = {};
+// Android 11+：ATMS 现代活动层级（TaskDisplayArea → RootTask → ActivityRecord）。
+// 高亮 mResumedActivity / mFocusedApp 指向的 Activity；不含窗口 surface。
+ACTIVITIES_SAMPLES['default'] = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  mResumedActivity: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
+  mFocusedApp: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
+  mLastPausedActivity: ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1}
+  mConfigWillChange: false
+
+  Display #0 (activities from top to bottom):
+    TaskDisplayArea #0 bounds=[0,0][1080,2400]
+      RootTask #0: type=home mode=fullscreen, displayId=0, isVisible=true
+        * ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1} type=home mode=fullscreen
+          packageName=com.android.launcher3 processName=com.android.launcher3
+          mResumed=false mVisible=true mDrawing=false
+      RootTask #1: type=standard mode=fullscreen, displayId=0, isVisible=true
+        * ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991} type=standard mode=fullscreen
+          packageName=com.example.app processName=com.example.app
+          mResumed=true mVisible=true mDrawing=true`;
+ACTIVITIES_SAMPLES['11'] = ACTIVITIES_SAMPLES['default'];
+ACTIVITIES_SAMPLES['12'] = ACTIVITIES_SAMPLES['default'];
+ACTIVITIES_SAMPLES['13'] = ACTIVITIES_SAMPLES['default'];
+ACTIVITIES_SAMPLES['14'] = ACTIVITIES_SAMPLES['default'];
+ACTIVITIES_SAMPLES['15'] = ACTIVITIES_SAMPLES['default'];
+ACTIVITIES_SAMPLES['16'] = ACTIVITIES_SAMPLES['default'];
+// Android 9/10：旧 AMS 形态（ActivityDisplay → ActivityStack → TaskRecord → ActivityRecord）
+ACTIVITIES_SAMPLES['10'] = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  mResumedActivity: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
+
+  ActivityDisplay #0 (activities from top to bottom):
+    ActivityStack #0: type=standard mode=fullscreen, isVisible=true
+      TaskRecord #991: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
+        * ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991} type=standard mode=fullscreen
+          mResumed=true mVisible=true
+    ActivityStack #1: type=home mode=fullscreen, isVisible=true
+      TaskRecord #1: ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1}
+        * ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1} type=home mode=fullscreen
+          mResumed=false mVisible=true`;
+ACTIVITIES_SAMPLES['9'] = ACTIVITIES_SAMPLES['10'];
+
+// ─── dumpsys window containers 示例（WMS 原生入口，与 activity containers 同一棵 WindowContainer 树）───
+// 复用 SAMPLES 内容（格式完全相同），仅替换首行标识使其自洽地表明来自 `dumpsys window containers`。
+const WINDOWCONTAINER_SAMPLES = {};
+for (const _k of Object.keys(SAMPLES)) {
+  WINDOWCONTAINER_SAMPLES[_k] = (SAMPLES[_k] || '').replace(/^ACTIVITY MANAGER CONTAINERS \(dumpsys activity containers\)/m, 'WINDOW MANAGER (dumpsys window containers)');
+}
+WINDOWCONTAINER_SAMPLES['default'] = WINDOWCONTAINER_SAMPLES['14'] || WINDOWCONTAINER_SAMPLES['13'] || SAMPLES['14'] || '';
+
 function buildContainersHwc() {
   hwcLayers = [];
   layerIndex = new Map();
@@ -4679,22 +4816,27 @@ function buildContainersHwc() {
 
 function updateDataSourceUI() {
   const dc = document.getElementById('ds-containers');
-  const ds = document.getElementById('ds-surfaceflinger');
+  const da = document.getElementById('ds-activities');
+  const dwc = document.getElementById('ds-windowcontainers');
   const dw = document.getElementById('ds-window');
+  const ds = document.getElementById('ds-surfaceflinger');
   if (dc) dc.classList.toggle('active', dataSource === 'containers');
-  if (ds) ds.classList.toggle('active', dataSource === 'surfaceflinger');
+  if (da) da.classList.toggle('active', dataSource === 'activities');
+  if (dwc) dwc.classList.toggle('active', dataSource === 'windowcontainers');
   if (dw) dw.classList.toggle('active', dataSource === 'window');
+  if (ds) ds.classList.toggle('active', dataSource === 'surfaceflinger');
+  const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers');
   const vw = document.getElementById('view-window');
   const vh = document.getElementById('view-hwc');
   const vst = document.getElementById('view-sftree');
   const vl = document.getElementById('view-windowlist');
-  if (vw) vw.style.display = (dataSource === 'containers') ? '' : 'none';
-  if (vh) vh.style.display = (dataSource === 'window') ? 'none' : ''; // HWC 合成预览仅 containers/surfaceflinger 可见
+  if (vw) vw.style.display = isTreeDs ? '' : 'none';
+  if (vh) vh.style.display = (dataSource === 'activities') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导、surfaceflinger 真实；activities 无窗口几何故隐藏
   if (vst) vst.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
-  // 窗口树 / SF 层级树都展示展开·折叠·定位工具；定位 Resumed 仅窗口树（containers）
-  const showTreeTools = (dataSource === 'containers') || (dataSource === 'surfaceflinger' && currentView === 'sf-tree');
-  const showWin = dataSource === 'containers';
+  // 树工具（展开/折叠/定位 Resumed）：窗口树类数据源（containers/activities/windowcontainers）
+  const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && currentView === 'sf-tree');
+  const showWin = isTreeDs;
   const exp = document.getElementById('tb-expand');
   const col = document.getElementById('tb-collapse');
   const res = document.getElementById('tb-resumed');
@@ -4704,11 +4846,24 @@ function updateDataSourceUI() {
   const ta = document.getElementById('input-textarea');
   if (ta) ta.placeholder = dataSource === 'containers'
     ? '在此粘贴 dumpsys activity containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity containers\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
-    : dataSource === 'window'
-      ? '在此粘贴 dumpsys window windows 输出...\n\n1. adb shell dumpsys window windows\n2. 复制含 “Window #N Window{...}” 的窗口段落\n3. 点击「解析」查看窗口图层与 5 种 mDrawState 状态\n4. 或点「加载示例数据」'
-      : '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」';
+    : dataSource === 'activities'
+      ? '在此粘贴 dumpsys activity activities 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity activities\n3. 复制含 TaskDisplayArea / RootTask / ActivityRecord 的段落\n4. 或点「加载示例数据」'
+      : dataSource === 'windowcontainers'
+        ? '在此粘贴 dumpsys window containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys window containers\n3. 复制完整输出（与 activity containers 同一棵 WindowContainer 树，WMS 原生入口）\n4. 或点「加载示例数据」'
+        : dataSource === 'window'
+          ? '在此粘贴 dumpsys window windows 输出...\n\n1. adb shell dumpsys window windows\n2. 复制含 “Window #N Window{...}” 的窗口段落\n3. 点击「解析」查看窗口图层与 5 种 mDrawState 状态\n4. 或点「加载示例数据」'
+          : '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」';
   const hint = document.getElementById('view-hint');
   if (hint) hint.style.display = (currentView === 'hwc') ? 'inline-flex' : 'none';
+}
+
+function openPerspectiveModal() {
+  const m = document.getElementById('perspective-modal');
+  if (m) m.classList.add('show');
+}
+function closePerspectiveModal() {
+  const m = document.getElementById('perspective-modal');
+  if (m) m.classList.remove('show');
 }
 
 function switchDataSource(ds) {
@@ -4730,10 +4885,10 @@ function switchDataSource(ds) {
   const hi = document.getElementById('header-info'); if (hi) hi.textContent = '';
   const ov = document.getElementById('hwc-overlays'); if (ov) ov.innerHTML = '';
   windowDump = { windows: [], currentFocus: null, focusedApp: null }; windowIndex = new Map(); selectedWindowId = null;
-  currentView = (ds === 'containers') ? 'window' : (ds === 'window' ? 'windowlist' : 'hwc');
+  currentView = (ds === 'containers' || ds === 'activities' || ds === 'windowcontainers') ? 'window' : (ds === 'window' ? 'windowlist' : 'hwc');
   updateViewToggleUI();
   updateDataSourceUI();
-  showToast('已切换到 ' + (ds === 'containers' ? 'Containers' : (ds === 'window' ? 'Windows' : 'SurfaceFlinger')) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
+  showToast('已切换到 ' + (ds === 'containers' ? 'Activity Containers' : (ds === 'activities' ? 'Activities' : (ds === 'windowcontainers' ? 'Window Containers' : (ds === 'window' ? 'Window (mDrawState)' : 'SurfaceFlinger')))) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
 }
 
 /* ========================================================================
@@ -5940,9 +6095,13 @@ WINDOW_SAMPLES['14'] = WINDOW_SAMPLES['default'];
 function dataSourceToAdbCommand(ds) {
   if (ds === 'surfaceflinger') return 'surfaceflinger';
   if (ds === 'window') return 'window';
+  if (ds === 'activities') return 'activities';
+  if (ds === 'windowcontainers') return 'windowcontainers';
   return 'containers';
 }
 function adbCommandLabel(cmd) {
+  if (cmd === 'activities') return 'activity activities';
+  if (cmd === 'windowcontainers') return 'window containers';
   return cmd === 'surfaceflinger' ? 'SurfaceFlinger' : (cmd === 'window' ? 'window windows' : 'activity containers');
 }
 
@@ -6279,6 +6438,50 @@ window.addEventListener('DOMContentLoaded', function() {
     <div style="margin-top:12px;text-align:right">
       <button class="btn" onclick="closeDeviceModal()">取消</button>
     </div>
+  </div>
+</div>
+
+<!-- 视角 / 排查用途对照面板 -->
+<div class="device-modal-mask" id="perspective-modal" onclick="if(event.target===this)closePerspectiveModal()">
+  <div class="device-modal" style="width:780px;max-width:96vw">
+    <h3>各 dumpsys 命令的视角与排查用途</h3>
+    <p class="dm-sub">四条命令的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层）。前三者都在 system_server 共享同一棵树，最后一个是独立 native 进程、只看屏幕像素。</p>
+    <table class="persp-table">
+      <thead>
+        <tr><th>命令</th><th>视角（谁在看）</th><th>关注点</th><th>适用排查</th><th>工具中的入口</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>dumpsys activity activities</code></td>
+          <td>ATMS：活动 / 任务<b>逻辑生命周期</b></td>
+          <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
+          <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
+          <td>🎯 <b>Activities</b>（树视图，高亮 Resumed / Focused）</td>
+        </tr>
+        <tr>
+          <td><code>dumpsys activity containers</code></td>
+          <td>经 ATMS 入口看 <b>WindowContainer 容器树</b></td>
+          <td>容器嵌套（到 WindowState），节点父子关系</td>
+          <td>容器父子关系、窗口层级嵌套、谁在谁下面</td>
+          <td>📦 <b>Activity Containers</b></td>
+        </tr>
+        <tr>
+          <td><code>dumpsys window containers</code></td>
+          <td>WMS <b>原生入口</b>看同一棵树（窗口管理视角）</td>
+          <td>窗口可见性 / 动画 / surface 归属（与 activity containers 同结构）</td>
+          <td>与 activity containers 互为印证，看窗口怎么挂、surface 归属</td>
+          <td>🪟 <b>Window Containers</b>（同树）</td>
+        </tr>
+        <tr>
+          <td><code>dumpsys SurfaceFlinger</code></td>
+          <td>独立 native 进程，<b>真实合成图层</b>（屏幕像素）</td>
+          <td>按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer</td>
+          <td>黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏</td>
+          <td>🖥 <b>SurfaceFlinger</b>（HWC 合成预览 / 层级树）</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="modal-close"><button class="btn" onclick="closePerspectiveModal()">关闭</button></div>
   </div>
 </div>
 </body>

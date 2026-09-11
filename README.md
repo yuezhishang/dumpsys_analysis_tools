@@ -1,9 +1,9 @@
 # Dumpsys Activity Containers Visualizer
 
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
-> 支持 `dumpsys activity containers` / `dumpsys SurfaceFlinger` / `dumpsys window`，覆盖 **Android 9 – 16**。
+> 支持 `dumpsys activity containers` / `dumpsys activity activities` / `dumpsys window containers` / `dumpsys SurfaceFlinger` / `dumpsys window`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.32-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.33-green.svg)](#版本)
 
 ---
 
@@ -31,6 +31,8 @@
 - 🔍 **统一交互**：搜索、节点折叠、重置布局、导出图片，在 Containers / SurfaceFlinger / Window 各视图一致可用。
 - 📱 **Android 9–16 全对齐**：A9/10/11 扁平格式、A12/13 分散旧格式、A14+ 树形 `Layer Hierarchy` 均已适配。
 - 🧪 **内置样例数据**：未接设备也能先看效果，上手零门槛。
+- 🎯 **五大数据源**：Activity Containers / Activities / Window Containers / SurfaceFlinger / Window，分别对应 ATMS 逻辑层、WMS 容器树、WMS 原生入口、真实合成图层、窗口 `mDrawState`。
+- ℹ️ **视角 / 排查对照**：内置「视角/排查」面板，标注每条 `dumpsys` 命令的视角与适用排查场景，理清四层关系不混淆。
 
 ---
 
@@ -48,6 +50,23 @@
 - **容器树**：`dumpsys activity containers` 的 WindowContainer 层级，支持缩放、搜索、节点折叠与导出图片。
 - **SF 层级树**：Android 14+ 整合的 `Layer Hierarchy` 完整层级（可开启「以容器形式展示」折叠窗口子 surface）。
 - **窗口图层**：`dumpsys window` 的每个窗口卡片，按 Z 序（降序）排列，标出焦点窗口与 5 种 `mDrawState`。
+
+---
+
+## 各 dumpsys 命令的视角与排查用途
+
+工具把四条核心 `dumpsys` 命令拆成独立数据源——它们**视角不同、排查用途不同**，但底层是同一棵 `WindowContainer` 树：
+
+> **activity activities** ⊂ **activity containers / window containers**（同一棵 WindowContainer 树，ATMS 与 WMS 共享引用）→ 每个窗口的 surface → **SurfaceFlinger**（独立 native 进程，只认屏幕像素）。
+
+| 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
+| --- | --- | --- | --- | --- |
+| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图，高亮 Resumed / Focused） |
+| `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity Containers** |
+| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树） |
+| `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
+
+> 点工具里的 **ℹ️ 视角/排查** 按钮可随时弹出此对照表。
 
 ---
 
@@ -126,8 +145,8 @@ bash start-tool.sh
 | 项目 | 说明 |
 | --- | --- |
 | Android 版本 | 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 |
-| 数据源 | `dumpsys activity containers`、`dumpsys SurfaceFlinger`、`dumpsys window` |
-| 视图 | 容器树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
+| 数据源 | `dumpsys activity containers`、`dumpsys activity activities`、`dumpsys window containers`、`dumpsys SurfaceFlinger`、`dumpsys window` |
+| 视图 | 容器树、Activities 树、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
 | 解析格式 | A9–11 扁平 `Visible/HWC layers`；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy` |
 
 ---
@@ -145,6 +164,14 @@ bash start-tool.sh
 
 ### 4. 窗口图层（Windows）
 解析 `dumpsys window windows`，按 Z 序（降序）排列每个窗口卡片，标出焦点窗口 `★`，并展示 `mDrawState`、尺寸、属性等关键参数。
+
+### 5. Activities 树（dumpsys activity activities）
+解析 `dumpsys activity activities`，从 ATMS **逻辑生命周期**视角还原 `TaskDisplayArea → RootTask → ActivityRecord` 层级（只到 ActivityRecord，不含窗口 surface）。自动高亮 `mResumedActivity` / `mFocusedApp` 指向的 Activity（Resumed / Focused 标记），并可用「⚡ 定位 Resumed」一键跳转。适合排查「哪个 activity 在前台、状态卡在哪」。
+
+### 6. Window Containers 树（dumpsys window containers）
+解析 `dumpsys window containers`——这是 WMS **原生入口** dump 的同一棵 WindowContainer 树（与 Activity Containers 结构完全一致，只是视角从「窗口管理」出发，常带更多可见性 / 动画 / surface 信息）。与 📦 Activity Containers 互为印证，用来核对窗口怎么挂、surface 归属哪里。
+
+> 小结：`activity activities` 管「谁在跑」，`activity containers` / `window containers` 管「窗口怎么挂」，`SurfaceFlinger` 管「屏幕画了啥」——前三者共享同一棵树，最后一个在独立进程只看真实图层。
 
 ---
 
@@ -214,7 +241,7 @@ node adb-bridge.js
 
 - `index.html`：所有前端逻辑（解析、渲染、交互）均在这一文件内，直接编辑刷新即可。
 - `adb-bridge.js`：桥接服务本体（仅用 Node.js 内置 `http` / `child_process`，无需依赖）。
-- 抓取命令可在 `adb-bridge.js` 的 `/dump` 处理中调整（`containers` / `surfaceflinger` / `window`）。
+- 抓取命令可在 `adb-bridge.js` 的 `/dump` 处理中调整（`containers` / `activities` / `windowcontainers` / `surfaceflinger` / `window`）。
 
 ---
 
@@ -226,7 +253,8 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.32**（当前）：新增「dumpsys window」数据源与「窗口图层」视图，可视化 5 种 `mDrawState`；统一多视图交互；桥接改为纯手动控制（启动器 + 便携 Node）。
+- **v1.33**（当前）：新增 🎯 **Activities**（`dumpsys activity activities`，ATMS 逻辑层）与 🪟 **Window Containers**（`dumpsys window containers`，WMS 原生入口，与 activity containers 同一棵树）两个数据源；新增「ℹ️ 视角/排查」对照面板，标注每条命令的视角与适用排查场景；桥接抓取同步支持 `activities` / `windowcontainers`。
+- **v1.32**：新增「dumpsys window」数据源与「窗口图层」视图，可视化 5 种 `mDrawState`；统一多视图交互；桥接改为纯手动控制（启动器 + 便携 Node）。
 - 早期版本（`v1.0` / `v1.10`–`v1.12`）作为封版快照保留。
 
 ---
