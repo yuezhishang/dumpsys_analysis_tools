@@ -1048,7 +1048,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.41'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。
+const APP_VERSION = 'v1.42'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -6248,17 +6248,6 @@ var DATA_SOURCE_GROUPS = [
     ]
   },
   {
-    id: 'amstack', icon: '🗂', label: 'Stack List', cmd: 'am stack list',
-    title: 'am stack list｜任务栈速览面板（非层级树）：一眼看清栈数 / 可见(前台) task / display 分布 / 布局(取自 configuration 的 mWindowingMode) 与栈类型(mActivityType)。已做跨版本适配：A9–A10 容器头为 Stack id=N，A11+ 改名为 RootTask id=N。该命令无焦点字段，前台仅按 visible=true 判定',
-    items: [
-      {
-        id: 'amstack', label: 'Stack List', icon: '🗂', cmd: 'am stack list', view: 'hwc',
-        desc: '任务栈速览卡片面板（非层级树）。缺字段如实标注「该版本无此字段」，不用 bounds 猜。',
-        paste: '在此粘贴 am stack list 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell am stack list\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
-      }
-    ]
-  },
-  {
     id: 'window', icon: '🪟', label: 'Window', cmd: 'dumpsys window',
     title: 'dumpsys window｜Window 相关数据的统一入口：点击展开 Containers（WMS 原生入口看容器树）/ Windows（每个窗口的布局与 5 种 mDrawState）。后续新增的 window 子命令都会追加到这里',
     foot: '两个入口看的是同一棵 WindowContainer 树：Containers 偏结构（谁在谁下面、surface 归属），Windows 偏每个窗口自己的布局与绘制状态。',
@@ -6283,6 +6272,17 @@ var DATA_SOURCE_GROUPS = [
         id: 'surfaceflinger', label: 'SurfaceFlinger', icon: '🖥', cmd: 'dumpsys SurfaceFlinger', view: 'hwc',
         desc: '独立 native 进程的真实合成图层（扁平，无 task 嵌套）。HWC 合成预览 / 层级树（层级树 A14+）。',
         paste: '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」'
+      }
+    ]
+  },
+  {
+    id: 'amstack', icon: '🗂', label: 'Stack List', cmd: 'am stack list',
+    title: 'am stack list｜任务栈速览面板（非层级树）：一眼看清栈数 / 可见(前台) task / display 分布 / 布局(取自 configuration 的 mWindowingMode) 与栈类型(mActivityType)。已做跨版本适配：A9–A10 容器头为 Stack id=N，A11+ 改名为 RootTask id=N。该命令无焦点字段，前台仅按 visible=true 判定',
+    items: [
+      {
+        id: 'amstack', label: 'Stack List', icon: '🗂', cmd: 'am stack list', view: 'hwc',
+        desc: '任务栈速览卡片面板（非层级树）。缺字段如实标注「该版本无此字段」，不用 bounds 猜。',
+        paste: '在此粘贴 am stack list 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell am stack list\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
       }
     ]
   }
@@ -8686,7 +8686,7 @@ window.addEventListener('DOMContentLoaded', function() {
 <div class="device-modal-mask" id="perspective-modal" onclick="if(event.target===this)closePerspectiveModal()">
   <div class="device-modal" style="width:780px;max-width:96vw">
     <h3>各 dumpsys 命令的视角与排查用途</h3>
-    <p class="dm-sub">数据源按「命令族」分组：<b>📦 Activity</b>（activity containers / activity activities）、<b>🪟 Window</b>（window containers / window windows）、<b>🗂 Stack List</b>、<b>🖥 SurfaceFlinger</b> —— 分组按钮点击后弹出子项菜单。命令之间的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树，分别由 ATMS / WMS 两个入口暴露）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层，独立 native 进程，只看屏幕像素）。</p>
+    <p class="dm-sub">数据源按「命令族」分组：<b>📦 Activity</b>（activity containers / activity activities）、<b>🪟 Window</b>（window containers / window windows）、<b>🖥 SurfaceFlinger</b>、<b>🗂 Stack List</b> —— 分组按钮点击后弹出子项菜单。命令之间的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树，分别由 ATMS / WMS 两个入口暴露）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层，独立 native 进程，只看屏幕像素）。</p>
     <table class="persp-table">
       <thead>
         <tr><th>命令</th><th>视角（谁在看）</th><th>关注点</th><th>适用排查</th><th>工具中的入口</th></tr>
@@ -8698,13 +8698,6 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
           <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
           <td>📦 <b>Activity → 🎯 Activities</b>（树视图高亮 Resumed / Focused；画布左上的「诊断面板」按实际用途分 G1–G6：前台与焦点归属 / 生命周期状态 / 绘制与启动 / Task 栈结构 / Intent 与进程归属 / 多窗口·转屏·兼容 —— 结论可点击定位；熄屏·锁屏·AOD 等环境因素会降级为灰色「环境项」）</td>
-        </tr>
-        <tr>
-          <td><code>am stack list</code></td>
-          <td>ATMS：<b>任务栈速览</b>（Stack → Task 两层，逻辑层摘要）</td>
-          <td>每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity</td>
-          <td>一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局</td>
-          <td>🗂 <b>Stack List</b>（任务栈速览面板，非层级树：概览卡 + 每栈布局判定全屏/分屏/PIP + 每 task 卡，点击看 topActivity 与详情）</td>
         </tr>
         <tr>
           <td><code>dumpsys activity containers</code></td>
@@ -8733,6 +8726,13 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer</td>
           <td>黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏</td>
           <td>🖥 <b>SurfaceFlinger</b>（HWC 合成预览 / 层级树）</td>
+        </tr>
+        <tr>
+          <td><code>am stack list</code></td>
+          <td>ATMS：<b>任务栈速览</b>（Stack → Task 两层，逻辑层摘要）</td>
+          <td>每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity</td>
+          <td>一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局</td>
+          <td>🗂 <b>Stack List</b>（任务栈速览面板，非层级树：概览卡 + 每栈布局判定全屏/分屏/PIP + 每 task 卡，点击看 topActivity 与详情）</td>
         </tr>
       </tbody>
     </table>
