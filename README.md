@@ -1,9 +1,9 @@
 # Dumpsys Activity Containers Visualizer
 
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
-> 支持 `dumpsys activity containers` / `dumpsys activity activities` / `am stack list` / `dumpsys window containers` / `dumpsys SurfaceFlinger` / `dumpsys window`，覆盖 **Android 9 – 16**。
+> 支持 6 条命令，按命令族合并为 **📦 Activity** / **🗂 Stack List** / **🪟 Window** / **🖥 SurfaceFlinger** 四个入口：`dumpsys activity containers`、`dumpsys activity activities`、`am stack list`、`dumpsys window containers`、`dumpsys window windows`、`dumpsys SurfaceFlinger`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.40-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.41-green.svg)](#版本)
 
 ---
 
@@ -31,8 +31,8 @@
 - 🔍 **统一交互**：搜索、节点折叠、重置布局、导出图片，在 Containers / SurfaceFlinger / Window 各视图一致可用。
 - 📱 **Android 9–16 全对齐**：A9/10/11 扁平格式、A12/13 分散旧格式、A14+ 树形 `Layer Hierarchy` 均已适配。
 - 🧪 **内置样例数据**：未接设备也能先看效果，上手零门槛。
-- 🎯 **六大数据源**：Activity Containers / Activities / Stack List（`am stack list`）/ Window Containers / SurfaceFlinger / Window，分别对应 WMS 容器树、ATMS 逻辑层、ATMS 任务栈速览、WMS 原生入口、真实合成图层、窗口 `mDrawState`。
-- ℹ️ **视角 / 排查对照**：内置「视角/排查」面板，标注每条 `dumpsys` 命令的视角与适用排查场景，理清四层关系不混淆。
+- 🎯 **六大数据源、四个入口**：按命令族合并为 **📦 Activity**（Containers / Activities）、**🗂 Stack List**、**🪟 Window**（Containers / Windows）、**🖥 SurfaceFlinger** —— 多子项入口**点击弹菜单**切换（不用把 6 个按钮摊满一条），单项入口**一键直切**；新增同族子命令**只改一处配置**。
+- ℹ️ **视角 / 排查对照**：内置「视角/排查」面板，标注每条 `dumpsys` 命令（含 `dumpsys window windows`）的视角与适用排查场景，理清「逻辑层 → 容器层 → surface → 合成层」的关系不混淆。
 
 ---
 
@@ -55,19 +55,62 @@
 
 ## 各 dumpsys 命令的视角与排查用途
 
-工具把五条核心命令拆成独立数据源——它们**视角不同、排查用途不同**，但底层是同一棵 `WindowContainer` 树：
+工具把 6 条核心命令**按命令族归并成 4 个数据源入口**（📦 Activity / 🗂 Stack List / 🪟 Window / 🖥 SurfaceFlinger，多子项入口点击弹菜单），它们**视角不同、排查用途不同**，但底层是同一棵 `WindowContainer` 树：
 
 > **activity activities** ⊂ **activity containers / window containers**（同一棵 WindowContainer 树，ATMS 与 WMS 共享引用）→ 每个窗口的 surface → **SurfaceFlinger**（独立 native 进程，只认屏幕像素）。
 
 | 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
 | --- | --- | --- | --- | --- |
-| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图高亮 Resumed / Focused；详情面板顶部「排查洞察」自动检测多 RESUMED 冲突、焦点指向 paused、task 栈深度，并汇总 Intent/进程/uid 归属） |
+| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 📦 **Activity → 🎯 Activities**（树视图高亮 Resumed / Focused；画布左上「诊断面板」按实际用途分 G1–G6，结论可点击定位，熄屏·锁屏等环境因素降级为灰色环境项） |
 | `am stack list` | ATMS：**任务栈速览**（Stack / RootTask → Task 两层，逻辑层摘要） | 每个栈的 id / bounds / displayId / userId，以及 `configuration` 里的 `mWindowingMode` / `mActivityType`；每个 Task 的 `visible` 与栈顶 Activity。**跨版本适配**：A9–A10 容器头为 `Stack id=N`（A9 部分输出**无** `configuration` 行 → 布局不可得，工具如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 `RootTask id=N` | 一眼看清栈数、可见(前台) task、display 分布、布局（全屏/分屏/PIP，取自 mWindowingMode） | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每栈卡片（布局徽章取 `mWindowingMode`、类型徽章取 `mActivityType`）+ 每 task 行；**画布可直接拖拽平移 / 滚轮缩放 / 重置布局**。注意：该命令**无焦点字段**，前台仅按 `visible=true` 判定） |
-| `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity Containers** |
-| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
+| `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity → 📦 Containers** |
+| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window → 🪟 Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
+| `dumpsys window windows` | WMS：**每个 Window 自己的布局与绘制状态** | 窗口 frame / 可见性 / 5 种 `mDrawState`（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN） | 窗口绘制卡顿、白屏、窗口没上屏、`mDrawState` 停在非 HAS_DRAWN | 🪟 **Window → 🖼 Windows**（窗口卡片视图，可按 `mDrawState` 筛选） |
 | `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
 
 > 点工具里的 **ℹ️ 视角/排查** 按钮可随时弹出此对照表。
+
+---
+
+## 数据源分组与扩展
+
+数据源栏不再平铺 6 个按钮，而是按「命令族」合并为 **4 个入口**——同族命令看的是同一个东西，只是入口不同；合并后横向空间不再被占满，也给后续扩展留了位置：
+
+| 入口 | 子项 | 完整命令 | 点击行为 |
+| --- | --- | --- | --- |
+| 📦 **Activity** | 📦 Containers / 🎯 Activities | `dumpsys activity containers` / `dumpsys activity activities` | 弹子项菜单 |
+| 🗂 **Stack List** | —（单项） | `am stack list` | 直接切换 |
+| 🪟 **Window** | 🪟 Containers / 🖼 Windows | `dumpsys window containers` / `dumpsys window windows` | 弹子项菜单 |
+| 🖥 **SurfaceFlinger** | —（单项） | `dumpsys SurfaceFlinger` | 直接切换 |
+
+交互要点：
+
+- **多子项入口**：点击弹出菜单（菜单项含完整命令与视角说明，当前项标「当前」）；组内某项被选中时按钮**高亮**，并把子项名显示在按钮上（如 `📦 Activity Containers ▾`），一眼知道现在看的是哪个。
+- **单项入口**：没有子项，点击直接切换——保持旧手感，不增加一次点击。
+- 菜单支持点击外部 / `Esc` 关闭；鼠标悬停任一入口可见该命令族的完整说明。
+
+### 加一个新的 dumpsys 子命令？
+
+UI 完全由 `index.html` 里的 `DATA_SOURCE_GROUPS` 配置驱动。例如以后要在 Activity 下再加一个 `dumpsys activity service`：
+
+```js
+// index.html → DATA_SOURCE_GROUPS → 找到 id: 'activity' 的那一组，在 items 里追加一条
+{
+  id: 'actservice', label: 'Services', icon: '🧩', cmd: 'dumpsys activity service',
+  view: 'window',                    // 切换后默认落到哪个视图：window / windowlist / hwc
+  desc: '一句话说清这个入口的视角与适用排查',
+  paste: '在此粘贴 dumpsys activity service 输出...\n\n1. 先选择「目标 Android 版本」\n2. …'
+}
+```
+
+四步就位（第 4 步多数情况用不上）：
+
+1. 上面这条配置 —— 数据源栏、子项菜单、激活态、输入框占位提示、切换后的默认视图、toast 文案、版本下拉过滤**都会自动跟上**；而且**分组会自动从「单项直切」变成「点击弹菜单」**（因为子项从 1 个变成了 2 个）；
+2. `parseInput()` 里加一个 `dataSource === 'actservice'` 的解析分支；
+3. `window.VERSION_SUPPORT` 里加一条 `{ min, note }`（决定该数据源可选的最低 Android 版本）；
+4. （可选）若该命令有**特殊的视图能力**（能不能推导 HWC、要不要显示展开·折叠按钮），再在 `updateDataSourceUI()` 的视图开关门控里补一句 —— 这属于数据源自身的**能力判断**，故意不放进配置，避免出现「配置说能、解析层其实没有几何」的假承诺。
+
+> 校验脚本里有一条断言专门盯着这件事：**每个数据源必须在 `VERSION_SUPPORT` 里有条目，且必须有 `cmd` / `desc` / `view` / `paste`** —— 漏配直接 FAIL，不会悄悄上线。
 
 ---
 
@@ -146,7 +189,7 @@ bash start-tool.sh
 | 项目 | 说明 |
 | --- | --- |
 | Android 版本 | 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 |
-| 数据源 | `dumpsys activity containers`、`dumpsys activity activities`、`am stack list`、`dumpsys window containers`、`dumpsys SurfaceFlinger`、`dumpsys window` |
+| 数据源 | 6 条命令按命令族合并为 **4 个入口**：📦 Activity（`activity containers` / `activity activities`）、🗂 Stack List（`am stack list`）、🪟 Window（`window containers` / `window windows`）、🖥 SurfaceFlinger（`SurfaceFlinger`）—— 多子项入口点击弹菜单 |
 | 视图 | 容器树、Activities 树 + 诊断面板、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
 | 解析格式 | 容器：A9–11 扁平；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy`。Activities：A9–10 `Stack #N` + `Task id #` 前置块 + `TaskRecord{}`；A11 `Stack #N` + `Task{}`（前置块已取消）；A12 起无 Stack 头；A13+ `Hist` 双空格 |
 
@@ -160,7 +203,7 @@ bash start-tool.sh
 ### 2. HWC 合成预览（SurfaceFlinger）
 解析 `dumpsys SurfaceFlinger` 的 **HWC layers** 真实合层表（这是合层权威清单），展示每个图层的几何、Z 序，并高亮当前焦点窗口。未接设备时由 **containers / windowcontainers** 数据推导 HWC（仅供参考）。
 
-> **注意**：HWC 合成预览仅对 `containers` / `windowcontainers` / `surfaceflinger` 数据源可用。`activities` 与 `window` 数据源不提供完整的 Layer 几何 / Z 序，无法推导 HWC，因此这两个数据源下 HWC 视图按钮自动隐藏。
+> **注意**：HWC 合成预览仅对 📦 **Activity → Containers** / 🪟 **Window → Containers** / 🖥 **SurfaceFlinger** 三个数据源可用。📦 **Activity → Activities** 与 🪟 **Window → Windows** 不提供完整的 Layer 几何 / Z 序，无法推导 HWC，因此在这两个子项下 HWC 视图按钮自动隐藏。
 
 ### 3. SF 层级树（SurfaceFlinger Tree，Android 14+）
 解析 Android 14 起整合的 `Layer Hierarchy` 树形段，呈现 SurfaceFlinger 侧的完整层级（与 containers 同源，但把每个窗口再向下拆出子 surface 并多出辅助层）。可开启「以容器形式展示」开关折叠窗口子 surface。
@@ -311,7 +354,11 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.40**（当前）：用 AOSP 源码逐版复核 Activities 的**缩进台阶**，据此修 6 处——
+- **v1.41**（当前）：**数据源栏按命令族分组**（为后续扩展留位）——
+  ① 原来的 **6 个平铺按钮合并为 4 个入口**：「📦 Activity」（`activity containers` + `activity activities`）、「🗂 Stack List」、「🪟 Window」（`window containers` + `window windows`）、「🖥 SurfaceFlinger」；**多子项入口点击后弹出子项菜单**（菜单项含完整命令、视角说明与「当前」标记），**单项入口保持一键直切**、不增加点击成本；组内某项被选中时入口**高亮**并把子项名显示在按钮上，一眼知道当前在看哪个。
+  ② 新增 **`DATA_SOURCE_GROUPS` 单一配置**（分组 id / 图标 / 名称 / 命令 + 子项 `label`·`cmd`·`desc`·`view`·`paste`）：数据源栏、子项菜单、激活态、输入框占位提示、切换后的默认视图、toast 文案、版本下拉过滤**全部由它驱动**。以后要给 Activity / Window 增加新的 `dumpsys` 子命令，只需「配置里加一条 + `parseInput()` 加一个分支 + `VERSION_SUPPORT` 加一条」，入口会自动变成菜单项。详见 [数据源分组与扩展](#数据源分组与扩展)。
+  ③ 「视角/排查」对照表**补上此前遗漏的 `dumpsys window windows` 一行**，各命令的「工具入口」改为分组路径（如 📦 Activity → 🎯 Activities），并把 v1.36 时代遗留、早已失效的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。
+- **v1.40**：用 AOSP 源码逐版复核 Activities 的**缩进台阶**，据此修 6 处——
   ① **A9/A10 的「Task 前置块」**：`Task id #N` 与 `mBounds=` / `mMinWidth=` / `mMinHeight=` / `mLastNonFullscreenBounds=` 五行都打在 4 空格，与紧随其后的 `* TaskRecord{…}` **同缩进**（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进区分不了归属；此前这几行会被吸收到上级 Stack 上，把 **Task 的 `mBounds` 显示成 Stack 的 `mBounds`**（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；**A11 起该前置块已取消**（源码实证）。
   ② **Stack 头块的随行属性**：Stack 头后面固定再打两行**与头同缩进**的 `isSleeping=` / `mBounds=`（A9–A11 皆然），原先被「属性必须比节点更深」的规则**整行丢弃**，现单独放行两行。
   ③ **诊断标签统一走 `tLabel()`**：`tasks[]` 同时收 Stack 与 Task 节点，而 Stack 没有 `taskId`，旧写法会在 A9/A10 的 dump 上打出「**Task #undefined 是空任务**」——把跨版本格式差异**伪装成解析失败**。

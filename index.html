@@ -584,6 +584,24 @@ select.btn{
 .source-bar .ds-label{font-size:12px;color:var(--text-muted);font-weight:600;margin-right:2px}
 .source-bar .seg-btn{font-size:12px}
 .source-bar .ds-hint{font-size:11px;color:var(--text-muted)}
+/* ===== 数据源分组按钮 + 子项下拉菜单（多子项分组点击弹菜单；便于后续扩展） ===== */
+.seg-btn.ds-group{display:inline-flex;align-items:center;gap:4px}
+.seg-btn.ds-group .ds-caret{font-size:9px;opacity:.7;margin-left:1px}
+.seg-btn.ds-group .ds-sub{font-size:11px;font-weight:700;color:var(--accent-blue);background:rgba(88,166,255,.14);border-radius:5px;padding:1px 6px;margin-left:2px}
+.seg-btn.ds-group.active .ds-sub{color:#0d1117;background:var(--accent-blue)}
+.ds-menu{position:fixed;z-index:120;min-width:330px;max-width:min(470px,94vw);background:var(--panel,#161b22);border:1px solid var(--border,#30363d);border-radius:10px;box-shadow:0 14px 38px rgba(0,0,0,.5);padding:6px;display:none}
+.ds-menu.show{display:block}
+.ds-menu-head{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--text-muted);padding:6px 10px 7px;border-bottom:1px solid var(--border);margin-bottom:5px}
+.ds-menu-head code{font-size:10.5px;font-weight:600;color:var(--accent-blue);background:var(--bg-tertiary);border-radius:4px;padding:1px 5px}
+.ds-menu-item{display:block;width:100%;text-align:left;box-sizing:border-box;background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 10px;cursor:pointer;transition:background .12s,border-color .12s}
+.ds-menu-item:hover{background:var(--bg-hover,rgba(88,166,255,.1));border-color:var(--border)}
+.ds-menu-item.active{background:rgba(88,166,255,.14);border-color:var(--accent-blue)}
+.ds-mi-top{display:flex;align-items:center;gap:6px}
+.ds-mi-label{font-size:12.5px;font-weight:700;color:var(--text-primary)}
+.ds-mi-cur{font-size:10.5px;font-weight:700;color:var(--accent-blue);border:1px solid var(--accent-blue);border-radius:5px;padding:0 5px}
+.ds-mi-cmd{display:block;font-size:10.5px;color:var(--accent-blue);margin-top:2px}
+.ds-mi-desc{display:block;font-size:11px;color:var(--text-muted);line-height:1.5;margin-top:3px}
+.ds-menu-foot{font-size:10.5px;color:var(--text-muted);line-height:1.5;padding:7px 10px 3px;border-top:1px solid var(--border);margin-top:5px}
 /* ===== dumpsys window 窗口图层视图 ===== */
 .win-root { padding: 18px; }
 .win-stack { display: flex; flex-direction: column; gap: 10px; max-width: 920px; margin: 0 auto; }
@@ -820,18 +838,9 @@ select.btn{
   <span class="header-info" id="header-info"></span>
 </header>
 
-<!-- 数据源常驻切换条（加载数据前即可见，不依赖 viz-panel 激活） -->
-<div class="source-bar" id="source-bar">
-  <span class="ds-label">数据源</span>
-  <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="dumpsys activity containers｜视角：经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：排查容器父子关系、窗口层级嵌套、谁在谁下面">📦 Activity Containers</button>
-  <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。详情面板顶部自动生成「排查洞察」：检测多 RESUMED 前台冲突、焦点指向 paused、task 栈深度、并汇总每个 Activity 的 Intent(component)/进程/uid 归属">🎯 Activities</button>
-  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜任务栈速览面板（非层级树）：一眼看清栈数 / 可见(前台) task / display 分布 / 布局(取自 configuration 的 mWindowingMode) 与栈类型(mActivityType，桌面栈·应用栈·系统栈)。已做跨版本适配：A9–A10 容器头为 Stack id=N（A9 可能无 configuration 行，缺字段会如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 RootTask id=N。该命令无焦点字段，前台仅按 visible=true 判定。画布可拖拽平移 / 滚轮缩放 / 重置布局">🗂 Stack List</button>
-  <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属），与 activity containers 互为印证">🪟 Window Containers</button>
-  <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="dumpsys window windows｜视角：每个 Window 的布局与 5 种 mDrawState 绘制状态。适用：窗口绘制卡顿/未上屏、mDrawState 停留在非 HAS_DRAWN">🖼 Window (mDrawState)</button>
-  <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="dumpsys SurfaceFlinger｜视角：独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏">🖥 SurfaceFlinger</button>
-  <span class="ds-hint">切换数据源后请粘贴对应 dumpsys 输出，或点「加载示例数据」</span>
-  <button class="seg-btn info-btn" id="ds-perspective" onclick="openPerspectiveModal()" title="查看各 dumpsys 命令的视角与排查用途对照">ℹ️ 视角/排查</button>
-</div>
+<!-- 数据源常驻切换条（加载数据前即可见）：由 JS 的 DATA_SOURCE_GROUPS 渲染
+     多子项分组 → 点击按钮弹出子项菜单；单项 → 点击直接切换 -->
+<div class="source-bar" id="source-bar"></div>
 
 <!-- Input Panel -->
 <div class="input-panel" id="input-panel">
@@ -1039,7 +1048,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.40'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。
+const APP_VERSION = 'v1.41'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -6205,19 +6214,238 @@ function buildContainersHwc() {
 }
 
 
+/* ========================================================================
+   数据源分组配置 ★单一数据源（新增扩展只改这一处 + parseInput 分流）
+   ------------------------------------------------------------------------
+   · 同一族命令的多个入口合并为一个分组；分组有 2 个以上子项时，按钮点击弹出子项菜单，
+     只有 1 个子项时按钮直接切换（所以给分组加第 2 个子项，UI 会自动变成菜单）。
+   · 后面要给 Activity / Window 增加新的 dumpsys 子命令（例如 dumpsys activity service、
+     dumpsys window policy），只需：
+       ① 在该分组的 items 里追加一条 { id, label, icon, cmd, desc, view, paste }；
+       ② 在 parseInput() 里加上 dataSource === '新 id' 的分支；
+       ③ 在 window.VERSION_SUPPORT 里加一条 { min, note }；
+       ④ 若该命令有特殊的视图能力（比如「能/不能推导 HWC」「要不要显示展开·折叠按钮」），
+          再在 updateDataSourceUI() 的视图开关门控里补一句 —— 这属于该数据源自身的能力判断，
+          不放进配置（避免出现「配置说能、解析层其实没有几何」的假承诺）。
+     分组按钮、菜单、激活态、输入框提示、默认视图、版本下拉过滤都会自动跟上。
+   ======================================================================== */
+var DATA_SOURCE_GROUPS = [
+  {
+    id: 'activity', icon: '📦', label: 'Activity', cmd: 'dumpsys activity',
+    title: 'dumpsys activity｜Activity 相关数据的统一入口：点击展开 Containers（容器树）/ Activities（活动·任务生命周期）。后续新增的 activity 子命令都会追加到这里',
+    foot: '同族命令，关注点不同：Containers 看窗口容器怎么嵌套，Activities 看活动/任务的状态与归属。',
+    items: [
+      {
+        id: 'containers', label: 'Containers', icon: '📦', cmd: 'dumpsys activity containers', view: 'window',
+        desc: '经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：容器父子关系、窗口层级嵌套、谁在谁下面。',
+        paste: '在此粘贴 dumpsys activity containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity containers\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
+      },
+      {
+        id: 'activities', label: 'Activities', icon: '🎯', cmd: 'dumpsys activity activities', view: 'window',
+        desc: 'ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。层级树 + 画布左上「诊断面板」（G1–G6，结论可点击定位）。',
+        paste: '在此粘贴 dumpsys activity activities 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity activities\n3. 复制含 Display / Task / ActivityRecord 的段落\n4. 或点「加载示例数据」'
+      }
+    ]
+  },
+  {
+    id: 'amstack', icon: '🗂', label: 'Stack List', cmd: 'am stack list',
+    title: 'am stack list｜任务栈速览面板（非层级树）：一眼看清栈数 / 可见(前台) task / display 分布 / 布局(取自 configuration 的 mWindowingMode) 与栈类型(mActivityType)。已做跨版本适配：A9–A10 容器头为 Stack id=N，A11+ 改名为 RootTask id=N。该命令无焦点字段，前台仅按 visible=true 判定',
+    items: [
+      {
+        id: 'amstack', label: 'Stack List', icon: '🗂', cmd: 'am stack list', view: 'hwc',
+        desc: '任务栈速览卡片面板（非层级树）。缺字段如实标注「该版本无此字段」，不用 bounds 猜。',
+        paste: '在此粘贴 am stack list 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell am stack list\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
+      }
+    ]
+  },
+  {
+    id: 'window', icon: '🪟', label: 'Window', cmd: 'dumpsys window',
+    title: 'dumpsys window｜Window 相关数据的统一入口：点击展开 Containers（WMS 原生入口看容器树）/ Windows（每个窗口的布局与 5 种 mDrawState）。后续新增的 window 子命令都会追加到这里',
+    foot: '两个入口看的是同一棵 WindowContainer 树：Containers 偏结构（谁在谁下面、surface 归属），Windows 偏每个窗口自己的布局与绘制状态。',
+    items: [
+      {
+        id: 'windowcontainers', label: 'Containers', icon: '🪟', cmd: 'dumpsys window containers', view: 'window',
+        desc: 'WMS 原生入口看同一棵 WindowContainer 树。适用：窗口可见性/动画/surface 归属，与 activity containers 互为印证。',
+        paste: '在此粘贴 dumpsys window containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys window containers\n3. 复制完整输出（与 activity containers 同一棵 WindowContainer 树）\n4. 或点「加载示例数据」'
+      },
+      {
+        id: 'window', label: 'Windows', icon: '🖼', cmd: 'dumpsys window windows', view: 'windowlist',
+        desc: '每个 Window 的布局与 5 种 mDrawState 绘制状态（NO_SURFACE → HAS_DRAWN）。适用：窗口绘制卡顿/未上屏。',
+        paste: '在此粘贴 dumpsys window windows 输出...\n\n1. adb shell dumpsys window windows\n2. 复制含 “Window #N Window{...}” 的窗口段落\n3. 点击「解析」查看窗口图层与 5 种 mDrawState 状态\n4. 或点「加载示例数据」'
+      }
+    ]
+  },
+  {
+    id: 'surfaceflinger', icon: '🖥', label: 'SurfaceFlinger', cmd: 'dumpsys SurfaceFlinger',
+    title: 'dumpsys SurfaceFlinger｜独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏',
+    items: [
+      {
+        id: 'surfaceflinger', label: 'SurfaceFlinger', icon: '🖥', cmd: 'dumpsys SurfaceFlinger', view: 'hwc',
+        desc: '独立 native 进程的真实合成图层（扁平，无 task 嵌套）。HWC 合成预览 / 层级树（层级树 A14+）。',
+        paste: '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」'
+      }
+    ]
+  }
+];
+
+// 便于调试 / 校验：分组扁平清单
+function dsAllItems() {
+  var out = [];
+  DATA_SOURCE_GROUPS.forEach(function (g) { g.items.forEach(function (it) { out.push(it); }); });
+  return out;
+}
+function dsGroupById(gid) {
+  for (var i = 0; i < DATA_SOURCE_GROUPS.length; i++) if (DATA_SOURCE_GROUPS[i].id === gid) return DATA_SOURCE_GROUPS[i];
+  return null;
+}
+function dsGroupOf(id) {
+  for (var i = 0; i < DATA_SOURCE_GROUPS.length; i++) {
+    var g = DATA_SOURCE_GROUPS[i];
+    for (var j = 0; j < g.items.length; j++) if (g.items[j].id === id) return g;
+  }
+  return null;
+}
+function dsItemOf(id) {
+  for (var i = 0; i < DATA_SOURCE_GROUPS.length; i++) {
+    var its = DATA_SOURCE_GROUPS[i].items;
+    for (var j = 0; j < its.length; j++) if (its[j].id === id) return its[j];
+  }
+  return null;
+}
+function dsItemOfGroup(g, id) {
+  if (!g) return null;
+  for (var j = 0; j < g.items.length; j++) if (g.items[j].id === id) return g.items[j];
+  return null;
+}
+// 数据源在 UI 上的完整名字：多子项分组带上级（Activity · Containers），单项直接用分组名
+function dsLabelOf(id) {
+  var g = dsGroupOf(id), it = dsItemOf(id);
+  if (!g || !it) return id;
+  return g.items.length > 1 ? (g.label + ' · ' + it.label) : g.label;
+}
+// 切换数据源时默认落到哪个视图（沿用原三元表达式的语义，缺失时兜底一致）
+function dsDefaultView(id) {
+  var it = dsItemOf(id);
+  if (it && it.view) return it.view;
+  return (id === 'containers' || id === 'activities' || id === 'windowcontainers') ? 'window'
+    : (id === 'window' ? 'windowlist' : 'hwc');
+}
+function escAttr(v) { return escHtml(v).replace(/"/g, '&quot;'); }
+
+// ── 数据源条渲染（分组按钮；多子项 → 弹菜单）──
+function renderDataSourceBar() {
+  const host = document.getElementById('source-bar');
+  if (!host || host.__dsRendered) return;
+  host.__dsRendered = true;
+  var html = '<span class="ds-label">数据源</span>';
+  DATA_SOURCE_GROUPS.forEach(function (g) {
+    var multi = g.items.length > 1;
+    var hit = dsItemOfGroup(g, dataSource);
+    var inner = '<span class="ds-icon">' + g.icon + '</span><span class="ds-name">' + escHtml(g.label) + '</span>';
+    if (multi) {
+      inner += '<span class="ds-sub" id="dsg-sub-' + g.id + '"' + (hit ? '' : ' style="display:none"') + '>' + escHtml(hit ? hit.label : '') + '</span>';
+      inner += '<span class="ds-caret">▾</span>';
+    }
+    html += '<button type="button" class="seg-btn ds-group' + (hit ? ' active' : '') + '" id="dsg-' + g.id + '"'
+      + ' title="' + escAttr(g.title) + '"'
+      + ' onclick="' + (multi ? "toggleDsMenu('" + g.id + "', event)" : "switchDataSource('" + g.items[0].id + "')") + '">'
+      + inner + '</button>';
+  });
+  html += '<span class="ds-hint">切换数据源后请粘贴对应 dumpsys 输出，或点「加载示例数据」</span>';
+  html += '<button type="button" class="seg-btn info-btn" id="ds-perspective" onclick="openPerspectiveModal()" title="查看各 dumpsys 命令的视角与排查用途对照">ℹ️ 视角/排查</button>';
+  host.innerHTML = html;
+  installDsMenuDismiss();
+}
+
+// ── 子项菜单（纯函数，便于校验）──
+function buildDsMenuHtml(gid, curDs) {
+  var g = dsGroupById(gid);
+  if (!g) return '';
+  var h = '<div class="ds-menu-head"><span>' + escHtml(g.icon + ' ' + g.label) + '</span><code>' + escHtml(g.cmd) + '</code></div>';
+  g.items.forEach(function (it) {
+    var on = (it.id === curDs);
+    h += '<button type="button" class="ds-menu-item' + (on ? ' active' : '') + '" onclick="pickDataSource(\'' + it.id + '\')">'
+      + '<span class="ds-mi-top"><span class="ds-mi-label">' + escHtml((it.icon ? it.icon + ' ' : '') + it.label) + '</span>'
+      + (on ? '<span class="ds-mi-cur">当前</span>' : '') + '</span>'
+      + '<span class="ds-mi-cmd">' + escHtml(it.cmd) + '</span>'
+      + '<span class="ds-mi-desc">' + escHtml(it.desc) + '</span></button>';
+  });
+  if (g.foot) h += '<div class="ds-menu-foot">' + escHtml(g.foot) + '</div>';
+  return h;
+}
+function ensureDsMenuEl() {
+  var m = document.getElementById('ds-menu');
+  if (m) return m;
+  m = document.createElement('div');
+  m.className = 'ds-menu';
+  m.id = 'ds-menu';
+  if (document.body && document.body.appendChild) document.body.appendChild(m);
+  return m;
+}
+function positionDsMenu(m, btn) {
+  if (!m || !btn || typeof btn.getBoundingClientRect !== 'function') return;
+  var r = btn.getBoundingClientRect();
+  var w = m.offsetWidth || 360, h = m.offsetHeight || 240;
+  var vw = window.innerWidth || (document.documentElement && document.documentElement.clientWidth) || 1200;
+  var vh = window.innerHeight || (document.documentElement && document.documentElement.clientHeight) || 800;
+  var left = r.left;
+  if (left + w > vw - 10) left = Math.max(10, vw - w - 10);
+  var top = r.bottom + 6;
+  if (top + h > vh - 10) top = Math.max(10, Math.min(r.top - h - 6, vh - h - 10));
+  m.style.left = left + 'px';
+  m.style.top = top + 'px';
+}
+function closeDsMenu() {
+  var m = document.getElementById('ds-menu');
+  if (m && m.classList) m.classList.remove('show');
+}
+function toggleDsMenu(gid, ev) {
+  if (ev) { if (ev.preventDefault) ev.preventDefault(); if (ev.stopPropagation) ev.stopPropagation(); }
+  var m = document.getElementById('ds-menu');
+  var shown = !!(m && m.classList && m.classList.contains('show'));
+  if (shown && m.__gid === gid) { closeDsMenu(); return; }
+  var g = dsGroupById(gid);
+  if (!g) return;
+  m = ensureDsMenuEl();
+  m.innerHTML = buildDsMenuHtml(gid, dataSource);
+  m.__gid = gid;
+  if (m.classList) m.classList.add('show');
+  positionDsMenu(m, document.getElementById('dsg-' + gid));
+}
+// 选中某个子项（菜单项 onclick）
+function pickDataSource(id) {
+  closeDsMenu();
+  switchDataSource(id);
+  updateDataSourceUI();
+}
+function installDsMenuDismiss() {
+  if (window.__dsMenuDismiss) return;
+  window.__dsMenuDismiss = true;
+  document.addEventListener('click', function (e) {
+    var m = document.getElementById('ds-menu');
+    if (!m || !m.classList || !m.classList.contains('show')) return;
+    var t = e && e.target;
+    if (m.contains && m.contains(t)) return;
+    if (t && t.closest && t.closest('.seg-btn.ds-group')) return;
+    closeDsMenu();
+  });
+  document.addEventListener('keydown', function (e) { if (e && e.key === 'Escape') closeDsMenu(); });
+  window.addEventListener('resize', closeDsMenu);
+}
+
 function updateDataSourceUI() {
-  const dc = document.getElementById('ds-containers');
-  const da = document.getElementById('ds-activities');
-  const dwc = document.getElementById('ds-windowcontainers');
-  const dw = document.getElementById('ds-window');
-  const ds = document.getElementById('ds-surfaceflinger');
-  const dam = document.getElementById('ds-amstack');
-  if (dc) dc.classList.toggle('active', dataSource === 'containers');
-  if (da) da.classList.toggle('active', dataSource === 'activities');
-  if (dwc) dwc.classList.toggle('active', dataSource === 'windowcontainers');
-  if (dw) dw.classList.toggle('active', dataSource === 'window');
-  if (ds) ds.classList.toggle('active', dataSource === 'surfaceflinger');
-  if (dam) dam.classList.toggle('active', dataSource === 'amstack');
+  renderDataSourceBar();
+  // 分组按钮：组内任一项是当前数据源 → 该组高亮，并把当前子项名显示在按钮上（多子项组）
+  DATA_SOURCE_GROUPS.forEach(function (g) {
+    var hit = dsItemOfGroup(g, dataSource);
+    var btn = document.getElementById('dsg-' + g.id);
+    if (btn && btn.classList && typeof btn.classList.toggle === 'function') btn.classList.toggle('active', !!hit);
+    var sub = document.getElementById('dsg-sub-' + g.id);
+    if (sub) {
+      sub.textContent = hit ? hit.label : '';
+      sub.style.display = hit ? '' : 'none';
+    }
+  });
   const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers' || dataSource === 'amstack');
   const vw = document.getElementById('view-window');
   const vh = document.getElementById('view-hwc');
@@ -6236,16 +6464,10 @@ function updateDataSourceUI() {
   if (exp) exp.style.display = showTreeTools ? '' : 'none';
   if (col) col.style.display = showTreeTools ? '' : 'none';
   if (res) res.style.display = showWin ? '' : 'none';
+  // 输入框提示语由数据源配置提供（新增数据源时一并写 paste，不用改这里）
   const ta = document.getElementById('input-textarea');
-  if (ta) ta.placeholder = dataSource === 'containers'
-    ? '在此粘贴 dumpsys activity containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity containers\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
-    : dataSource === 'activities'
-      ? '在此粘贴 dumpsys activity activities 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity activities\n3. 复制含 TaskDisplayArea / RootTask / ActivityRecord 的段落\n4. 或点「加载示例数据」'
-      : dataSource === 'windowcontainers'
-        ? '在此粘贴 dumpsys window containers 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys window containers\n3. 复制完整输出（与 activity containers 同一棵 WindowContainer 树，WMS 原生入口）\n4. 或点「加载示例数据」'
-        : dataSource === 'window'
-          ? '在此粘贴 dumpsys window windows 输出...\n\n1. adb shell dumpsys window windows\n2. 复制含 “Window #N Window{...}” 的窗口段落\n3. 点击「解析」查看窗口图层与 5 种 mDrawState 状态\n4. 或点「加载示例数据」'
-          : '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」';
+  const _dsIt = dsItemOf(dataSource);
+  if (ta && _dsIt && _dsIt.paste) ta.placeholder = _dsIt.paste;
   const hint = document.getElementById('view-hint');
   if (hint) hint.style.display = (currentView === 'hwc') ? 'inline-flex' : 'none';
 }
@@ -6260,7 +6482,8 @@ function closePerspectiveModal() {
 }
 
 function switchDataSource(ds) {
-  if (ds === dataSource) return;
+  closeDsMenu();
+  if (ds === dataSource) { updateDataSourceUI(); return; }
   if (hasUserData || parsedForest.length || hwcLayers.length) {
     if (!confirm('切换数据源需重新粘贴对应格式的输出。是否清空当前数据？\n\n确定 = 清空并切换；取消 = 保留当前数据（不切换）')) {
       updateDataSourceUI();
@@ -6278,11 +6501,11 @@ function switchDataSource(ds) {
   const hi = document.getElementById('header-info'); if (hi) hi.textContent = '';
   const ov = document.getElementById('hwc-overlays'); if (ov) ov.innerHTML = '';
   windowDump = { windows: [], currentFocus: null, focusedApp: null }; windowIndex = new Map(); selectedWindowId = null;
-  currentView = (ds === 'containers' || ds === 'activities' || ds === 'windowcontainers') ? 'window' : (ds === 'window' ? 'windowlist' : 'hwc');
+  currentView = dsDefaultView(ds);
   updateViewToggleUI();
   updateDataSourceUI();
   if (typeof refreshVersionOptions === 'function') refreshVersionOptions();
-  showToast('已切换到 ' + (ds === 'containers' ? 'Activity Containers' : (ds === 'activities' ? 'Activities' : (ds === 'windowcontainers' ? 'Window Containers' : (ds === 'amstack' ? 'Stack List' : (ds === 'window' ? 'Window (mDrawState)' : 'SurfaceFlinger'))))) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
+  showToast('已切换到 ' + dsLabelOf(ds) + ' 数据源。请粘贴对应 dumpsys 输出，或加载示例数据。', 'success');
 }
 
 /* ========================================================================
@@ -8463,7 +8686,7 @@ window.addEventListener('DOMContentLoaded', function() {
 <div class="device-modal-mask" id="perspective-modal" onclick="if(event.target===this)closePerspectiveModal()">
   <div class="device-modal" style="width:780px;max-width:96vw">
     <h3>各 dumpsys 命令的视角与排查用途</h3>
-    <p class="dm-sub">四条命令的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层）。前三者都在 system_server 共享同一棵树，最后一个是独立 native 进程、只看屏幕像素。</p>
+    <p class="dm-sub">数据源按「命令族」分组：<b>📦 Activity</b>（activity containers / activity activities）、<b>🪟 Window</b>（window containers / window windows）、<b>🗂 Stack List</b>、<b>🖥 SurfaceFlinger</b> —— 分组按钮点击后弹出子项菜单。命令之间的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树，分别由 ATMS / WMS 两个入口暴露）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层，独立 native 进程，只看屏幕像素）。</p>
     <table class="persp-table">
       <thead>
         <tr><th>命令</th><th>视角（谁在看）</th><th>关注点</th><th>适用排查</th><th>工具中的入口</th></tr>
@@ -8474,7 +8697,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>ATMS：活动 / 任务<b>逻辑生命周期</b></td>
           <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
           <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
-          <td>🎯 <b>Activities</b>（树视图高亮 Resumed / Focused；详情面板顶部「排查洞察」自动检测多 RESUMED 冲突、焦点指向 paused、task 栈深度，并汇总每个 Activity 的 Intent/进程/uid 归属）</td>
+          <td>📦 <b>Activity → 🎯 Activities</b>（树视图高亮 Resumed / Focused；画布左上的「诊断面板」按实际用途分 G1–G6：前台与焦点归属 / 生命周期状态 / 绘制与启动 / Task 栈结构 / Intent 与进程归属 / 多窗口·转屏·兼容 —— 结论可点击定位；熄屏·锁屏·AOD 等环境因素会降级为灰色「环境项」）</td>
         </tr>
         <tr>
           <td><code>am stack list</code></td>
@@ -8488,14 +8711,21 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>经 ATMS 入口看 <b>WindowContainer 容器树</b></td>
           <td>容器嵌套（到 WindowState），节点父子关系</td>
           <td>容器父子关系、窗口层级嵌套、谁在谁下面</td>
-          <td>📦 <b>Activity Containers</b></td>
+          <td>📦 <b>Activity → 📦 Containers</b></td>
         </tr>
         <tr>
           <td><code>dumpsys window containers</code></td>
           <td>WMS <b>原生入口</b>看同一棵树（窗口管理视角）</td>
           <td>窗口可见性 / 动画 / surface 归属（与 activity containers 同结构）</td>
           <td>与 activity containers 互为印证，看窗口怎么挂、surface 归属哪个 Activity</td>
-          <td>🪟 <b>Window Containers</b>（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）</td>
+          <td>🪟 <b>Window → 🪟 Containers</b>（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）</td>
+        </tr>
+        <tr>
+          <td><code>dumpsys window windows</code></td>
+          <td>WMS：<b>每个 Window 自己的布局与绘制状态</b></td>
+          <td>窗口 frame / 可见性 / 5 种 <code>mDrawState</code>（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN）</td>
+          <td>窗口绘制卡顿、白屏、窗口没上屏、mDrawState 停在非 HAS_DRAWN</td>
+          <td>🪟 <b>Window → 🖼 Windows</b>（窗口卡片视图，可按 mDrawState 筛选）</td>
         </tr>
         <tr>
           <td><code>dumpsys SurfaceFlinger</code></td>
