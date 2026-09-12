@@ -59,14 +59,14 @@
 
 > **activity activities** ⊂ **activity containers / window containers**（同一棵 WindowContainer 树，ATMS 与 WMS 共享引用）→ 每个窗口的 surface → **SurfaceFlinger**（独立 native 进程，只认屏幕像素）。
 
-| 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
-| --- | --- | --- | --- | --- |
-| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 📦 **Activity → 🎯 Activities**（树视图高亮 Resumed / Focused；画布左上「诊断面板」按实际用途分 G1–G6，结论可点击定位，熄屏·锁屏等环境因素降级为灰色环境项） |
-| `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity → 📦 Containers** |
-| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window → 🪟 Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
-| `dumpsys window windows` | WMS：**每个 Window 自己的布局与绘制状态** | 窗口 frame / 可见性 / 5 种 `mDrawState`（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN） | 窗口绘制卡顿、白屏、窗口没上屏、`mDrawState` 停在非 HAS_DRAWN | 🪟 **Window → 🖼 Windows**（窗口卡片视图，可按 `mDrawState` 筛选） |
-| `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
-| `am stack list` | ATMS：**任务栈速览**（Stack / RootTask → Task 两层，逻辑层摘要） | 每个栈的 id / bounds / displayId / userId，以及 `configuration` 里的 `mWindowingMode` / `mActivityType`；每个 Task 的 `visible` 与栈顶 Activity。**跨版本适配**：A9–A10 容器头为 `Stack id=N`（A9 部分输出**无** `configuration` 行 → 布局不可得，工具如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 `RootTask id=N` | 一眼看清栈数、可见(前台) task、display 分布、布局（全屏/分屏/PIP，取自 mWindowingMode） | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每栈卡片（布局徽章取 `mWindowingMode`、类型徽章取 `mActivityType`）+ 每 task 行；**画布可直接拖拽平移 / 滚轮缩放 / 重置布局**。注意：该命令**无焦点字段**，前台仅按 `visible=true` 判定） |
+| 命令 | 视角（谁在看） | 关注点 | 适用排查 | 差异说明 | 工具入口 |
+| --- | --- | --- | --- | --- | --- |
+| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | — | 📦 **Activity → 🎯 Activities**（树视图高亮 Resumed / Focused；画布左上「诊断面板」按实际用途分 G1–G6，结论可点击定位，熄屏·锁屏等环境因素降级为灰色环境项） |
+| `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 与 `window containers` 渲染的是**同一棵 WindowContainer 树**（内存里是同一批节点对象，只是由不同服务打印）。本命令经 **ATMS（ActivityTaskManager）** 入口打印，侧重**容器嵌套结构**：DisplayContent → TaskDisplayArea → Task → ActivityRecord → WindowToken → WindowState，适合理清「谁在谁里面、窗口层级怎么嵌套」。**不含**窗口的可见性 / 动画 / surface 归属等窗口管理属性。 | 📦 **Activity → 📦 Containers** |
+| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 与 `activity containers` 渲染的是**同一棵 WindowContainer 树**。本命令经 **WMS（WindowManager）原生入口** 打印同一批节点，侧重**窗口管理视角**：窗口可见性、动画状态、surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）。**树结构与 activity containers 完全一致**，但多了窗口层的 WM 属性；两者互为印证，结构不一致即说明某层状态异常。 | 🪟 **Window → 🪟 Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
+| `dumpsys window windows` | WMS：**每个 Window 自己的布局与绘制状态** | 窗口 frame / 可见性 / 5 种 `mDrawState`（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN） | 窗口绘制卡顿、白屏、窗口没上屏、`mDrawState` 停在非 HAS_DRAWN | — | 🪟 **Window → 🖼 Windows**（窗口卡片视图，可按 `mDrawState` 筛选） |
+| `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | — | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
+| `am stack list` | ATMS：**任务栈速览**（Stack / RootTask → Task 两层，逻辑层摘要） | 每个栈的 id / bounds / displayId / userId，以及 `configuration` 里的 `mWindowingMode` / `mActivityType`；每个 Task 的 `visible` 与栈顶 Activity。**跨版本适配**：A9–A10 容器头为 `Stack id=N`（A9 部分输出**无** `configuration` 行 → 布局不可得，工具如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 `RootTask id=N` | 一眼看清栈数、可见(前台) task、display 分布、布局（全屏/分屏/PIP，取自 mWindowingMode） | — | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每栈卡片（布局徽章取 `mWindowingMode`、类型徽章取 `mActivityType`）+ 每 task 行；**画布可直接拖拽平移 / 滚轮缩放 / 重置布局**。注意：该命令**无焦点字段**，前台仅按 `visible=true` 判定） |
 
 > 点工具里的 **ℹ️ 视角/排查** 按钮可随时弹出此对照表。
 

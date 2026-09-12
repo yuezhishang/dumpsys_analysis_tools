@@ -8689,7 +8689,7 @@ window.addEventListener('DOMContentLoaded', function() {
     <p class="dm-sub">数据源按「命令族」分组：<b>📦 Activity</b>（activity containers / activity activities）、<b>🪟 Window</b>（window containers / window windows）、<b>🖥 SurfaceFlinger</b>、<b>🗂 Stack List</b> —— 分组按钮点击后弹出子项菜单。命令之间的关系：<b>activity activities</b> ⊂ <b>activity containers / window containers</b>（同一棵 WindowContainer 树，分别由 ATMS / WMS 两个入口暴露）→ surface（窗口 surface）→ <b>SurfaceFlinger</b>（真实合成图层，独立 native 进程，只看屏幕像素）。</p>
     <table class="persp-table">
       <thead>
-        <tr><th>命令</th><th>视角（谁在看）</th><th>关注点</th><th>适用排查</th><th>工具中的入口</th></tr>
+        <tr><th>命令</th><th>视角（谁在看）</th><th>关注点</th><th>适用排查</th><th>差异说明</th><th>工具中的入口</th></tr>
       </thead>
       <tbody>
         <tr>
@@ -8697,6 +8697,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>ATMS：活动 / 任务<b>逻辑生命周期</b></td>
           <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
           <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
+          <td style="color:var(--text-secondary)">—</td>
           <td>📦 <b>Activity → 🎯 Activities</b>（树视图高亮 Resumed / Focused；画布左上的「诊断面板」按实际用途分 G1–G6：前台与焦点归属 / 生命周期状态 / 绘制与启动 / Task 栈结构 / Intent 与进程归属 / 多窗口·转屏·兼容 —— 结论可点击定位；熄屏·锁屏·AOD 等环境因素会降级为灰色「环境项」）</td>
         </tr>
         <tr>
@@ -8704,6 +8705,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>经 ATMS 入口看 <b>WindowContainer 容器树</b></td>
           <td>容器嵌套（到 WindowState），节点父子关系</td>
           <td>容器父子关系、窗口层级嵌套、谁在谁下面</td>
+          <td>与 <code>window containers</code> 渲染的是<b>同一棵 WindowContainer 树</b>（内存里是同一批节点对象，只是由不同服务打印）。本命令经 <b>ATMS（ActivityTaskManager）</b>入口打印，侧重<b>容器嵌套结构</b>：DisplayContent → TaskDisplayArea → Task → ActivityRecord → WindowToken → WindowState，适合理清「谁在谁里面、窗口层级怎么嵌套」。<b>不含</b>窗口的可见性 / 动画 / surface 归属等窗口管理属性。</td>
           <td>📦 <b>Activity → 📦 Containers</b></td>
         </tr>
         <tr>
@@ -8711,6 +8713,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>WMS <b>原生入口</b>看同一棵树（窗口管理视角）</td>
           <td>窗口可见性 / 动画 / surface 归属（与 activity containers 同结构）</td>
           <td>与 activity containers 互为印证，看窗口怎么挂、surface 归属哪个 Activity</td>
+          <td>与 <code>activity containers</code> 渲染的是<b>同一棵 WindowContainer 树</b>。本命令经 <b>WMS（WindowManager）原生入口</b>打印同一批节点，侧重<b>窗口管理视角</b>：窗口可见性、动画状态、surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）。<b>树结构与 activity containers 完全一致</b>，但多了窗口层的 WM 属性；两者互为印证，结构不一致即说明某层状态异常。</td>
           <td>🪟 <b>Window → 🪟 Containers</b>（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）</td>
         </tr>
         <tr>
@@ -8718,6 +8721,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>WMS：<b>每个 Window 自己的布局与绘制状态</b></td>
           <td>窗口 frame / 可见性 / 5 种 <code>mDrawState</code>（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN）</td>
           <td>窗口绘制卡顿、白屏、窗口没上屏、mDrawState 停在非 HAS_DRAWN</td>
+          <td style="color:var(--text-secondary)">—</td>
           <td>🪟 <b>Window → 🖼 Windows</b>（窗口卡片视图，可按 mDrawState 筛选）</td>
         </tr>
         <tr>
@@ -8725,6 +8729,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>独立 native 进程，<b>真实合成图层</b>（屏幕像素）</td>
           <td>按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer</td>
           <td>黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏</td>
+          <td style="color:var(--text-secondary)">—</td>
           <td>🖥 <b>SurfaceFlinger</b>（HWC 合成预览 / 层级树）</td>
         </tr>
         <tr>
@@ -8732,6 +8737,7 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>ATMS：<b>任务栈速览</b>（Stack → Task 两层，逻辑层摘要）</td>
           <td>每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity</td>
           <td>一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局</td>
+          <td style="color:var(--text-secondary)">—</td>
           <td>🗂 <b>Stack List</b>（任务栈速览面板，非层级树：概览卡 + 每栈布局判定全屏/分屏/PIP + 每 task 卡，点击看 topActivity 与详情）</td>
         </tr>
       </tbody>
