@@ -38,11 +38,28 @@ if %ERRORLEVEL%==0 (
 
 echo.
 echo Starting adb bridge... Keep this window open. Close it to stop.
-echo Tool page: http://127.0.0.1:7788/
+echo The tool page opens automatically once the bridge is ready.
+echo If it does not pop up, visit http://127.0.0.1:7788/ manually.
 echo.
-start "" "http://127.0.0.1:7788/" >nul 2>&1
+REM NOTE: do NOT open the browser here as well - adb-bridge.js opens it
+REM itself with the REAL port (which may be shifted if 7788 is taken).
+REM Opening in both places was the "two index tabs" bug.
 "%NODE%" "%BRIDGE%"
+set "BRIDGE_RC=%ERRORLEVEL%"
+if not "%BRIDGE_RC%"=="0" (
+  echo.
+  echo [WARN] Bridge failed to start ^(exit code %BRIDGE_RC%^).
+  if exist "%~dp0index.html" (
+    echo [FALLBACK] Opening the local page in degraded mode ^(device grab unavailable^)...
+    start "" "%~dp0index.html" >nul 2>&1
+  ) else (
+    echo [ERROR] index.html not found next to this script.
+  )
+) else (
+  echo.
+  echo [STOPPED] Bridge stopped normally.
+)
 echo.
-echo [STOPPED] Press any key to close...
+echo Press any key to close...
 pause >nul
 exit /b 0

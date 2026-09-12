@@ -708,7 +708,15 @@ select.btn{
 
 
 /* ── Stack List 目的速览面板 ── */
-.diagram-root.stacklist-root { display: block; padding: 18px; overflow: auto; height: 100%; box-sizing: border-box; }
+/* Stack List 画布化：不再是原生滚动容器。
+   旧版 `overflow:auto; height:100%` 会与 panX/panY 的 transform 平移语义冲突 ——
+   拖拽变成"搬动一个带滚动条的框"，内容不跟随滚动、滚动条还杵在右边。
+   改为内容自然撑开（height:auto）、不裁剪，由画布变换平移查看：
+   拖拽平移 / 滚轮缩放 / 重置布局，交互与 window 树视图一致。 */
+.diagram-root.stacklist-root { display: block; padding: 18px; overflow: visible; box-sizing: border-box; }
+.diagram-root.stacklist-root > .stack-overview,
+.diagram-root.stacklist-root > .stack-note,
+.diagram-root.stacklist-root > .stack-card { max-width: 1120px; }
 .stack-overview { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
 .ov-stat { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 16px; min-width: 92px; text-align: center; }
 .ov-num { display: block; font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1.2; }
@@ -766,7 +774,7 @@ select.btn{
   <span class="ds-label">数据源</span>
   <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="dumpsys activity containers｜视角：经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：排查容器父子关系、窗口层级嵌套、谁在谁下面">📦 Activity Containers</button>
   <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。详情面板顶部自动生成「排查洞察」：检测多 RESUMED 前台冲突、焦点指向 paused、task 栈深度、并汇总每个 Activity 的 Intent(component)/进程/uid 归属">🎯 Activities</button>
-  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜任务栈速览面板（非层级树）：一眼看清 RootTask 栈数 / 可见(前台) task / display 分布 / 布局（取自 configuration 的 mWindowingMode）与栈类型（mActivityType，桌面栈·应用栈·系统栈）。注意：该命令无焦点字段，前台仅按 visible=true 判定">🗂 Stack List</button>
+  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜任务栈速览面板（非层级树）：一眼看清栈数 / 可见(前台) task / display 分布 / 布局(取自 configuration 的 mWindowingMode) 与栈类型(mActivityType，桌面栈·应用栈·系统栈)。已做跨版本适配：A9–A10 容器头为 Stack id=N（A9 可能无 configuration 行，缺字段会如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 RootTask id=N。该命令无焦点字段，前台仅按 visible=true 判定。画布可拖拽平移 / 滚轮缩放 / 重置布局">🗂 Stack List</button>
   <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属），与 activity containers 互为印证">🪟 Window Containers</button>
   <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="dumpsys window windows｜视角：每个 Window 的布局与 5 种 mDrawState 绘制状态。适用：窗口绘制卡顿/未上屏、mDrawState 停留在非 HAS_DRAWN">🖼 Window (mDrawState)</button>
   <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="dumpsys SurfaceFlinger｜视角：独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏">🖥 SurfaceFlinger</button>
@@ -799,7 +807,7 @@ select.btn{
       </select>
       <script>
       window.VERSION_SUPPORT = {
-        amstack: { min: 10, note: "ATMS Stack 模型自 Android 10（Q）起" },
+        amstack: { min: 9, note: "A9–A10 容器头为 Stack id=N（A9 可能无 configuration 行）；A11+ 改名为 RootTask id=N" },
         activities: { min: 10, note: "ATMS / TaskDisplayArea 自 Android 10（Q）起" },
         containers: { min: 10, note: "WindowContainer 统一树自 Android 10（Q）起" },
         windowcontainers: { min: 10, note: "WMS WindowContainer 树自 Android 10（Q）起" },
@@ -979,7 +987,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.37'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树，一眼看清栈数/前台 task/display 分布/全屏·分屏·PIP 布局）；Activities 详情面板顶部新增「排查洞察」（多 RESUMED 冲突、前台焦点指向 paused、task 栈深度、Intent/进程归属）；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：①容器头识别 `RootTask id=N`（旧版 `Stack id=N` 仍支持）；②解析每个头紧跟的 `configuration={...}`，提取权威布局字段 mWindowingMode/mDisplayWindowingMode/mActivityType/mBounds/mAppBounds/mMaxBounds/mDisplayRotation；③task 改为按出现顺序归属最近容器头（真实输出无缩进）；④删除伪造的“未识别到 Stack 头”假根，只按 visible 判定“可见/前台”（该命令无焦点字段）；⑤Stack List 改卡片式并补栈类型徽章。
+const APP_VERSION = 'v1.38'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1787,6 +1795,16 @@ function parseAmStackList(text) {
   let curRoot = null;
   const orphanTasks = [];
 
+  // 本次输出的「能力清单」—— am stack list 的格式跨版本差异很大，缺的字段必须诚实标注，
+  // 不能把「该版本没有这个字段」显示成「未知」（那会把格式差异伪装成解析失败）。
+  //   headKeyword   : `Stack`(A9/A10) / `RootTask`(A11+)
+  //   hasConfig     : 是否有 configuration={...} 行（A9 部分机型没有）→ 决定布局字段是否可得
+  //   hasVisible    : task 行是否有 visible=（早期 A5–A7 没有）
+  //   hasUserId     : 容器头/task 行是否有 userId=
+  //   hasTaskBounds : task 行是否有 bounds=
+  //   hasTopActivity: task 行是否有 topActivity=
+  const meta = { headKeyword: null, hasConfig: false, hasVisible: false, hasUserId: false, hasTaskBounds: false, hasTopActivity: false };
+
   function setProps(node, obj) {
     node.props = obj;
     node.propList = Object.keys(obj).map(function (k) { return { key: k, value: obj[k] }; });
@@ -1810,16 +1828,32 @@ function parseAmStackList(text) {
     if (!raw.trim()) continue;
     const t = raw.trim();
 
-    // ① 容器头：新版 `RootTask id=N bounds=[..] displayId=D userId=U`，旧版 `Stack id=N ...`。
-    //    真实输出【完全无缩进】，容器头必然顶格；task 归属由“出现顺序”决定（见 ③）。
-    let sm = t.match(/^(?:RootTask|Stack)\s+id=(\d+)\s+bounds=(\S+?)(?:\s+displayId=(\d+))?(?:\s+userId=(\d+))?\s*$/);
+    // ① 容器头：跨版本关键字不同 ——
+    //    Android 5–10 打印 `Stack id=N ...`（ATMS 时代仍沿用 Stack 命名）；
+    //    Android 11+ 因引入 RootTask 类改打印 `RootTask id=N ...`（RootTask 即 Stack 改名，语义相同）。
+    //    且 bounds/displayId/userId 的「顺序与存在性」跨版本、跨机型都不同
+    //    （A5 无 userId；部分机型把 displayId 放在 bounds 前），故不再用「固定顺序 + 行尾 $」的整行正则，
+    //    改为「关键字 + 独立提取」，字段缺失就如实不填（由 meta 记录能力）。
+    //    真实输出【完全无缩进】，容器头必然顶格；task 归属由「出现顺序」决定（见 ③）。
+    let sm = t.match(/^(RootTask|Stack)\s+id=(\d+)\b(.*)$/);
     if (sm) {
-      const node = createNode('RootTask id=' + sm[1]);
+      const headKw = sm[1];
+      const rest = sm[3] || '';
+      const bm = rest.match(/\bbounds=(\[[^\]]*\]\[[^\]]*\])/);
+      const dm = rest.match(/\bdisplayId=(-?\d+)/);
+      const um = rest.match(/\buserId=(-?\d+)/);
+      meta.headKeyword = headKw;
+      if (um) meta.hasUserId = true;
+      const node = createNode(headKw + ' id=' + sm[2]);
       node.type = 'root';
-      node.name = 'RootTask id=' + sm[1];
-      node.label = 'RootTask id=' + sm[1];
+      node.name = headKw + ' id=' + sm[2];
+      node.label = headKw + ' id=' + sm[2];
       node.tags = [];
-      setProps(node, { rootTaskId: sm[1], bounds: sm[2], displayId: sm[3] || '0', userId: sm[4] || '0' });
+      const props = { rootTaskId: sm[2] };
+      if (bm) props.bounds = bm[1];
+      if (dm) props.displayId = dm[1];
+      if (um) props.userId = um[1];
+      setProps(node, props);
       parsedForest.push(node);
       curRoot = node;
       continue;
@@ -1829,6 +1863,7 @@ function parseAmStackList(text) {
     //    mWindowingMode(全屏/分屏/PIP/自由窗口) / mActivityType(standard/home/undefined) /
     //    mBounds / mAppBounds / mMaxBounds / mDisplayRotation。
     if (/^configuration=/.test(t)) {
+      meta.hasConfig = true;
       if (curRoot) {
         const cfg = parseConfig(t);
         Object.keys(cfg).forEach(function (k) { if (cfg[k] != null) curRoot.props[k] = cfg[k]; });
@@ -1847,16 +1882,23 @@ function parseAmStackList(text) {
       const isUnknown = /^unknown$/i.test(pkgAct);
       const visibleM = rest.match(/\bvisible=(\w+)/);
       const visible = visibleM ? visibleM[1] : 'unknown';
-      const boundsM = rest.match(/\bbounds=(\S+)/);
-      const userIdM = rest.match(/\buserId=(\d+)/);
+      const boundsM = rest.match(/\bbounds=(\[[^\]]*\]\[[^\]]*\])/);
+      const userIdM = rest.match(/\buserId=(-?\d+)/);
       const topM = rest.match(/\btopActivity=(.+)$/);
       const topRaw = topM ? topM[1].trim() : '';
+      if (visibleM) meta.hasVisible = true;
+      if (boundsM) meta.hasTaskBounds = true;
+      if (userIdM) meta.hasUserId = true;
+      if (topM) meta.hasTopActivity = true;
+      // 早期版本（A5–A7）的 task 行只有 `taskId=N: pkg/act`，没有 topActivity= 字段 ——
+      // 这种情况下 pkg/act 本身就是栈顶组件，直接拿它解析 topPkg/topClass，避免详情缺字段。
+      const compSrc = topRaw || (isUnknown ? '' : pkgAct);
       let topActivity = '';
       let topPkg = '';
       let topClass = '';
-      if (topRaw) {
-        const cm = topRaw.match(/ComponentInfo\{([^}]+)\}/);
-        const s = cm ? cm[1] : topRaw;
+      if (compSrc) {
+        const cm = compSrc.match(/ComponentInfo\{([^}]+)\}/);
+        const s = cm ? cm[1] : compSrc;
         const parts = s.split('/');
         topPkg = parts[0] || '';
         topClass = parts[1] || '';
@@ -1892,11 +1934,13 @@ function parseAmStackList(text) {
   // 避免把“解析失败”伪装成“数据未识别”（旧版合成的 `Stacks（未识别到 Stack 头…）` 已删除）。
   for (const n of orphanTasks) {
     n.tags.push({ name: 'warn', class: 'paused' });
-    n.label = n.label + '  ⚠ 缺少 RootTask 头';
+    n.label = n.label + '  ⚠ 未归属到任何容器头（输出中缺少 Stack/RootTask 头）';
     parsedForest.push(n);
   }
 
   buildIndex(parsedForest);
+  // 把「本次输出的能力清单」交给 UI 做诚实降级展示（缺的字段 = 该版本输出没有，不是解析失败）
+  if (typeof window !== 'undefined') window.__amstackMeta = meta;
   return parsedForest;
 }
 
@@ -3843,8 +3887,9 @@ function findResumedActivity() {
     let target = tasks.find(function (t) { return t.props.visible === 'true'; }) || tasks[tasks.length - 1];
     renderTree();
     selectNode(target);
+    // Stack List 已画布化（无原生滚动条），scrollIntoView 无效 —— 改为平移画布把该行居中
     const row = document.querySelector('.stack-task[data-nid="' + target.id + '"]');
-    if (row && row.scrollIntoView) row.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    if (row) centerOnElement(row);
     showToast('已定位可见 Task: ' + target.label + '（am stack list 无焦点字段，仅按 visible 判定）', 'success');
     return;
   }
@@ -4255,7 +4300,7 @@ const PROP_DICT = {
     container: 'Task'
   },
   'windowMode': {
-    desc: '窗口模式，取自 configuration 的 mWindowingMode（判布局的【权威字段】，不要用 bounds 几何猜）：fullscreen=全屏，split_screen=分屏，pinned=画中画 PIP，freeform=自由窗口，multi-window=多窗口。',
+    desc: '窗口模式，取自 configuration 的 mWindowingMode（判布局的【权威字段】，不要用 bounds 几何猜）：fullscreen=全屏，split_screen=分屏，pinned=画中画 PIP，freeform=自由窗口，multi-window=多窗口。注意：该字段只存在于 configuration 行；A9 的部分输出没有这一行 → 布局不可得，工具会标注「该版本无此字段」而不是猜。',
     version: 'A10+',
     values: 'fullscreen / split_screen / pinned / freeform / multi-window',
     container: 'RootTask / Task'
@@ -5333,10 +5378,49 @@ for (const _k of Object.keys(SAMPLES)) {
 }
 WINDOWCONTAINER_SAMPLES['default'] = WINDOWCONTAINER_SAMPLES['14'] || WINDOWCONTAINER_SAMPLES['13'] || SAMPLES['14'] || '';
 
-// ─── am stack list 示例（真实设备输出：LineageOS 21 / Android 14）───
-// 要点：真实输出【无缩进】，容器头是 `RootTask id=N`，每个头紧跟一行 `configuration={...}`（权威布局字段在此）。
+// ─── am stack list 示例（任务栈速览；Android 9–16）───
+// 该命令的输出格式跨版本差异很大，所以示例按「格式档」分版本提供，绝不用一份数据套所有版本：
+//   档 A  Android 9–10 ：容器头 `Stack id=N`（ATMS 时代仍沿用 Stack 命名）
+//                     · A9 的输出可能【不含 configuration 行】→ 无权威布局字段
+//                     · A10 起出现 configuration 行，但早期 winConfig 无 mMaxBounds/mDisplayRotation
+//   档 B  Android 11–13：容器头改名 `RootTask id=N`（ATMS 引入 RootTask 类，即 Stack 改名）
+//   档 C  Android 14–16：同档 B（下表实测样本）
+// 注意：`configuration` 行有无除版本外还受 ROM/机型影响，故解析器一律「按实际出现的字段解析」，
+//       缺什么就在 UI 标注「该版本无此字段」，绝不用 bounds 几何猜布局。
+// 数据来源（均为真实设备输出，非编造；分辨率统一为 1080×2400 便于阅读，字段名与结构保持原样）：
+//   档 A(A9)  ← CSDN abm1993 的 Android 8.1 实测输出（该输出无 configuration 行）
+//   档 A(A10) ← CSDN liaosongmao1 转载的小米 5 实测输出（有 configuration，winConfig 无 mMaxBounds）
+//   档 B(A11) ← 51CTO 博客 Android 11 emulator_x86_64 实测输出
+//   档 C(A14) ← 本项目作者设备实测（Android 14 / LineageOS 21）
 const AMSTACK_SAMPLES = {};
-AMSTACK_SAMPLES['default'] = `RootTask id=224 bounds=[0,0][1080,2400] displayId=0 userId=0
+
+// ── 档 A-1 · Android 9：Stack 头 + 输出不含 configuration 行（演示「该版本无布局字段」的诚实降级）──
+AMSTACK_SAMPLES['9'] = `Stack id=1 bounds=[0,0][1080,2400] displayId=0 userId=0
+taskId=142: com.android.settings/com.android.settings.Settings bounds=[0,0][1080,2400] userId=0 visible=true topActivity=ComponentInfo{com.android.settings/com.android.settings.Settings}
+Stack id=0 bounds=[0,0][1080,2400] displayId=0 userId=0
+taskId=139: com.android.launcher3/com.android.launcher3.Launcher bounds=[0,0][1080,2400] userId=0 visible=false topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.Launcher}`;
+
+// ── 档 A-2 · Android 10：Stack 头 + 有 configuration，但 winConfig 无 mMaxBounds/mDisplayRotation ──
+AMSTACK_SAMPLES['10'] = `Stack id=4 bounds=[0,0][1080,2400] displayId=0 userId=0
+configuration={1.0 ?mcc?mnc [zh_CN] ldltr sw360dp w360dp h616dp 480dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} s.12}
+taskId=231: com.android.dialer/com.android.dialer.main.impl.MainActivity bounds=[0,0][1080,2400] userId=0 visible=true topActivity=ComponentInfo{com.android.dialer/com.android.dialer.main.impl.MainActivity}
+Stack id=0 bounds=[0,0][1080,2400] displayId=0 userId=0
+configuration={1.0 ?mcc?mnc [zh_CN] ldltr sw360dp w360dp h616dp 480dpi nrml long port finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} s.12}
+taskId=228: com.android.launcher3/com.android.launcher3.lineage.LineageLauncher bounds=[0,0][1080,2400] userId=0 visible=false topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.lineage.LineageLauncher}`;
+
+// ── 档 B · Android 11–13：容器头 `RootTask id=N` + 完整 configuration ──
+const _AMSTACK_B11 = `RootTask id=420 bounds=[0,0][1080,2400] displayId=0 userId=0
+configuration={1.0 310mcc260mnc [zh_CN] ldltr sw411dp w411dp h797dp 560dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0}-455144485 s.24 fontWeightAdjustment=0}
+taskId=420: com.android.gallery3d/.GalleryActivity bounds=[0,0][1080,2400] userId=0 visible=true topActivity=ComponentInfo{com.android.gallery3d/.GalleryActivity}
+RootTask id=1 bounds=[0,0][1080,2400] displayId=0 userId=0
+configuration={1.0 310mcc260mnc [zh_CN] ldltr sw411dp w411dp h797dp 560dpi nrml long port finger qwerty/v/v dpad/v winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 0 - 1080, 2400) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0}-455144485 s.24 fontWeightAdjustment=0}
+taskId=1: com.android.launcher3/com.android.launcher3.Launcher bounds=[0,0][1080,2400] userId=0 visible=false topActivity=ComponentInfo{com.android.launcher3/com.android.launcher3.Launcher}`;
+AMSTACK_SAMPLES['11'] = _AMSTACK_B11;
+AMSTACK_SAMPLES['12'] = _AMSTACK_B11;
+AMSTACK_SAMPLES['13'] = _AMSTACK_B11;
+
+// ── 档 C · Android 14+：作者设备实测（RootTask 头 + 完整 configuration，含空任务 unknown）──
+const _AMSTACK_C14 = `RootTask id=224 bounds=[0,0][1080,2400] displayId=0 userId=0
 configuration={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.449 fontWeightAdjustment=0}
 taskId=224: com.android.settings/com.android.settings.Settings bounds=[0,0][1080,2400] userId=0 visible=true topActivity=ComponentInfo{com.android.settings/com.android.settings.Settings}
 RootTask id=2 bounds=[0,0][1080,2400] displayId=0 userId=0
@@ -5349,8 +5433,11 @@ taskId=211: com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLau
 RootTask id=223 bounds=[0,0][1080,2400] displayId=0 userId=0
 configuration={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=standard mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.449 fontWeightAdjustment=0}
 taskId=223: org.lineageos.eleven/org.lineageos.eleven.ui.activities.HomeActivity bounds=[0,0][1080,2400] userId=0 visible=false topActivity=ComponentInfo{org.lineageos.eleven/org.lineageos.eleven.ui.activities.HomeActivity}`;
-// 输出格式跨版本一致，统一复用真实样例
-['9', '10', '11', '12', '13', '14', '15', '16'].forEach(function (v) { AMSTACK_SAMPLES[v] = AMSTACK_SAMPLES['default']; });
+AMSTACK_SAMPLES['14'] = _AMSTACK_C14;
+AMSTACK_SAMPLES['15'] = _AMSTACK_C14;
+AMSTACK_SAMPLES['16'] = _AMSTACK_C14;
+// 兜底（未选版本 / 该版本无对应档）：用最新档 C
+AMSTACK_SAMPLES['default'] = _AMSTACK_C14;
 
 function buildContainersHwc() {
   hwcLayers = [];
@@ -5776,7 +5863,12 @@ function renderStackList() {
     }
   }
 
-  let tasks = 0, vis = 0; const disp = new Set(); const modes = {};
+  // 本次输出的能力清单（由 parseAmStackList 记录）：决定哪些字段「该版本本来就没有」，
+  // 这些必须如实标注，不能显示成「未知」——那会把版本格式差异伪装成解析失败。
+  const meta = (typeof window !== 'undefined' && window.__amstackMeta) || {};
+  const headKw = meta.headKeyword || 'RootTask';
+
+  let tasks = 0, vis = 0, visKnown = false; const disp = new Set(); const modes = {};
   for (const r of parsedForest) {
     const lab = modeLabel(r.props && r.props.windowMode);
     modes[lab] = (modes[lab] || 0) + 1;
@@ -5784,7 +5876,8 @@ function renderStackList() {
     if (d != null && d !== '?') disp.add(d);
     for (const c of (r.children || [])) {
       tasks++;
-      if (c.props && c.props.visible === 'true') vis++;
+      if (c.props && c.props.visible === 'true') { vis++; visKnown = true; }
+      else if (c.props && c.props.visible === 'false') { visKnown = true; }
     }
   }
   const layoutStr = Object.keys(modes).map(function (k) { return k + '×' + modes[k]; }).join('，') || '—';
@@ -5792,16 +5885,33 @@ function renderStackList() {
   const ov2 = document.createElement('div');
   ov2.className = 'stack-overview';
   ov2.innerHTML =
-    '<div class="ov-stat"><span class="ov-num">' + parsedForest.length + '</span><span class="ov-label">栈 RootTask</span></div>' +
+    '<div class="ov-stat"><span class="ov-num">' + parsedForest.length + '</span><span class="ov-label">栈 ' + escHtml(headKw) + '</span></div>' +
     '<div class="ov-stat"><span class="ov-num">' + tasks + '</span><span class="ov-label">任务 Task</span></div>' +
-    '<div class="ov-stat"><span class="ov-num">' + vis + '</span><span class="ov-label">可见任务</span></div>' +
+    (visKnown
+      ? '<div class="ov-stat"><span class="ov-num">' + vis + '</span><span class="ov-label">可见任务</span></div>'
+      : '<div class="ov-stat"><span class="ov-num ov-num-sm">该版本无此字段</span><span class="ov-label">可见任务（无 visible）</span></div>') +
     '<div class="ov-stat"><span class="ov-num">' + disp.size + '</span><span class="ov-label">Display</span></div>' +
-    '<div class="ov-stat"><span class="ov-num ov-num-sm">' + escHtml(layoutStr) + '</span><span class="ov-label">布局（mWindowingMode）</span></div>';
+    (meta.hasConfig
+      ? '<div class="ov-stat"><span class="ov-num ov-num-sm">' + escHtml(layoutStr) + '</span><span class="ov-label">布局（mWindowingMode）</span></div>'
+      : '<div class="ov-stat"><span class="ov-num ov-num-sm">该版本无此字段</span><span class="ov-label">布局（无 configuration）</span></div>');
   root.appendChild(ov2);
 
+  // 版本能力提示：把「输出里本来就没有的字段」讲清楚，不糊弄
   const note = document.createElement('div');
   note.className = 'stack-note';
-  note.innerHTML = 'ℹ️ 布局取自 <code>configuration</code> 的 <code>mWindowingMode</code>；<code>am stack list</code> <b>不提供焦点字段</b>，“前台”仅以任务 <code>visible=true</code> 判定。';
+  const verLabel = (headKw === 'Stack') ? 'Android 5–10，容器头为 Stack' : 'Android 11+，容器头改名 RootTask';
+  let noteHtml = 'ℹ️ 容器头识别为 <code>' + escHtml(headKw) + ' id=N</code>（' + escHtml(verLabel) + '）。';
+  if (meta.hasConfig) {
+    noteHtml += '布局取自 <code>configuration</code> 行的 <code>mWindowingMode</code>。';
+  } else {
+    noteHtml += '本次输出<b>不含 <code>configuration</code> 行</b>，无从获取权威布局字段（早期版本 / 部分机型无此行），一律标注「该版本无此字段」，<b>不做几何猜测</b>。';
+  }
+  if (visKnown) {
+    noteHtml += '<code>am stack list</code> <b>不提供焦点字段</b>，「前台」仅以任务 <code>visible=true</code> 判定。';
+  } else {
+    noteHtml += '本次输出<b>不含 <code>visible=</code> 字段</b>（早期版本），故不判断可见性 / 前台，以免编造。';
+  }
+  note.innerHTML = noteHtml;
   root.appendChild(note);
 
   for (const r of parsedForest) {
@@ -5833,7 +5943,8 @@ function renderStackList() {
       row.appendChild(pkg);
       if (cp.visible === 'true') { const v = document.createElement('span'); v.className = 'st-badge vis'; v.textContent = '可见'; row.appendChild(v); }
       else if (cp.visible === 'false') { const v = document.createElement('span'); v.className = 'st-badge inv'; v.textContent = '不可见'; row.appendChild(v); }
-      else { const v = document.createElement('span'); v.className = 'st-badge inv'; v.textContent = '未知'; row.appendChild(v); }
+      else if (meta.hasVisible) { const v = document.createElement('span'); v.className = 'st-badge inv'; v.textContent = '未知'; row.appendChild(v); }
+      // 该版本输出不含 visible 字段 → 不显示徽章（既不编造「可见」，也不显示「未知」误导）
       if (!cp.topActivity) { const v = document.createElement('span'); v.className = 'st-badge empty'; v.textContent = '空任务'; row.appendChild(v); }
       row.onclick = (function (node) { return function (e) { e.stopPropagation(); selectNode(node); }; })(c);
       tlist.appendChild(row);

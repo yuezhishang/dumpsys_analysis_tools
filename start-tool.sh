@@ -53,9 +53,22 @@ else
 fi
 echo
 echo "正在启动 adb 桥接服务（保持终端开着；Ctrl+C 或关闭终端即停止）……"
+echo "桥接就绪后会自动打开工具页面；若未弹出，请手动访问 http://127.0.0.1:7788/"
+echo "# 注意：此处不重复打开浏览器 —— 桥接会用【真实端口】自己打开（端口被占用时会顺延）。"
 echo
-echo "工具页面将自动在浏览器打开：http://127.0.0.1:7788/"
-( sleep 1; if command -v xdg-open >/dev/null 2>&1; then xdg-open "http://127.0.0.1:7788/" >/dev/null 2>&1; elif command -v open >/dev/null 2>&1; then open "http://127.0.0.1:7788/" >/dev/null 2>&1; fi ) &
 "$NODE_BIN" "$BRIDGE"
-echo "[已停止] 按 Enter 关闭窗口……"
+BRIDGE_RC=$?
+if [ "$BRIDGE_RC" -ne 0 ]; then
+  echo
+  echo "[警告] 桥接启动失败（退出码 $BRIDGE_RC），以降级模式打开本地工具页面（抓取功能不可用）。"
+  if [ -f "$HTML_FILE" ]; then
+    if command -v xdg-open >/dev/null 2>&1; then xdg-open "$HTML_FILE" >/dev/null 2>&1
+    elif command -v open >/dev/null 2>&1; then open "$HTML_FILE" >/dev/null 2>&1
+    else echo "请手动打开：$HTML_FILE"; fi
+  fi
+else
+  echo
+  echo "[已停止] 桥接已正常停止。"
+fi
+echo "按 Enter 关闭窗口……"
 read -r

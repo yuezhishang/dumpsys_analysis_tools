@@ -27,7 +27,7 @@
 - 🧩 **单文件 HTML**：`index.html` 内聚全部逻辑与样式，可直接双击打开（示例/手动粘贴模式）。
 - 🔌 **零依赖桥接**：`adb-bridge.js` 仅用 Node.js 内置模块，不需要 `npm install`。
 - 📦 **便携 Node 运行时**：`node/node.exe` 已随包提供，没有 Node.js 也能跑（跨设备干净复制即可用）。
-- 🪟 **三端启动器**：`start-tool.bat`（Windows）/ `start-tool.sh`（macOS·Linux·Git Bash），双击即启动并自动打开浏览器。
+- 🪟 **三端启动器**：`start-tool.bat`（Windows）/ `start-tool.sh`（macOS·Linux·Git Bash），双击即启动；**由桥接用真实端口打开一个工具页面**（启动器不再重复打开 —— 旧版启动器与桥接各开一次，会开出两个标签页），桥接起不来时启动器才兜底打开本地降级页。
 - 🔍 **统一交互**：搜索、节点折叠、重置布局、导出图片，在 Containers / SurfaceFlinger / Window 各视图一致可用。
 - 📱 **Android 9–16 全对齐**：A9/10/11 扁平格式、A12/13 分散旧格式、A14+ 树形 `Layer Hierarchy` 均已适配。
 - 🧪 **内置样例数据**：未接设备也能先看效果，上手零门槛。
@@ -62,7 +62,7 @@
 | 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
 | --- | --- | --- | --- | --- |
 | `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图高亮 Resumed / Focused；详情面板顶部「排查洞察」自动检测多 RESUMED 冲突、焦点指向 paused、task 栈深度，并汇总 Intent/进程/uid 归属） |
-| `am stack list` | ATMS：**任务栈速览**（RootTask → Task 两层，逻辑层摘要） | 每个 RootTask 的 id / bounds / displayId / userId，以及 `configuration` 里的 `mWindowingMode` / `mActivityType`；每个 Task 的 `visible` 与栈顶 Activity | 一眼看清 RootTask 栈数、可见(前台) task、display 分布、布局（全屏/分屏/PIP，取自 mWindowingMode） | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每 RootTask 卡片（布局徽章取 `mWindowingMode`、类型徽章取 `mActivityType`）+ 每 task 行。注意：该命令**无焦点字段**，前台仅按 `visible=true` 判定） |
+| `am stack list` | ATMS：**任务栈速览**（Stack / RootTask → Task 两层，逻辑层摘要） | 每个栈的 id / bounds / displayId / userId，以及 `configuration` 里的 `mWindowingMode` / `mActivityType`；每个 Task 的 `visible` 与栈顶 Activity。**跨版本适配**：A9–A10 容器头为 `Stack id=N`（A9 部分输出**无** `configuration` 行 → 布局不可得，工具如实标注「该版本无此字段」而非显示「未知」），A11+ 改名为 `RootTask id=N` | 一眼看清栈数、可见(前台) task、display 分布、布局（全屏/分屏/PIP，取自 mWindowingMode） | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每栈卡片（布局徽章取 `mWindowingMode`、类型徽章取 `mActivityType`）+ 每 task 行；**画布可直接拖拽平移 / 滚轮缩放 / 重置布局**。注意：该命令**无焦点字段**，前台仅按 `visible=true` 判定） |
 | `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity Containers** |
 | `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
 | `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
@@ -219,6 +219,10 @@ A：能。`node/node.exe` 已随包提供，启动器会自动用它。你也可
 **Q：桥接会在后台偷偷常驻吗？**
 A：不会。桥接只在启动器终端开着时运行，关闭终端即停止，没有任何常驻进程或自启动。
 
+**Q：为什么以前启动后会打开两个工具页面？**
+A：旧版 `start-tool.bat` / `start-tool.sh` 与 `adb-bridge.js` **各打开了一次**浏览器，两者都指向 `http://127.0.0.1:7788/`，于是开出两个相同标签页。**v1.38 起改为只由桥接打开一次**（用真实监听端口，端口被占顺延后也正确）；启动器仅在桥接**启动失败**（退出码非 0：无 Node / 端口全被占 / 脚本异常）时兜底打开本地 `index.html` 降级页。
+另注意：请使用启动器打开的 `http://127.0.0.1:7788/` 页面。**直接双击 `index.html`（`file://`）连不上桥接**（`file://` 的 origin 为 null，会被浏览器的 Private Network Access 拦截），此时「从设备抓取」不可用。
+
 **Q：数据会传到外部吗？**
 A：不会。所有解析都在本机浏览器内完成，桥接仅在本机 `127.0.0.1` 与 adb 通信，不上传任何数据。
 
@@ -257,7 +261,11 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.37**（当前）：用**真实设备输出**（LineageOS 21 / Android 14）修正 **Stack List** 的解析与呈现——①容器头识别 `RootTask id=N`（旧版 `Stack id=N` 仍支持）；②解析每个头紧跟的 `configuration={...}`，提取**权威布局字段** `mWindowingMode` / `mActivityType` / `mBounds` / `mAppBounds` / `mMaxBounds` / `mDisplayRotation`；③task 改为按**出现顺序**归属最近容器头（真实输出**无缩进**，此前按缩进建树导致 task 全部孤立）；④**删除伪造的「未识别到 Stack 头」假根**；⑤布局判定改用 `mWindowingMode`（不再用 bounds 几何猜），新增**栈类型徽章** `mActivityType`（桌面栈 / 应用栈 / 系统栈）；⑥**只按 `visible=true` 判定「可见/前台」**（该命令无焦点字段，不再伪造「前台」）。
+- **v1.38**（当前）：三项修复 ——
+  ① **启动器不再与桥接重复打开浏览器**：此前 `start-tool.bat` / `start-tool.sh` 与 `adb-bridge.js` **各打开一次**，会开出**两个工具页面标签**。现在只由**桥接**用真实端口打开（端口被占顺延后也正确），启动器仅在**桥接退出码非 0**（启动失败：无 Node / 7788–7798 全被占 / 脚本异常）时兜底打开本地降级页。**注意：没连设备、没装 adb 都不会导致桥接启动失败** —— 页面照常打开，只是「从设备抓取」不可用。
+  ② **Stack List 完全画布化**：旧 CSS（`.stacklist-root{overflow:auto;height:100%}`）让它成了**原生滚动容器**，与画布 `panX/panY` 的 `transform` 平移语义冲突 —— 拖拽像「搬动一个带滚动条的框」，内容不跟随滚动、滚动条还杵在右边。现改为内容自然撑开（`overflow:visible; height:auto`），完全走画布变换：**拖拽平移 + 滚轮缩放 + 重置布局**，与 window 树视图手感一致；并区分「拖拽」与「点击」（位移 > 5px 不触发 task 卡点击），「定位可见 Task」由 `scrollIntoView` 改为画布居中。
+  ③ **`am stack list` 按版本差异适配**：容器头兼容 `Stack id=N`（A9/A10）与 `RootTask id=N`（A11+，RootTask 即 Stack 改名），**字段顺序无关、字段可缺**；`configuration` 行可缺（A8/A9 部分机型没有）→ 缺失时布局 / 可见性一律标注**「该版本无此字段」**，不再显示「未知」、也不用 bounds 几何猜；task 行支持早期只有 `taskId=N: pkg/act`（无 bounds / visible / topActivity）的格式，此时直接用 `pkg/act` 解析出 topPkg / topClass。示例数据按 **A9 / A10 / A11–13 / A14+ 四个格式档**分版本提供（均为检索到的**真实设备输出**并注明来源），不再「8 个版本共用一份 A14 数据」。
+- **v1.37**：用**真实设备输出**（LineageOS 21 / Android 14）修正 **Stack List** 的解析与呈现——①容器头识别 `RootTask id=N`（旧版 `Stack id=N` 仍支持）；②解析每个头紧跟的 `configuration={...}`，提取**权威布局字段** `mWindowingMode` / `mActivityType` / `mBounds` / `mAppBounds` / `mMaxBounds` / `mDisplayRotation`；③task 改为按**出现顺序**归属最近容器头（真实输出**无缩进**，此前按缩进建树导致 task 全部孤立）；④**删除伪造的「未识别到 Stack 头」假根**；⑤布局判定改用 `mWindowingMode`（不再用 bounds 几何猜），新增**栈类型徽章** `mActivityType`（桌面栈 / 应用栈 / 系统栈）；⑥**只按 `visible=true` 判定「可见/前台」**（该命令无焦点字段，不再伪造「前台」）。
 - **v1.36**：按「**从排查目的出发，不套功能**」重规划三个数据源——①**Stack List 不再是层级树**，改为「任务栈速览面板」：概览卡（栈数 / 任务数 / 可见任务 / display 数 / 布局分布）+ 每栈**布局判定**（全屏 / 分屏·多窗口 / 画中画 PIP，依据 bounds 几何自动识别）+ 每 task 卡（点击看 topActivity 与详情）；并**移除了此前误加的 HWC**（am stack list 无 Layer 几何，无法推导 HWC）。②**Activities 详情面板顶部新增「排查洞察」**：自动检测多个 RESUMED 前台冲突、mFocusedApp 焦点指向 paused、STOPPED 却可见、task 回退栈深度异常，并汇总每个 Activity 的 Intent(component) / 进程名 / uid / pid / taskAffinity 归属表；第二遍扫描补抓 `mIntent` / `mResumed` / `mVisible` / `mDrawing` 等。③**Window Containers 把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」**，树与详情面板均可见，真正回答「surface 归属哪个 Activity」。④**补全字段说明字典**（state / packageName / mIntent / mResumed / …），点击字段不再无说明。
 - **v1.35**：按「便于排查问题」重新规划 **Activities** 与 **Stack List** 数据源——①`dumpsys activity activities` 在骨架树基础上做第二遍扫描，把 `state` / `packageName` / `processName` / `pid` / `uid` / `taskAffinity` / `mVisibleRequested` / `keysPaused` / `isVisible` / `displayId` / `bounds` 等排查字段挂到节点并打状态徽章（resumed/paused/stopped/visible/focused）；②`am stack list` 解析器重写为**容错式**（字段可选、TopActivity 为 null 不崩、孤儿 Task 挂到合成 Stacks 根），彻底修复真实数据解析失败；③**删除 Window 数据源的 HWC 功能**（窗口无完整 Layer 几何/Z 序，无法推导 HWC，HWC 视图对 `activities` / `window` 自动隐藏）；④**目标版本下拉框按功能支持起始版本动态过滤**（ATMS / WindowContainer 类数据源自 Android 10 起，Window / SurfaceFlinger 自 Android 9 起），不再统一从 Android 9 开始。
 - **v1.34**：新增 🗂 **Stack List**（`am stack list`，ATMS 任务栈速览，Activities 轻量版）数据源，还原 `Stack → Task` 两层并高亮可见 / 前台 Task；「视角/排查」面板补充 `am stack list` 条目；桥接抓取同步支持 `amstack`。
