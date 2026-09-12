@@ -3,7 +3,7 @@
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
 > 支持 `dumpsys activity containers` / `dumpsys activity activities` / `am stack list` / `dumpsys window containers` / `dumpsys SurfaceFlinger` / `dumpsys window`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.35-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.36-green.svg)](#版本)
 
 ---
 
@@ -61,10 +61,10 @@
 
 | 命令 | 视角（谁在看） | 关注点 | 适用排查 | 工具入口 |
 | --- | --- | --- | --- | --- |
-| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图，高亮 Resumed / Focused） |
-| `am stack list` | ATMS：**任务栈速览**（Stack → Task 两层，逻辑层摘要） | 每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity | 一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局 | 🗂 **Stack List**（树视图，高亮可见 / 前台 Task） |
+| `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | 🎯 **Activities**（树视图高亮 Resumed / Focused；详情面板顶部「排查洞察」自动检测多 RESUMED 冲突、焦点指向 paused、task 栈深度，并汇总 Intent/进程/uid 归属） |
+| `am stack list` | ATMS：**任务栈速览**（Stack → Task 两层，逻辑层摘要） | 每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity | 一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局 | 🗂 **Stack List**（**任务栈速览面板，非层级树**：概览卡 + 每栈布局判定全屏/分屏/PIP + 每 task 卡，点击看 topActivity 与详情） |
 | `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 📦 **Activity Containers** |
-| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树） |
+| `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 🪟 **Window Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
 | `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
 
 > 点工具里的 **ℹ️ 视角/排查** 按钮可随时弹出此对照表。
@@ -169,10 +169,11 @@ bash start-tool.sh
 解析 `dumpsys window windows`，按 Z 序（降序）排列每个窗口卡片，标出焦点窗口 `★`，并展示 `mDrawState`、尺寸、属性等关键参数。
 
 ### 5. Activities 树（dumpsys activity activities）
-解析 `dumpsys activity activities`，从 ATMS **逻辑生命周期**视角还原 `TaskDisplayArea → RootTask → ActivityRecord` 层级（只到 ActivityRecord，不含窗口 surface）。除骨架树外，工具对输出做**第二遍扫描**，把排查用得上的关键字段挂到对应节点（详情面板可见）：`state`（RESUMED/PAUSED/STOPPED）、`packageName` / `processName` / `pid` / `uid`、`taskAffinity`、`mVisibleRequested` / `isVisible` / `keysPaused` / `mResumed`、`displayId` / `bounds` 等，并在节点上打 `resumed` / `paused` / `stopped` / `visible` / `focused` 状态徽章。自动高亮 `mResumedActivity` / `mFocusedApp` 指向的 Activity，并可用「⚡ 定位 Resumed」一键跳转。适合排查「哪个 activity 在前台、状态卡在哪、进程/任务归属是否异常」。
+解析 `dumpsys activity activities`，从 ATMS **逻辑生命周期**视角还原 `TaskDisplayArea → RootTask → ActivityRecord` 层级（只到 ActivityRecord，不含窗口 surface）。除骨架树外，工具对输出做**第二遍扫描**，把排查用得上的关键字段挂到对应节点（点击节点在详情面板可见，每个字段都有中文说明）：`state`（RESUMED/PAUSED/STOPPED）、`packageName` / `processName` / `pid` / `uid`、`taskAffinity`、`mIntent`（含 `cmp=` 真正要启动的组件）、`mResumed` / `mVisible` / `mDrawing` / `mVisibleRequested` / `isVisible` / `keysPaused`、`displayId` / `bounds` 等，并在节点上打 `resumed` / `paused` / `stopped` / `visible` / `focused` 状态徽章。自动高亮 `mResumedActivity` / `mFocusedApp` 指向的 Activity，并可用「⚡ 定位 Resumed」一键跳转。
+**更重要的是「排查洞察」面板**：切到 Activities 后，详情面板顶部自动生成，直接服务于「便于排查问题」：① 自动检测**多个 Activity 同时 RESUMED**（前台冲突）；② 检测 **mFocusedApp 焦点指向 paused/非 RESUMED**（前台焦点与实际状态不一致，可能卡死）；③ 检测 **STOPPED 却仍可见**；④ 按 task 统计**回退栈深度**（任务栈异常）；⑤ 汇总**每个 Activity 的 Intent(component) / 进程名 / uid / pid / taskAffinity 归属表**。无需自己从骨架树里找——异常会被红字标出。
 
 ### 6. Window Containers 树（dumpsys window containers）
-解析 `dumpsys window containers`——这是 WMS **原生入口** dump 的同一棵 WindowContainer 树（与 Activity Containers 结构完全一致，只是视角从「窗口管理」出发，常带更多可见性 / 动画 / surface 信息）。与 📦 Activity Containers 互为印证，用来核对窗口怎么挂、surface 归属哪里。
+解析 `dumpsys window containers`——这是 WMS **原生入口** dump 的同一棵 WindowContainer 树（与 Activity Containers 结构完全一致，只是视角从「窗口管理」出发，常带更多可见性 / 动画 / surface 信息）。与 📦 Activity Containers 互为印证，用来核对窗口怎么挂、surface 归属哪里。**关于「surface 归属」如何看**：每个 `ActivityRecord` 之下会挂一个窗口 token 子节点（形如 `#N <hash> <包名/类>`），那**就是该 Activity 的实际渲染面（surface 归属）**——本工具已自动标注为 `🪟 <包名/类> ← surface 归属: <ActivityRecord>`，点击该节点还会在详情面板显示「🪟 surface 归属: …」关系，无需再猜哪块 surface 属于哪个 Activity。
 
 > 小结：`activity activities` 管「谁在跑」，`activity containers` / `window containers` 管「窗口怎么挂」，`SurfaceFlinger` 管「屏幕画了啥」——前三者共享同一棵树，最后一个在独立进程只看真实图层。
 
@@ -256,7 +257,8 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.35**（当前）：按「便于排查问题」重新规划 **Activities** 与 **Stack List** 数据源——①`dumpsys activity activities` 在骨架树基础上做第二遍扫描，把 `state` / `packageName` / `processName` / `pid` / `uid` / `taskAffinity` / `mVisibleRequested` / `keysPaused` / `isVisible` / `displayId` / `bounds` 等排查字段挂到节点并打状态徽章（resumed/paused/stopped/visible/focused）；②`am stack list` 解析器重写为**容错式**（字段可选、TopActivity 为 null 不崩、孤儿 Task 挂到合成 Stacks 根），彻底修复真实数据解析失败；③**删除 Window 数据源的 HWC 功能**（窗口无完整 Layer 几何/Z 序，无法推导 HWC，HWC 视图对 `activities` / `window` 自动隐藏）；④**目标版本下拉框按功能支持起始版本动态过滤**（ATMS / WindowContainer 类数据源自 Android 10 起，Window / SurfaceFlinger 自 Android 9 起），不再统一从 Android 9 开始。
+- **v1.36**（当前）：按「**从排查目的出发，不套功能**」重规划三个数据源——①**Stack List 不再是层级树**，改为「任务栈速览面板」：概览卡（栈数 / 任务数 / 可见任务 / display 数 / 布局分布）+ 每栈**布局判定**（全屏 / 分屏·多窗口 / 画中画 PIP，依据 bounds 几何自动识别）+ 每 task 卡（点击看 topActivity 与详情）；并**移除了此前误加的 HWC**（am stack list 无 Layer 几何，无法推导 HWC）。②**Activities 详情面板顶部新增「排查洞察」**：自动检测多个 RESUMED 前台冲突、mFocusedApp 焦点指向 paused、STOPPED 却可见、task 回退栈深度异常，并汇总每个 Activity 的 Intent(component) / 进程名 / uid / pid / taskAffinity 归属表；第二遍扫描补抓 `mIntent` / `mResumed` / `mVisible` / `mDrawing` 等。③**Window Containers 把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」**，树与详情面板均可见，真正回答「surface 归属哪个 Activity」。④**补全字段说明字典**（state / packageName / mIntent / mResumed / …），点击字段不再无说明。
+- **v1.35**：按「便于排查问题」重新规划 **Activities** 与 **Stack List** 数据源——①`dumpsys activity activities` 在骨架树基础上做第二遍扫描，把 `state` / `packageName` / `processName` / `pid` / `uid` / `taskAffinity` / `mVisibleRequested` / `keysPaused` / `isVisible` / `displayId` / `bounds` 等排查字段挂到节点并打状态徽章（resumed/paused/stopped/visible/focused）；②`am stack list` 解析器重写为**容错式**（字段可选、TopActivity 为 null 不崩、孤儿 Task 挂到合成 Stacks 根），彻底修复真实数据解析失败；③**删除 Window 数据源的 HWC 功能**（窗口无完整 Layer 几何/Z 序，无法推导 HWC，HWC 视图对 `activities` / `window` 自动隐藏）；④**目标版本下拉框按功能支持起始版本动态过滤**（ATMS / WindowContainer 类数据源自 Android 10 起，Window / SurfaceFlinger 自 Android 9 起），不再统一从 Android 9 开始。
 - **v1.34**：新增 🗂 **Stack List**（`am stack list`，ATMS 任务栈速览，Activities 轻量版）数据源，还原 `Stack → Task` 两层并高亮可见 / 前台 Task；「视角/排查」面板补充 `am stack list` 条目；桥接抓取同步支持 `amstack`。
 - **v1.33**：新增 🎯 **Activities**（`dumpsys activity activities`，ATMS 逻辑层）与 🪟 **Window Containers**（`dumpsys window containers`，WMS 原生入口，与 activity containers 同一棵树）两个数据源；新增「ℹ️ 视角/排查」对照面板，标注每条命令的视角与适用排查场景；桥接抓取同步支持 `activities` / `windowcontainers`。
 - **v1.32**：新增「dumpsys window」数据源与「窗口图层」视图，可视化 5 种 `mDrawState`；统一多视图交互；桥接改为纯手动控制（启动器 + 便携 Node）。

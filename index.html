@@ -706,6 +706,42 @@ select.btn{
 .device-state.offline, .device-state.unauthorized { background: rgba(248,81,73,.18); color: #f85149; }
 .dm-empty { color: var(--text-muted); font-size: 13px; padding: 8px 2px; }
 
+
+/* ── Stack List 目的速览面板 ── */
+.diagram-root.stacklist-root { display: block; padding: 18px; overflow: auto; height: 100%; box-sizing: border-box; }
+.stack-overview { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+.ov-stat { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 16px; min-width: 92px; text-align: center; }
+.ov-num { display: block; font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1.2; }
+.ov-label { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.stack-card { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+.stack-card-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-light); flex-wrap: wrap; }
+.stack-id { font-weight: 700; color: var(--text-primary); font-size: 14px; }
+.stack-mode { font-size: 11px; padding: 2px 9px; border-radius: 10px; font-weight: 600; }
+.stack-mode.full { background: rgba(63,185,80,.18); color: #3fb950; }
+.stack-mode.split { background: rgba(88,166,255,.18); color: #58a6ff; }
+.stack-mode.pip { background: rgba(218,145,54,.22); color: #d9923a; }
+.stack-meta { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-left: auto; }
+.stack-tasks { padding: 6px 10px; }
+.stack-task { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; border: 1px solid transparent; }
+.stack-task:hover { background: var(--bg-tertiary); border-color: var(--accent); }
+.stack-task.empty { color: var(--text-muted); cursor: default; font-style: italic; }
+.st-pkg { font-family: var(--mono); font-size: 13px; color: var(--text-primary); flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.st-badge { font-size: 10px; padding: 1px 7px; border-radius: 9px; flex: 0 0 auto; }
+.st-badge.vis { background: rgba(63,185,80,.18); color: #3fb950; }
+.st-badge.inv { background: rgba(139,148,158,.18); color: #8b949e; }
+.st-badge.front { background: rgba(218,145,54,.22); color: #d9923a; }
+/* ── Activities 排查洞察 ── */
+.insight-section { border-left: 3px solid var(--accent); }
+.insight-summary { font-size: 12.5px; color: var(--text-secondary); margin-bottom: 8px; }
+.insight-anoms { display: flex; flex-direction: column; gap: 6px; }
+.insight-anom { font-size: 12.5px; color: #f87171; background: rgba(248,81,73,.10); border: 1px solid rgba(248,81,73,.35); border-radius: var(--radius-sm); padding: 7px 10px; line-height: 1.5; }
+.insight-ok { font-size: 12.5px; color: #3fb950; }
+.insight-tbl { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 8px; }
+.insight-tbl th, .insight-tbl td { border: 1px solid var(--border-light); padding: 5px 7px; text-align: left; vertical-align: top; }
+.insight-tbl th { background: var(--bg-tertiary); color: var(--text-primary); white-space: nowrap; }
+.insight-tbl td code { background: var(--bg-tertiary); padding: 1px 4px; border-radius: 4px; color: var(--accent); }
+.ins-dim { color: var(--text-muted); font-size: 10.5px; }
+
 </style>
 </head>
 <body>
@@ -714,7 +750,7 @@ select.btn{
 <header class="app-header">
   <h1><span class="icon">📱</span> Dumpsys Activity Containers Visualizer</h1>
   <span class="version-badge">Android 9 – 16</span>
-  <span class="version-badge app-version" id="app-version-badge">v1.35</span>
+  <span class="version-badge app-version" id="app-version-badge">v1.36</span>
   <div class="spacer"></div>
   <span class="header-info" id="header-info"></span>
 </header>
@@ -723,9 +759,9 @@ select.btn{
 <div class="source-bar" id="source-bar">
   <span class="ds-label">数据源</span>
   <button class="seg-btn active" id="ds-containers" onclick="switchDataSource('containers')" title="dumpsys activity containers｜视角：经 ATMS 入口看 WindowContainer 容器嵌套结构（到 WindowState）。适用：排查容器父子关系、窗口层级嵌套、谁在谁下面">📦 Activity Containers</button>
-  <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。适用：前台 activity 错乱、状态卡 RESUMED/PAUSED/STOPPED、task 栈异常、Intent/进程归属">🎯 Activities</button>
-  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜视角：ATMS 任务栈速览（Stack→Task 两层，Activities 的轻量版）。适用：一眼看清前台是哪个 task、有几个栈、哪个 display、多窗口/分屏/PIP 栈分布">🗂 Stack List</button>
-  <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属，与 activity containers 互为印证">🪟 Window Containers</button>
+  <button class="seg-btn" id="ds-activities" onclick="switchDataSource('activities')" title="dumpsys activity activities｜视角：ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。详情面板顶部自动生成「排查洞察」：检测多 RESUMED 前台冲突、焦点指向 paused、task 栈深度、并汇总每个 Activity 的 Intent(component)/进程/uid 归属">🎯 Activities</button>
+  <button class="seg-btn" id="ds-amstack" onclick="switchDataSource('amstack')" title="am stack list｜任务栈速览面板（非层级树）：一眼看清栈数量 / 前台 task / display 分布 / 全屏·分屏·PIP 布局，点击 task 卡查看 topActivity 与详情">🗂 Stack List</button>
+  <button class="seg-btn" id="ds-windowcontainers" onclick="switchDataSource('windowcontainers')" title="dumpsys window containers｜视角：WMS 原生入口看同一棵 WindowContainer 树（窗口管理视角）。适用：窗口可见性/动画/surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属），与 activity containers 互为印证">🪟 Window Containers</button>
   <button class="seg-btn" id="ds-window" onclick="switchDataSource('window')" title="dumpsys window windows｜视角：每个 Window 的布局与 5 种 mDrawState 绘制状态。适用：窗口绘制卡顿/未上屏、mDrawState 停留在非 HAS_DRAWN">🖼 Window (mDrawState)</button>
   <button class="seg-btn" id="ds-surfaceflinger" onclick="switchDataSource('surfaceflinger')" title="dumpsys SurfaceFlinger｜视角：独立 native 进程看真实合成图层（屏幕像素）。适用：黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏">🖥 SurfaceFlinger</button>
   <span class="ds-hint">切换数据源后请粘贴对应 dumpsys 输出，或点「加载示例数据」</span>
@@ -937,7 +973,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.35'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。
+const APP_VERSION = 'v1.36'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树，一眼看清栈数/前台 task/display 分布/全屏·分屏·PIP 布局）；Activities 详情面板顶部新增「排查洞察」（多 RESUMED 冲突、前台焦点指向 paused、task 栈深度、Intent/进程归属）；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1551,6 +1587,19 @@ function parseDumpsys(text) {
     const node = createNode(body);
     if (/^ROOT/i.test(trimmed)) { node.type = 'root'; node.label = 'ROOT'; node.name = 'ROOT'; }
 
+    // 窗口 token / surface 归属：形如 "#N <hash> <name>" 且非已知容器 → 这是 Activity 的实际渲染面(surface 归属)
+    if (/^[0-9a-fA-F]{3,}\s+\S/.test(body)) {
+      const wm = body.match(/^[0-9a-fA-F]{3,}\s+(\S+)/);
+      const wname = wm ? wm[1] : body;
+      const parentLabel = (stack.length > 0) ? stack[stack.length - 1].node.label : '';
+      node.type = 'window';
+      node.name = wname;
+      node.surfaceOf = parentLabel;
+      node.label = '🪟 ' + wname + (parentLabel ? '  ← surface 归属: ' + parentLabel : '');
+      node.tags = node.tags || [];
+      if (!node.tags.some(function (t) { return t.name === 'surface'; })) node.tags.push({ name: 'surface', class: 'surface' });
+    }
+
     while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
     if (stack.length > 0) {
       stack[stack.length - 1].node.children.push(node);
@@ -1614,6 +1663,7 @@ function parseActivitiesDump(text) {
   }
   buildIndex(parsedForest);
   enrichActivitiesProps(text);
+  if (typeof window !== 'undefined') window.__activitiesInsight = null;
   return parsedForest;
 }
 
@@ -1631,13 +1681,22 @@ function enrichActivitiesProps(text) {
   function parsePropLine(s) {
     const out = [];
     const trimmed = s.trim();
-    // 多个 key=value：取最后一个空格前的 key；value 里可能还有空格（如 mIntent=...）
+    // 整行捕获型字段：值含空格/括号（如 mIntent={act=... cmp=...}），不能用空格分隔，整行抓到末尾
+    const REST_KEYS = ['mIntent', 'mComponent', 'realActivity', 'mFocusedApp', 'mLastPausedActivity', 'mCurrentLaunchIntent'];
+    for (const k of REST_KEYS) {
+      const re = new RegExp('(?:^|\\s)' + k + '=(.*)$');
+      const mm = trimmed.match(re);
+      if (mm) out.push({ key: k, value: mm[1].trim() });
+    }
+    // 多个 key=value：普通扫描（跳过整行捕获型字段）
     const re = /([A-Za-z_.][A-Za-z0-9_.]*)\s*=\s*(\S+(?:\s+\S+)*?)(?=\s+[A-Za-z_.][A-Za-z0-9_.]*\s*=|$)/g;
     let m;
     while ((m = re.exec(trimmed)) !== null) {
+      const k = m[1];
+      if (REST_KEYS.indexOf(k) >= 0) continue;
       let v = m[2].trim();
       if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
-      out.push({ key: m[1], value: v });
+      out.push({ key: k, value: v });
     }
     if (/^(RESUMED|PAUSED|STOPPED|STARTED|DESTROYED)$/i.test(trimmed)) {
       out.push({ key: 'state', value: trimmed });
@@ -1645,7 +1704,7 @@ function enrichActivitiesProps(text) {
     return out;
   }
 
-  const INTERESTING_KEYS = /^(state|packageName|processName|pid|uid|taskAffinity|mIntent|mComponent|mActivityType|mLaunchMode|theme|mVisibleRequested|mClientVisible|mReportedDrawn|mDeferHidingClient|keysPaused|mLastPausedActivity|autoRemoveRecents|askedCompatMode|noDisplay|forceNewConfig|mDockedInCompatMode|type|mode|displayId|isVisible|userId|bounds|minWidth|minHeight|maxWidth|maxHeight|defaultSize|minimalSize|mBounds|mMaxBounds)$/;
+  const INTERESTING_KEYS = /^(state|packageName|processName|pid|uid|taskAffinity|mIntent|mComponent|realActivity|mFocusedApp|mActivityType|mLaunchMode|theme|mResumed|mVisible|mDrawing|mVisibleRequested|mClientVisible|mReportedDrawn|mDeferHidingClient|keysPaused|mLastPausedActivity|autoRemoveRecents|askedCompatMode|noDisplay|forceNewConfig|mDockedInCompatMode|type|mode|displayId|isVisible|userId|bounds|minWidth|minHeight|maxWidth|maxHeight|defaultSize|minimalSize|mBounds|mMaxBounds)$/;
 
   function attachProp(node, key, value) {
     if (!node.props) { node.props = {}; node.propList = []; }
@@ -1788,7 +1847,7 @@ function parseAmStackList(text) {
       node.type = 'activity';
       node.label = 'taskId=' + taskId + ': ' + pkgAct;
       node.name = pkgAct;
-      node.props = { taskId: taskId, name: pkgAct, visible: visible };
+      node.props = { taskId: taskId, app: pkgAct, visible: visible };
       if (bounds) node.props.bounds = bounds;
       if (topActivity) {
         node.props.topActivity = topActivity;
@@ -1953,6 +2012,10 @@ function renderTree() {
   if (ov) ov.innerHTML = '';
   if (currentView === 'windowlist') {
     renderWindowDump();
+    return;
+  }
+  if (dataSource === 'amstack') {
+    renderStackList();
     return;
   }
   if (currentView === 'hwc') {
@@ -2811,6 +2874,24 @@ function renderLayerDetails(node, panel, content) {
 function renderDetails(node) {
   const panel = document.getElementById('details-panel');
   const content = document.getElementById('details-content');
+  // Activities 数据源：详情面板顶部常驻「排查洞察」（与节点详情并存）
+  if (dataSource === 'activities' && nodeIndex.size > 0) {
+    try {
+      const __ins = getActivitiesInsight();
+      if (__ins) {
+        const __sec = document.createElement('div');
+        __sec.className = 'details-section insight-section';
+        const __t = document.createElement('div');
+        __t.className = 'details-section-title';
+        __t.textContent = '🔍 排查洞察（dumpsys activity activities）';
+        __sec.appendChild(__t);
+        const __b = document.createElement('div');
+        __b.innerHTML = __ins;
+        __sec.appendChild(__b);
+        content.appendChild(__sec);
+      }
+    } catch (e) {}
+  }
   if (!panel || !content) return;
   panel.classList.remove('empty');
   content.innerHTML = '';
@@ -2852,6 +2933,9 @@ function renderDetails(node) {
   if (node.type === 'token' && node.children.length > 0) {
     const winNames = node.children.filter(c => c.type === 'window').map(c => c.label).join('，');
     if (winNames) relParts.push('包含窗口: ' + winNames);
+  }
+  if (node.type === 'window' && node.surfaceOf) {
+    relParts.push('🪟 surface 归属: ' + node.surfaceOf);
   }
   if (relParts.length > 0) {
     const relDiv = document.createElement('div');
@@ -3108,6 +3192,7 @@ function expandToNode(node) {
 
 
 function renderStats() {
+  if (dataSource === 'amstack') { const sb = document.getElementById('stats-bar'); if (sb) sb.style.display = 'none'; return; }
   const setStat = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
   const sb = document.getElementById('stats-bar');
   if (!sb) return;
@@ -4012,6 +4097,138 @@ const PROP_DICT = {
     version: 'A12+',
     values: 'true / false',
     container: 'TaskFragment'
+  },
+  'state': {
+    desc: 'Activity 生命周期状态关键字（独立成行）。RESUMED=前台可交互；PAUSED=已暂停（保留、不可交互）；STOPPED=已停止（不可见、等待销毁）；STARTED/DESTROYED 为中间/终态。',
+    version: 'A9+',
+    values: 'RESUMED / PAUSED / STOPPED / STARTED / DESTROYED',
+    container: 'ActivityRecord'
+  },
+  'packageName': {
+    desc: '该 Activity 所属应用包名。排查「哪个应用的 activity 在前台 / 卡死」的第一标识。',
+    version: 'A9+',
+    values: '包名（如 com.example.app）',
+    container: 'ActivityRecord'
+  },
+  'processName': {
+    desc: '承载该 Activity 的进程名。多数情况等于包名；多进程应用（如 :remote）会不同，可用于「进程归属」排查。',
+    version: 'A9+',
+    values: '进程名',
+    container: 'ActivityRecord'
+  },
+  'pid': {
+    desc: '承载该 Activity 的进程 ID。配合 processName 可定位具体进程（adb shell ps <pid>）。无则为空（示例数据常省略）。',
+    version: 'A9+',
+    values: '整数',
+    container: 'ActivityRecord'
+  },
+  'uid': {
+    desc: '应用 UID（Android 多用户 + 共享 UID 机制）。0=系统。配合 pid 一起定位进程归属。',
+    version: 'A9+',
+    values: '整数（如 10085）',
+    container: 'ActivityRecord'
+  },
+  'taskAffinity': {
+    desc: '任务亲和性。决定 Activity「想归属哪个 task」。与启动模式(launchMode)配合控制 task 栈合并/新建，是「task 栈异常」排查关键。',
+    version: 'A9+',
+    values: '包名（如 com.example.app）',
+    container: 'ActivityRecord'
+  },
+  'mIntent': {
+    desc: '启动该 Activity 的 Intent（整行捕获）。含 action / cmp(组件) / flags / data 等。cmp= 后的「包名/类名」即真正要启动的组件——「Intent/进程归属」排查的核心。',
+    version: 'A9+',
+    values: '{act=... cmp=包名/类 flg=0x... u=0 ...}',
+    container: 'ActivityRecord'
+  },
+  'mComponent': {
+    desc: 'Intent 显式指定的目标组件（包名/类名）。与 mIntent 的 cmp 通常一致。',
+    version: 'A9+',
+    values: '包名/类名',
+    container: 'ActivityRecord'
+  },
+  'realActivity': {
+    desc: 'Activity 真实组件名（解析别名/代理后的目标）。与显示名不同时说明有别名或代理跳转。',
+    version: 'A12+',
+    values: '包名/类名',
+    container: 'ActivityRecord'
+  },
+  'mLastPausedActivity': {
+    desc: '最近一次被暂停的 Activity（系统级记录）。与 mFocusedApp 不一致时常意味着「前台 activity 错乱 / 状态卡死」过渡期。',
+    version: 'A9+',
+    values: 'ActivityRecord 或 null',
+    container: 'Root / Stack'
+  },
+  'mVisibleRequested': {
+    desc: '系统「请求」该 Activity 可见（逻辑可见性）。true 不代表真的画出来了，需结合 isVisible / mDrawState。',
+    version: 'A9+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'mClientVisible': {
+    desc: '客户端侧可见性（应用自己报告的可见）。与 mVisibleRequested 不一致可能是窗口可见性异常信号。',
+    version: 'A12+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'mReportedDrawn': {
+    desc: '该 Activity 是否已向系统报告「首帧绘制完成」。false 且应可见 → 可能启动慢/黑屏/卡死。',
+    version: 'A12+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'mDeferHidingClient': {
+    desc: '是否推迟隐藏客户端（过渡动画期间暂缓 remove）。true 时窗口仍暂留，属正常过渡。',
+    version: 'A12+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'keysPaused': {
+    desc: '该 Activity 的按键/焦点是否处于暂停。true 表示暂不接收按键事件。',
+    version: 'A12+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'isVisible': {
+    desc: '该容器/Activity 当前是否可见（WMS 视角的实际可见）。与 mVisibleRequested 同义字段在不同版本命名不同。',
+    version: 'A12+',
+    values: 'true / false',
+    container: 'ActivityRecord / 容器'
+  },
+  'mDrawing': {
+    desc: '该 Activity 是否正在绘制（surface 有效）。mResumed=true 但 mDrawing=false → 可能首帧未出（卡顿/黑屏）。',
+    version: 'A9+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'topActivity': {
+    desc: '该 Task 栈顶 Activity 的完整组件名（包名/类名）。即「前台 activity」的精确标识。',
+    version: 'A9+',
+    values: '包名/类名',
+    container: 'Task'
+  },
+  'topPkg': {
+    desc: '栈顶 Activity 的包名（从 topActivity 解析）。',
+    version: 'A9+',
+    values: '包名',
+    container: 'Task'
+  },
+  'topClass': {
+    desc: '栈顶 Activity 的类名（从 topActivity 解析）。',
+    version: 'A9+',
+    values: '类名',
+    container: 'Task'
+  },
+  'rootTaskId': {
+    desc: 'RootTask（根任务）的 ID。A11+ 任务体系下的栈根。',
+    version: 'A11+',
+    values: '整数',
+    container: 'RootTask'
+  },
+  'app': {
+    desc: '该 Task 所属的应用组件（包名/类名），即 topActivity 的简写。点击 task 卡可展开完整 topActivity / topPkg / topClass。',
+    version: 'A9+',
+    values: '包名/类名',
+    container: 'Task'
   }
 };
 
@@ -4066,7 +4283,7 @@ const CONTAINER_DICT = {
     version: 'A9+'
   },
   'window': {
-    desc: '具体的窗口 Surface，对应一个实际可渲染的窗口。通常挂载在 WindowToken 下，代表壁纸、应用窗口或系统窗口的实际渲染面。',
+    desc: '具体的窗口 Surface（即「surface 归属」的实际渲染面）。在 dumpsys window containers 中它表现为 ActivityRecord 下的窗口 token 子节点（形如「#N <hash> <包名/类>」），本工具已标注为 🪟 surface 归属 并列出其归属的 Activity。挂载在 WindowToken 下，代表应用/系统窗口的实际渲染面。',
     version: 'A9+'
   },
   'other': {
@@ -5126,13 +5343,13 @@ function updateDataSourceUI() {
   const vh = document.getElementById('view-hwc');
   const vst = document.getElementById('view-sftree');
   const vl = document.getElementById('view-windowlist');
-  if (vw) vw.style.display = isTreeDs ? '' : 'none';
-  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window 无完整几何故隐藏
+  if (vw) vw.style.display = (dataSource === 'amstack') ? 'none' : (isTreeDs ? '' : 'none');
+  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window/amstack 无完整几何故隐藏
   if (vst) vst.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
   // 树工具（展开/折叠/定位 Resumed）：窗口树类数据源（containers/activities/windowcontainers）
   const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && currentView === 'sf-tree');
-  const showWin = isTreeDs;
+  const showWin = (dataSource !== 'amstack') && isTreeDs;
   const exp = document.getElementById('tb-expand');
   const col = document.getElementById('tb-collapse');
   const res = document.getElementById('tb-resumed');
@@ -5427,6 +5644,165 @@ function resetWinFilter() {
   if (vs) vs.value = 'all';
   if (ds) ds.value = 'all';
   applyWindowFilter();
+}
+
+function escHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+// ── am stack list 目的速览面板（非层级树）：一眼看清栈数量 / 前台 task / display 分布 / 全屏·分屏·PIP 布局 ──
+function renderStackList() {
+  const root = document.getElementById('tree-root');
+  const emptyState = document.getElementById('empty-state');
+  const ov = document.getElementById('hwc-overlays'); if (ov) ov.innerHTML = '';
+  if (!root) return;
+  root.style.width = ''; root.style.height = '';
+  zoom = 1; panX = 0; panY = 0; applyPan();
+  root.innerHTML = '';
+  if (parsedForest.length === 0) {
+    if (emptyState) {
+      emptyState.style.display = 'flex';
+      const et = emptyState.querySelector('.empty-text');
+      if (et) et.innerHTML = '未从输出中解析到任何 Stack / Task。<br>请粘贴 <code>adb shell am stack list</code> 输出（或加载示例）。';
+    }
+    root.style.display = 'none';
+    return;
+  }
+  if (emptyState) emptyState.style.display = 'none';
+  root.style.display = 'block';
+  root.className = 'diagram-root stacklist-root';
+
+  function parseB(s) {
+    if (!s) return null;
+    const m = String(s).match(/\\[(\d+),(\d+)\\]\\[(\d+),(\d+)\\]/);
+    if (!m) return null;
+    return [+m[1], +m[2], +m[3], +m[4]];
+  }
+  let sw = 0, sh = 0;
+  for (const r of parsedForest) {
+    const b = parseB(r.props && r.props.bounds); if (b) { sw = Math.max(sw, b[2]); sh = Math.max(sh, b[3]); }
+    for (const c of (r.children || [])) { const cb = parseB(c.props && c.props.bounds); if (cb) { sw = Math.max(sw, cb[2]); sh = Math.max(sh, cb[3]); } }
+  }
+  if (!sw) sw = 1080; if (!sh) sh = 2400;
+
+  function classify(stackNode) {
+    let b = parseB(stackNode.props && stackNode.props.bounds);
+    if (!b) {
+      let mx = 0, my = 0;
+      for (const c of (stackNode.children || [])) { const cb = parseB(c.props && c.props.bounds); if (cb) { mx = Math.max(mx, cb[2]); my = Math.max(my, cb[3]); } }
+      if (mx) b = [0, 0, mx, my];
+    }
+    if (!b) return '未知';
+    const w = b[2] - b[0], h = b[3] - b[1];
+    if (w >= sw * 0.95 && h >= sh * 0.95) return '全屏';
+    const small = w < sw * 0.6 && h < sh * 0.6;
+    const corner = b[0] > 0 || b[1] > 0;
+    if (small && corner) return '画中画 PIP';
+    if (w < sw * 0.95 || h < sh * 0.95) return '分屏/多窗口';
+    return '全屏';
+  }
+
+  let tasks = 0, vis = 0; const disp = new Set(); const modes = {};
+  for (const r of parsedForest) {
+    const mode = classify(r); modes[mode] = (modes[mode] || 0) + 1;
+    for (const c of (r.children || [])) {
+      tasks++;
+      if (c.props && c.props.visible === 'true') vis++;
+      const d = (c.props && c.props.displayId) || (r.props && r.props.displayId);
+      if (d && d !== '?') disp.add(d);
+    }
+  }
+  const layoutStr = Object.keys(modes).map(function (k) { return k + '×' + modes[k]; }).join('，');
+
+  const ov2 = document.createElement('div');
+  ov2.className = 'stack-overview';
+  ov2.innerHTML =
+    '<div class="ov-stat"><span class="ov-num">' + parsedForest.length + '</span><span class="ov-label">栈 Stack</span></div>' +
+    '<div class="ov-stat"><span class="ov-num">' + tasks + '</span><span class="ov-label">任务 Task</span></div>' +
+    '<div class="ov-stat"><span class="ov-num">' + vis + '</span><span class="ov-label">可见任务</span></div>' +
+    '<div class="ov-stat"><span class="ov-num">' + disp.size + '</span><span class="ov-label">Display</span></div>' +
+    '<div class="ov-stat"><span class="ov-num">' + layoutStr + '</span><span class="ov-label">布局分布</span></div>';
+  root.appendChild(ov2);
+
+  for (const r of parsedForest) {
+    const mode = classify(r);
+    const card = document.createElement('div');
+    card.className = 'stack-card';
+    const head = document.createElement('div');
+    head.className = 'stack-card-head';
+    const sid = document.createElement('span'); sid.className = 'stack-id'; sid.textContent = r.label || ('Stack#' + (r.props && r.props.stackId));
+    const sm = document.createElement('span'); sm.className = 'stack-mode ' + (mode === '全屏' ? 'full' : (mode.indexOf('PIP') >= 0 ? 'pip' : 'split')); sm.textContent = mode;
+    const meta = document.createElement('span'); meta.className = 'stack-meta';
+    meta.textContent = 'display ' + ((r.props && r.props.displayId) || '?') + ' · userId ' + ((r.props && r.props.userId) || '?') + (r.props && r.props.bounds ? ' · bounds ' + r.props.bounds : '');
+    head.appendChild(sid); head.appendChild(sm); head.appendChild(meta);
+    card.appendChild(head);
+    const tlist = document.createElement('div'); tlist.className = 'stack-tasks';
+    for (const c of (r.children || [])) {
+      const row = document.createElement('div'); row.className = 'stack-task'; row.dataset.nid = c.id;
+      const pkg = document.createElement('span'); pkg.className = 'st-pkg'; pkg.textContent = (c.props && (c.props.topActivity || c.props.app)) || c.label;
+      row.appendChild(pkg);
+      if (c.props && c.props.visible === 'true') { const v = document.createElement('span'); v.className = 'st-badge vis'; v.textContent = '可见'; row.appendChild(v); }
+      else if (c.props && c.props.visible === 'false') { const v = document.createElement('span'); v.className = 'st-badge inv'; v.textContent = '不可见'; row.appendChild(v); }
+      if (c.tags && c.tags.some(function (t) { return t.name === 'front'; })) { const v = document.createElement('span'); v.className = 'st-badge front'; v.textContent = '前台'; row.appendChild(v); }
+      row.onclick = (function (node) { return function (e) { e.stopPropagation(); selectNode(node); }; })(c);
+      tlist.appendChild(row);
+    }
+    if ((r.children || []).length === 0) { const empty = document.createElement('div'); empty.className = 'stack-task empty'; empty.textContent = '（无 Task）'; tlist.appendChild(empty); }
+    card.appendChild(tlist);
+    root.appendChild(card);
+  }
+}
+
+// ── Activities 排查洞察：多 resumed 冲突 / 前台焦点指向 paused / task 栈深度 / Intent·进程归属 ──
+function getActivitiesInsight() {
+  if (typeof window !== 'undefined' && window.__activitiesInsight) return window.__activitiesInsight;
+  const acts = [];
+  for (const [id, node] of nodeIndex) {
+    if (node.type !== 'activity') continue;
+    const p = node.props || {};
+    const tm = (node.label || '').match(/t(\d+)/);
+    const taskId = tm ? tm[1] : (p.taskId || '?');
+    let state = '?';
+    if (node.tags.some(function (t) { return t.name === 'resumed'; })) state = 'RESUMED';
+    else if (node.tags.some(function (t) { return t.name === 'paused'; })) state = 'PAUSED';
+    else if (node.tags.some(function (t) { return t.name === 'stopped'; })) state = 'STOPPED';
+    else if (p.mResumed === 'true') state = 'RESUMED';
+    else if (p.mVisible === 'true') state = 'VISIBLE(未RESUMED)';
+    const focused = node.tags.some(function (t) { return t.name === 'focused'; });
+    const visible = p.mVisible === 'true' || node.tags.some(function (t) { return t.name === 'visible'; });
+    let cmp = '';
+    if (p.mIntent) { const cm = p.mIntent.match(/cmp=([^\s}]+)/); if (cm) cmp = cm[1]; }
+    acts.push({ label: node.label, name: p.packageName || p.processName || node.name, pkg: p.packageName, proc: p.processName, uid: p.uid, pid: p.pid, taskAffinity: p.taskAffinity, mIntent: p.mIntent, cmp: cmp, mFocusedApp: p.mFocusedApp, mLastPaused: p.mLastPausedActivity, mResumed: p.mResumed, mVisible: p.mVisible, mDrawing: p.mDrawing, state: state, taskId: taskId, visible: visible, focused: focused });
+  }
+  const anoms = [];
+  const resumed = acts.filter(function (a) { return a.state === 'RESUMED'; });
+  if (resumed.length > 1) anoms.push('⚠ 多个 Activity 同时处于 RESUMED（' + resumed.length + ' 个）。系统通常只允许 1 个前台可交互 Activity，可能存在「前台 activity 错乱」。');
+  acts.forEach(function (a) {
+    if (a.focused && a.state !== 'RESUMED') anoms.push('⚠ 焦点(mFocusedApp)指向 ' + (a.label || a.name) + '，但其状态为 ' + a.state + '（可能卡顿/未恢复，前台焦点与实际状态不一致）。');
+    if (a.state === 'STOPPED' && a.visible) anoms.push('⚠ ' + (a.label || a.name) + ' 状态 STOPPED 却仍可见（可能未正确隐藏/卡死）。');
+  });
+  const byTask = {};
+  acts.forEach(function (a) { (byTask[a.taskId] = byTask[a.taskId] || []).push(a); });
+  Object.keys(byTask).forEach(function (tk) {
+    if (byTask[tk].length > 1) anoms.push('ℹ️ Task t' + tk + ' 含 ' + byTask[tk].length + ' 个 Activity（回退栈深度，若异常可能是任务栈未清理）。');
+  });
+  let html = '';
+  html += '<div class="insight-summary">共 ' + acts.length + ' 个 Activity、' + Object.keys(byTask).length + ' 个 Task；RESUMED：' + resumed.length + ' 个。</div>';
+  if (anoms.length > 0) {
+    html += '<div class="insight-anoms">';
+    anoms.forEach(function (a) { html += '<div class="insight-anom">' + escHtml(a) + '</div>'; });
+    html += '</div>';
+  } else {
+    html += '<div class="insight-ok">✅ 未检测到明显异常（前台/状态/task 栈均自洽）。</div>';
+  }
+  html += '<table class="insight-tbl"><tr><th>Activity</th><th>状态</th><th>进程 / uid</th><th>task</th><th>Intent(component)</th></tr>';
+  acts.forEach(function (a) {
+    html += '<tr><td>' + escHtml(a.label || a.name || '?') + '</td><td>' + a.state + (a.mResumed !== undefined || a.mVisible !== undefined ? '<br><span class="ins-dim">' + (a.mResumed !== undefined ? ('mR=' + a.mResumed + ' ') : '') + (a.mVisible !== undefined ? ('mV=' + a.mVisible + ' ') : '') + (a.mDrawing !== undefined ? ('mD=' + a.mDrawing) : '') + '</span>' : '') + '</td><td>' + (a.proc || '?') + (a.uid ? ' / uid ' + a.uid : '') + (a.pid ? ' / pid ' + a.pid : '') + '</td><td>t' + a.taskId + (a.taskAffinity ? '<br><span class="ins-dim">aff=' + escHtml(a.taskAffinity) + '</span>' : '') + '</td><td>' + (a.cmp ? escHtml(a.cmp) : (a.mIntent ? escHtml(a.mIntent) : '—')) + '</td></tr>';
+  });
+  html += '</table>';
+  if (typeof window !== 'undefined') window.__activitiesInsight = html;
+  return html;
 }
 
 function renderWindowDump() {
@@ -6755,14 +7131,14 @@ window.addEventListener('DOMContentLoaded', function() {
           <td>ATMS：活动 / 任务<b>逻辑生命周期</b></td>
           <td>Task / ActivityRecord 的状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点</td>
           <td>前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属</td>
-          <td>🎯 <b>Activities</b>（树视图，高亮 Resumed / Focused）</td>
+          <td>🎯 <b>Activities</b>（树视图高亮 Resumed / Focused；详情面板顶部「排查洞察」自动检测多 RESUMED 冲突、焦点指向 paused、task 栈深度，并汇总每个 Activity 的 Intent/进程/uid 归属）</td>
         </tr>
         <tr>
           <td><code>am stack list</code></td>
           <td>ATMS：<b>任务栈速览</b>（Stack → Task 两层，逻辑层摘要）</td>
           <td>每个 Stack 的 id / bounds / displayId / userId，每个 Task 的可见性与栈顶 Activity</td>
           <td>一眼看清前台 task、栈数量、display 分布、多窗口 / 分屏 / PIP 栈布局</td>
-          <td>🗂 <b>Stack List</b>（树视图，高亮可见 / 前台 Task）</td>
+          <td>🗂 <b>Stack List</b>（任务栈速览面板，非层级树：概览卡 + 每栈布局判定全屏/分屏/PIP + 每 task 卡，点击看 topActivity 与详情）</td>
         </tr>
         <tr>
           <td><code>dumpsys activity containers</code></td>
@@ -6775,8 +7151,8 @@ window.addEventListener('DOMContentLoaded', function() {
           <td><code>dumpsys window containers</code></td>
           <td>WMS <b>原生入口</b>看同一棵树（窗口管理视角）</td>
           <td>窗口可见性 / 动画 / surface 归属（与 activity containers 同结构）</td>
-          <td>与 activity containers 互为印证，看窗口怎么挂、surface 归属</td>
-          <td>🪟 <b>Window Containers</b>（同树）</td>
+          <td>与 activity containers 互为印证，看窗口怎么挂、surface 归属哪个 Activity</td>
+          <td>🪟 <b>Window Containers</b>（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）</td>
         </tr>
         <tr>
           <td><code>dumpsys SurfaceFlinger</code></td>
