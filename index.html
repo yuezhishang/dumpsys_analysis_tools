@@ -754,6 +754,57 @@ select.btn{
 .insight-tbl th, .insight-tbl td { border: 1px solid var(--border-light); padding: 5px 7px; text-align: left; vertical-align: top; }
 .insight-tbl th { background: var(--bg-tertiary); color: var(--text-primary); white-space: nowrap; }
 .insight-tbl td code { background: var(--bg-tertiary); padding: 1px 4px; border-radius: 4px; color: var(--accent); }
+
+/* ── Activities 状态诊断浮层（画布上方，可折叠）── */
+.acts-diag { position: absolute; top: 12px; left: 12px; width: min(640px, calc(100% - 24px)); max-height: 52%; overflow: auto; background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); box-shadow: 0 4px 18px rgba(0,0,0,.28); z-index: 30; font-size: 12px; }
+.acts-diag.collapsed .ad-body { display: none; }
+.acts-diag .ad-head { position: sticky; top: 0; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-light); cursor: pointer; z-index: 1; }
+.acts-diag .ad-title { font-weight: 700; color: var(--text-primary); font-size: 13px; }
+.acts-diag .ad-scope { font-family: var(--mono); font-size: 11px; color: var(--text-muted); }
+.acts-diag .ad-counts { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; }
+.acts-diag .ad-c { font-size: 11px; padding: 1px 8px; border-radius: 9px; }
+.acts-diag .ad-c.bad { background: rgba(248,81,73,.18); color: #f85149; }
+.acts-diag .ad-c.warn { background: rgba(210,153,34,.20); color: #d29922; }
+.acts-diag .ad-c.env { background: rgba(139,148,158,.20); color: #9aa4b1; }
+.acts-diag .ad-c.info { background: rgba(88,166,255,.16); color: #58a6ff; }
+.acts-diag .ad-c.ok { background: rgba(63,185,80,.18); color: #3fb950; }
+.acts-diag .ad-toggle { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+.acts-diag .ad-toggle::after { content: '收起 ▲'; }
+.acts-diag.collapsed .ad-toggle::after { content: '展开 ▼'; }
+.acts-diag .ad-collapsed-hint { display: none; color: var(--text-muted); font-size: 11px; }
+.acts-diag.collapsed .ad-collapsed-hint { display: inline; }
+.acts-diag .ad-body { padding: 10px 12px 12px; }
+.acts-diag .ad-env { margin-bottom: 8px; line-height: 1.7; }
+.acts-diag .ad-chip { display: inline-block; font-size: 11px; padding: 1px 8px; border-radius: 9px; margin-right: 5px; }
+.acts-diag .ad-chip.bad { background: rgba(248,81,73,.18); color: #f85149; }
+.acts-diag .ad-chip.warn { background: rgba(210,153,34,.20); color: #d29922; }
+.acts-diag .ad-chip.ok { background: rgba(63,185,80,.18); color: #3fb950; }
+.acts-diag .ad-dim { color: var(--text-muted); font-size: 11px; }
+.acts-diag .ad-anchors { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 6px; margin-bottom: 8px; }
+.acts-diag .ad-anchor { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 6px 9px; min-width: 0; }
+.acts-diag .ad-ak { font-size: 10.5px; color: var(--text-muted); font-family: var(--mono); }
+.acts-diag .ad-av { font-size: 12px; color: var(--text-primary); word-break: break-all; overflow-wrap: anywhere; max-height: 3.6em; overflow: hidden; }
+.acts-diag .ad-av.resumed { color: #3fb950; }
+.acts-diag .ad-av.focused { color: #d29922; }
+.acts-diag .ad-sum { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; }
+.acts-diag .ad-caps { font-size: 11px; color: var(--text-secondary); margin-bottom: 7px; display: flex; flex-wrap: wrap; gap: 3px; align-items: center; line-height: 1.5; }
+.acts-diag .ad-cap { font-size: 10px; padding: 0 5px; border-radius: 7px; border: 1px solid var(--border-light); font-family: var(--mono); cursor: help; }
+.acts-diag .ad-cap.on { color: #3fb950; border-color: rgba(63,185,80,.45); background: rgba(63,185,80,.08); }
+.acts-diag .ad-cap.off { color: var(--text-muted); opacity: .5; }
+.acts-diag .ad-group { margin-bottom: 9px; }
+.acts-diag .ad-gtitle { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 5px; }
+.acts-diag .ad-item { border-left: 3px solid var(--border-light); background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 6px 10px; margin-bottom: 5px; }
+.acts-diag .ad-item.bad { border-left-color: #f85149; background: rgba(248,81,73,.08); }
+.acts-diag .ad-item.warn { border-left-color: #d29922; background: rgba(210,153,34,.08); }
+.acts-diag .ad-item.info { border-left-color: #58a6ff; background: rgba(88,166,255,.06); }
+.acts-diag .ad-item.env { border-left-color: #8b949e; background: rgba(139,148,158,.08); }
+.acts-diag .ad-it { font-size: 12px; font-weight: 600; color: var(--text-primary); }
+.acts-diag .ad-id { font-size: 11.5px; color: var(--text-secondary); line-height: 1.6; margin-top: 2px; word-break: break-word; }
+.acts-diag .ad-envnote { font-size: 11px; color: #9aa4b1; margin-top: 3px; font-style: italic; }
+.acts-diag .ad-links { margin-top: 4px; display: flex; gap: 6px; flex-wrap: wrap; }
+.acts-diag .ad-link { font-size: 11px; padding: 1px 8px; border-radius: 9px; border: 1px solid var(--border-light); color: var(--accent); cursor: pointer; }
+.acts-diag .ad-link:hover { background: var(--bg-secondary); }
+.acts-diag .ad-foot { font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-light); padding-top: 7px; margin-top: 4px; line-height: 1.6; }
 .ins-dim { color: var(--text-muted); font-size: 10.5px; }
 
 </style>
@@ -808,7 +859,7 @@ select.btn{
       <script>
       window.VERSION_SUPPORT = {
         amstack: { min: 9, note: "A9–A10 容器头为 Stack id=N（A9 可能无 configuration 行）；A11+ 改名为 RootTask id=N" },
-        activities: { min: 10, note: "ATMS / TaskDisplayArea 自 Android 10（Q）起" },
+        activities: { min: 9, note: "A9-A10 由 AMS 提供（Stack #N + TaskRecord{}）；A10 起 ATMS；A12 起无 Stack 头；A13 起 Hist 双空格" },
         containers: { min: 10, note: "WindowContainer 统一树自 Android 10（Q）起" },
         windowcontainers: { min: 10, note: "WMS WindowContainer 树自 Android 10（Q）起" },
         window: { min: 9, note: "Android 9 起 WindowState/mDrawState 格式稳定" },
@@ -950,6 +1001,7 @@ select.btn{
       </div>
       <div class="tree-root" id="tree-root" style="display:none"></div>
       <div class="hwc-overlays" id="hwc-overlays"></div>
+      <div class="acts-diag" id="acts-diag" style="display:none"></div>
     </div>
     <div class="details-panel empty" id="details-panel">
       <div class="details-header">
@@ -987,7 +1039,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.38'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。
+const APP_VERSION = 'v1.40'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1378,6 +1430,45 @@ let dragNode = null, dragMoved = false;
 let dragStartContentX = 0, dragStartContentY = 0, dragNodeStartLeft = 0, dragNodeStartTop = 0;
 let panX = 0, panY = 0, panStartX = 0, panStartY = 0, panOriginX = 0, panOriginY = 0;
 let zoom = 1;
+
+// ── 画布几何稳定窗口 ──
+// 解析成功后输入面板会折叠（CSS 过渡 .3s），画布随之变高 / 上移。
+// 若只在解析那一刻按「旧几何」居中，算出的平移会把整棵树推出画布外
+// （外部表现就是：提示解析成功、节点统计也对，但画布一片空白）。
+// 因此解析后开一个短暂窗口：期间画布尺寸一变就重新居中，并在过渡结束后兜底再居中一次
+// （兜底不依赖 ResizeObserver 是否触发）；窗口期结束后完全交还给用户手动平移。
+let canvasRecenterUntil = 0;
+let canvasRecenterTimer = null;
+
+function recenterCanvasNow() {
+  if (currentView === 'hwc' || currentView === 'windowlist') return;
+  if (!nodeIndex || nodeIndex.size === 0) return;
+  centerLayout();
+}
+
+function markCanvasRecenterWindow(ms) {
+  canvasRecenterUntil = Date.now() + ms;
+  if (canvasRecenterTimer) clearTimeout(canvasRecenterTimer);
+  canvasRecenterTimer = setTimeout(function () {
+    canvasRecenterTimer = null;
+    canvasRecenterUntil = 0;      // 之后交还给用户手动平移
+    recenterCanvasNow();          // 兜底：过渡结束后用最终几何居中
+  }, 380);
+}
+
+function recenterCanvasIfSettling() {
+  if (Date.now() > canvasRecenterUntil) return;
+  recenterCanvasNow();
+}
+
+function installCanvasResizeRecenter() {
+  const panel = document.getElementById('tree-panel');
+  if (!panel || panel.__roRecenter) return;
+  panel.__roRecenter = true;
+  if (typeof ResizeObserver === 'undefined') return;
+  const ro = new ResizeObserver(function () { recenterCanvasIfSettling(); });
+  ro.observe(panel);
+}
 const MIN_ZOOM = 0.2, MAX_ZOOM = 3;
 
 // HWC 预览状态
@@ -1628,152 +1719,451 @@ function parseDumpsys(text) {
   return parsedForest;
 }
 
-// ── dumpsys activity activities 解析（ATMS 逻辑层：同一棵 WindowContainer 树，只到 ActivityRecord）──
-// 目标：不只是骨架树，而是把「排查问题用得上的关键字段」挂到对应节点上，并在节点上打状态徽章。
-// 层级节点：Display / TaskDisplayArea / RootTask / Task / * ActivityRecord
-// 属性吸收：每个层级节点下方的 key=value / 关键属性行，按缩进挂到该节点 props。
+// ── dumpsys activity activities 解析（ATMS 逻辑层，到 ActivityRecord 为止）────────
+// 真实格式已按 AOSP 源码逐版核实（A9–A16）。三条铁律：
+//   ① 字段一律按 key=value 扫描，**不依赖出现位置**——A11 的 `visible=` 排在 `type=` 之前，
+//      A16 又在 `#id` 后插入了 `name=`；任何"按位置写整行正则"的做法都会挂。
+//   ② `StackId=`（A9–A11）与 `rootTaskId=`（A12+）是同一语义，都收，并保留原始字段名。
+//   ③ 该版本没有的字段一律不编造，记入 meta，UI 据此标注「该版本无此字段」。
+//
+// A14 实测结构：
+//   Display #0 (activities from top to bottom):
+//     * Task{ef2061b #2 type=undefined U=0 visible=true … sz=2}
+//       * Task{fe2d591 #3 type=undefined U=0 rootTaskId=2 … mode=multi-window …}
+//         * Task{5d3fb0c #227 type=standard A=10195:cn.memobird.study … }
+//           * Hist  #0: ActivityRecord{89eb787 u0 cn.memobird.study/.ui.MainActivity t227}
+//             packageName=cn.memobird.study processName=cn.memobird.study
+//             …
+//             state=STOPPED delayedResume=false finishing=false
+// A9/A10 结构（容器头是 `Stack #N:`，任务行是 `* TaskRecord{…}`，**无 type/visible/mode**）：
+//   Display #0 (activities from top to bottom):
+//     Stack #0: type=standard mode=fullscreen
+//       isSleeping=false
+//       mBounds=Rect(0, 0 - 0, 0)
+//       * TaskRecord{818ac96 #2967 A=net.csdn.csdnplus U=0 StackId=0 sz=2}
+//         * Hist #1: ActivityRecord{f7f215 u0 net.csdn.csdnplus/.activity.BlogDetailActivity t2967}
+// 区间终点：`Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等段
+// 会把整棵树再打印一遍（还有 `Task display areas in top down Z order:`），必须排除，否则节点翻倍。
+const ACT_SCOPE_START = /^Display #\d+\b/;
+const ACT_SCOPE_STOP = /^(Resumed activities in task display areas|ActivityTaskSupervisor state:|Task display areas in top down Z order|Application tokens in top down Z order)/;
+// ActivityRecord 块内允许挂到节点的字段白名单（避免把无关行塞进 props）
+const ACT_PROP_KEYS = ['packageName', 'processName', 'pid', 'uid', 'uidCode', 'appRecord',
+  'realActivity', 'mActivityComponent', 'taskAffinity', 'state', 'delayedResume', 'finishing',
+  'keysPaused', 'inHistory', 'idle', 'visible', 'mVisible', 'mVisibleRequested', 'mClientVisible',
+  'reportedDrawn', 'reportedVisible', 'nowVisible', 'allDrawn', 'mNumInterestingWindows',
+  'mNumDrawnWindows', 'mAppStopped', 'stopped', 'sleeping', 'launchMode', 'launchCount',
+  'launchFailed', 'lastLaunchTime', 'lastVisibleTime', 'rootOfTask', 'frontOfTask', 'noDisplay',
+  'occludesParent', 'mOccludesParent', 'immersive', 'overrideOrientation', 'requestedOrientation',
+  'mLastReportedMultiWindowMode', 'mLastReportedPictureInPictureMode', 'areBoundsLetterboxed',
+  'mCameraCompatControlState', 'compat', 'theme', 'windowType', 'isSleeping', 'taskName',
+  'mCreatedByOrganizer', 'mBounds', 'mLastNonFullscreenBounds', 'supportsSizeChanges', 'resizeMode',
+  'configChanges', 'mHaveState', 'mDeferHidingClient', 'mActivityType', 'requestedVrComponent',
+  'resultTo', 'mHandoverLaunchDisplayId', 'aspectRatio', 'maxAspectRatio', 'fullscreen'];
+
+function _actIndent(raw) {
+  let n = 0;
+  for (let j = 0; j < raw.length; j++) {
+    const c = raw[j];
+    if (c === ' ') n++;
+    else if (c === '\t') n += 4;
+    else break;
+  }
+  return n;
+}
+
+// 按 key 取值（键值顺序无关）。值到空白或 `}` 为止，可含 `:` `.` `/` 等。
+function _actKV(s, keys) {
+  const out = {};
+  for (let i = 0; i < keys.length; i++) {
+    const k = keys[i];
+    const m = s.match(new RegExp('(?:^|[\\s{])' + k + '=([^\\s}]+)'));
+    if (m) out[k] = m[1];
+  }
+  return out;
+}
+
+function _actComp(s) {
+  if (!s) return { pkg: '', cls: '' };
+  const i = s.indexOf('/');
+  if (i < 0) return { pkg: s, cls: '' };
+  return { pkg: s.slice(0, i), cls: s.slice(i + 1) };
+}
+
+function _actSetProps(node, obj) {
+  if (!node.props) node.props = {};
+  Object.keys(obj).forEach(function (k) {
+    const val = obj[k];
+    if (val === undefined || val === null || val === '') return;
+    node.props[k] = val;
+  });
+  node.propList = Object.keys(node.props).map(function (k) { return { key: k, value: node.props[k] }; });
+}
+
+function _actRebuildList(node) {
+  node.propList = Object.keys(node.props || {}).map(function (k) { return { key: k, value: node.props[k] }; });
+}
+
+// 吸收 ActivityRecord / Task 块内的一行属性
+function _actAbsorb(node, line, meta) {
+  const s = line.replace(/\)\s*$/, '');
+  let m;
+  // Rect 型字段（mBounds / mLastNonFullscreenBounds 等）的值里含空格，通用取值是「取到空白为止」，
+  // 会把 `Rect(0, 0 - 1080, 2400)` 截成 `Rect(0,`（此前 mBounds 在详情面板里就是这么显示半截的）。
+  // 这里按括号配平单独取一遍。用未清洗的原始行 —— 上面的 s 会去掉行尾 `)`。
+  const _rk = line.trim().match(/^([A-Za-z_][A-Za-z0-9_]*)=(Rect\([^)]*\))/);
+  if (_rk && ACT_PROP_KEYS.indexOf(_rk[1]) >= 0 && node.props[_rk[1]] === undefined) {
+    node.props[_rk[1]] = _rk[2];
+  }
+  // Intent { act=… cat=… flg=… cmp=… }
+  m = s.match(/^Intent\s*\{(.*)\}\s*$/);
+  if (m) {
+    const body = m[1].trim();
+    node.props.mIntent = body;
+    const cmp = body.match(/cmp=([^\s}]+)/);
+    if (cmp) { node.props.intentComponent = cmp[1]; meta.hasIntentCmp = true; }
+    const flg = body.match(/flg=(0x[0-9a-fA-F]+)/);
+    if (flg) node.props.intentFlags = flg[1];
+    const act = body.match(/act=([^\s}]+)/);
+    if (act) node.props.intentAction = act[1];
+    if (/\(has extras\)/.test(body)) node.props.intentHasExtras = 'true';
+    _actRebuildList(node);
+    return;
+  }
+  // app=ProcessRecord{9ef5f36 32577:cn.memobird.study/u0a195}
+  m = s.match(/^app=ProcessRecord\{([0-9a-fA-F]+)\s+(\d+):([^\/\s]*)\/(\S+)\}/);
+  if (m) {
+    node.props.processName = m[3] || node.props.processName;
+    node.props.pid = m[2];
+    node.props.uidCode = m[4];
+    node.props.appRecord = m[1];
+    meta.hasProcessRec = true;
+    _actRebuildList(node);
+    return;
+  }
+  // windows=[Window{…}, Window{…}]
+  m = s.match(/^windows=\[(.*)\]\s*$/);
+  if (m) {
+    node.props.windowCount = String((m[1].match(/Window\{/g) || []).length);
+    _actRebuildList(node);
+    return;
+  }
+  // 宿主 task（ActivityRecord 块内）：`rootOfTask=true task=Task{5d3fb0c #227 …}`
+  m = s.match(/task=Task\{([0-9a-fA-F]+)\s+#(\d+)/);
+  if (m) { node.props.hostTaskHash = m[1].toLowerCase(); node.props.hostTaskId = m[2]; }
+  m = s.match(/task=TaskRecord\{([0-9a-fA-F]+)\s+#(\d+)/);
+  if (m) { node.props.hostTaskHash = m[1].toLowerCase(); node.props.hostTaskId = m[2]; }
+  m = s.match(/mLastPausedActivity:\s*ActivityRecord\{([0-9a-fA-F]+)/);
+  if (m) node.props.mLastPausedActivity = m[1].toLowerCase();
+
+  // 通用 k=v 扫描（白名单）
+  const re = /(?:^|\s)([A-Za-z_][A-Za-z0-9_]*)\s*=\s*("[^"]*"|[^\s]+)/g;
+  let mm;
+  while ((mm = re.exec(s)) !== null) {
+    const k = mm[1];
+    let val = mm[2];
+    if (val.charAt(0) === '"') val = val.slice(1, -1);
+    val = val.replace(/[),;]+$/, '');
+    if (!val) continue;
+    if (ACT_PROP_KEYS.indexOf(k) < 0) continue;
+    if (node.props[k] === undefined) node.props[k] = val;
+  }
+  if (/^state=/.test(s)) meta.hasState = true;
+  if (/^nowVisible=/.test(s)) meta.hasNowVisible = true;
+  if (/\ballDrawn=/.test(s) || /\bmNumInterestingWindows=/.test(s)) meta.hasDrawn = true;
+  if (/\bmAppStopped=/.test(s) || /^stopped=/.test(s)) meta.hasAppStopped = true;
+  if (/\bmLastReportedMultiWindowMode=/.test(s)) meta.hasMultiWindowReport = true;
+  if (/\bareBoundsLetterboxed=/.test(s)) meta.hasLetterbox = true;
+  if (/\btaskAffinity=/.test(s)) meta.hasTaskAffinity = true;
+  _actRebuildList(node);
+}
+
+// 建树后统一打状态徽章
+function _actTagStates() {
+  for (const [id, node] of nodeIndex) {
+    const p = node.props || {};
+    const has = function (n) { return node.tags.some(function (t) { return t.name === n; }); };
+    const st = String(p.state || '').toUpperCase();
+    if (st === 'RESUMED' && !has('resumed')) node.tags.push({ name: 'resumed', class: 'resumed' });
+    if (st === 'PAUSED' && !has('paused')) node.tags.push({ name: 'paused', class: 'paused' });
+    if (st === 'STOPPED' && !has('stopped')) node.tags.push({ name: 'stopped', class: 'stopped' });
+    if (p.mResumed === 'true' && !has('resumed')) node.tags.push({ name: 'resumed', class: 'resumed' });
+    if (p.keysPaused === 'true' && !has('paused')) node.tags.push({ name: 'paused', class: 'paused' });
+    if (p.mVisible === 'true' || p.visible === 'true') {
+      if (!has('visible')) node.tags.push({ name: 'visible', class: 'visible' });
+    }
+  }
+}
+
 function parseActivitiesDump(text) {
   parsedForest = [];
   nodeIndex = new Map();
   nextNodeId = 0;
+  if (typeof window !== 'undefined') window.__actsDumpText = text;
+
   const lines = text.split('\n');
+  const hasHist = /^\s*\*\s*Hist\s+#\d+:/m.test(text);
+  const histDouble = /^\s*\*\s*Hist\s{2,}#\d+:/m.test(text);
+  const pick = function (re) { const m = text.match(re); return m ? m[1] : null; };
+
+  const meta = {
+    headKeyword: '', hasStackHead: false, hasTaskType: false, hasTaskVisible: false,
+    hasVisibleRequested: false, hasRootTaskId: false, hasStackId: false,
+    hasTaskMode: false, hasTaskSz: false, hasTaskName: false, hasTaskAffinity: false,
+    hasHist: hasHist, histDouble: histDouble, runIgnored: 0,
+    hasState: false, hasNowVisible: false, hasDrawn: false, hasAppStopped: false,
+    hasIntentCmp: false, hasProcessRec: false,
+    hasMultiWindowReport: false, hasLetterbox: false,
+    hasTaskRecord: false, hasTaskWC: false, hasTaskPreBlock: false,
+    scopeFound: false, scopeLines: 0,
+    anchors: {}, env: {}
+  };
+
+  // ── 权威锚点（跨版本：A9–A12 是 mResumedActivity: / mFocusedApp:，A13+ 变成 ResumedActivity: / mFocusedApp=）
+  meta.anchors.resumedHash = pick(/(?:^|\s)m?ResumedActivity\s*[:=]\s*ActivityRecord\{([0-9a-fA-F]+)/m);
+  meta.anchors.resumedRaw = pick(/(?:^|\s)m?ResumedActivity\s*[:=]\s*(ActivityRecord\{[^\n]*)/m);
+  meta.anchors.focusedHash = pick(/(?:^|\s)m?Focused(?:App|Activity)\s*[:=]\s*ActivityRecord\{([0-9a-fA-F]+)/m);
+  meta.anchors.focusedRaw = pick(/(?:^|\s)m?Focused(?:App|Activity)\s*[:=]\s*(ActivityRecord\{[^\n]*)/m);
+  { const _fw = text.match(/(?:^|\s)mCurrentFocus\s*[:=]\s*Window\{([0-9a-fA-F]+)\s+(?:u\d+\s+)?([^}]*)\}/m);
+    meta.anchors.focusWindow = _fw ? _fw[1] : null;
+    meta.anchors.focusWindowName = _fw ? _fw[2].trim() : null;
+    if (_fw) meta.scopeFound = meta.scopeFound; }
+  meta.anchors.topFocusRootTask = pick(/(?:^|\s)topDisplayFocusedRootTask\s*[:=]\s*Task\{[0-9a-fA-F]+\s+#(\d+)/m);
+  meta.anchors.preferredRootTask = pick(/(?:^|\s)mPreferredTopFocusableRootTask\s*[:=]\s*Task\{[0-9a-fA-F]+\s+#(\d+)/m);
+  meta.anchors.lastFocusedRootTask = pick(/(?:^|\s)mLastFocusedRootTask\s*[:=]\s*Task\{[0-9a-fA-F]+\s+#(\d+)/m);
+  meta.anchors.resumedFound = !!meta.anchors.resumedHash;
+  meta.anchors.focusedFound = !!meta.anchors.focusedHash;
+
+  // ── 环境（判定"是不是熄屏/锁屏导致的"，避免把正常现象报成故障）
+  meta.env.mAwake = pick(/(?:^|\s)mAwake=(\w+)/m);
+  meta.env.mScreenOnEarly = pick(/(?:^|\s)mScreenOnEarly=(\w+)/m);
+  meta.env.mScreenOnFully = pick(/(?:^|\s)mScreenOnFully=(\w+)/m);
+  meta.env.isKeyguardShowing = pick(/(?:^|\s)isKeyguardShowing=(\w+)/m) || pick(/(?:^|\s)mKeyguardShowing=(\w+)/m);
+  meta.env.mAodShowing = pick(/(?:^|\s)mAodShowing=(\w+)/m);
+  meta.env.visibleProcs = pick(/(?:^|\s)VisibleActivityProcess:\[([^\]]*)\]/m);
+
   const stack = [];
-  // 捕获顶部 mResumedActivity / mFocusedApp 指向的 ActivityRecord hash，用于高亮
-  const rm = text.match(/mResumedActivity:\s*ActivityRecord\{([0-9a-fA-F]+)/);
-  const fm = text.match(/mFocusedApp:\s*ActivityRecord\{([0-9a-fA-F]+)/);
-  const resumedHash = rm ? rm[1].toLowerCase() : null;
-  const focusedHash = fm ? fm[1].toLowerCase() : null;
+  let curNode = null, curIndent = -1, inScope = false;
+  // stackTrailer：Stack 头块后面紧跟若干行【与头同缩进】的随行属性（A9–A11 固定是 isSleeping= / mBounds=）
+  // pendingTask  ：A9/A10 的 `Task id #N` 前置块，等下一行 TaskRecord 按 id 认领
+  let stackTrailer = 0, pendingTask = null;
 
-  for (const raw of lines) {
-    if (!raw.trim()) continue;
-    let indent = 0;
-    for (let j = 0; j < raw.length; j++) {
-      if (raw[j] === ' ') indent++;
-      else if (raw[j] === '\t') indent += 4;
-      else break;
-    }
-    const trimmed = raw.trim();
-    // 跳过段头与伪行（仅把明确的层级节点纳入树）
-    if (/^(ACTIVITY MANAGER|WINDOW MANAGER)/i.test(trimmed)) continue;
-    if (/^(mResumedActivity|mFocusedApp|mLastPausedActivity|mConfigWillChange|mLastFocusedRootTaskId|taskId=)/i.test(trimmed)) continue;
-    if (!/^(Display #\d|TaskDisplayArea #\d|RootTask #\d|Task #\d|\* ActivityRecord)/i.test(trimmed)) continue;
-
-    const body = trimmed.replace(/^\*\s+/, '');
-    const node = createNode(body);
-    const hm = body.match(/ActivityRecord\{([0-9a-fA-F]+)/);
-    if (hm) {
-      const h = hm[1].toLowerCase();
-      if (resumedHash && h === resumedHash) node.tags.push({ name: 'resumed', class: 'resumed' });
-      if (focusedHash && h === focusedHash) node.tags.push({ name: 'focused', class: 'focused' });
-    }
+  function push(node, indent) {
     while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
     if (stack.length > 0) {
-      stack[stack.length - 1].node.children.push(node);
-      node.parent = stack[stack.length - 1].node;
+      const p = stack[stack.length - 1].node;
+      p.children.push(node);
+      node.parent = p;
     } else {
       parsedForest.push(node);
     }
-    stack.push({ node, indent });
-  }
-  buildIndex(parsedForest);
-  enrichActivitiesProps(text);
-  if (typeof window !== 'undefined') window.__activitiesInsight = null;
-  return parsedForest;
-}
-
-
-// 对 dumpsys activity activities 输出做第二遍扫描：把层级节点附近的关键属性挂到节点 props。
-function enrichActivitiesProps(text) {
-  const lines = text.split('\n');
-  const nodeByRaw = {};
-  for (const [id, node] of nodeIndex) {
-    if (!node.rawContent) continue;
-    nodeByRaw[node.rawContent] = node;
+    stack.push({ node: node, indent: indent });
   }
 
-  // 解析一行里多个 key=value，同时识别独立一行的状态关键字
-  function parsePropLine(s) {
-    const out = [];
-    const trimmed = s.trim();
-    // 整行捕获型字段：值含空格/括号（如 mIntent={act=... cmp=...}），不能用空格分隔，整行抓到末尾
-    const REST_KEYS = ['mIntent', 'mComponent', 'realActivity', 'mFocusedApp', 'mLastPausedActivity', 'mCurrentLaunchIntent'];
-    for (const k of REST_KEYS) {
-      const re = new RegExp('(?:^|\\s)' + k + '=(.*)$');
-      const mm = trimmed.match(re);
-      if (mm) out.push({ key: k, value: mm[1].trim() });
-    }
-    // 多个 key=value：普通扫描（跳过整行捕获型字段）
-    const re = /([A-Za-z_.][A-Za-z0-9_.]*)\s*=\s*(\S+(?:\s+\S+)*?)(?=\s+[A-Za-z_.][A-Za-z0-9_.]*\s*=|$)/g;
+  for (let li = 0; li < lines.length; li++) {
+    const raw = lines[li];
+    const t = raw.trim();
+    if (!t) continue;
+
+    if (ACT_SCOPE_START.test(t)) { inScope = true; meta.scopeFound = true; }
+    else if (!inScope) continue;
+    if (ACT_SCOPE_STOP.test(t)) { inScope = false; continue; }
+    if (/^(ACTIVITY MANAGER|WINDOW MANAGER)/.test(t)) continue;
+    const indent = _actIndent(raw);
+    meta.scopeLines++;
+
     let m;
-    while ((m = re.exec(trimmed)) !== null) {
-      const k = m[1];
-      if (REST_KEYS.indexOf(k) >= 0) continue;
-      let v = m[2].trim();
-      if (v.startsWith('"') && v.endsWith('"')) v = v.slice(1, -1);
-      out.push({ key: k, value: v });
-    }
-    if (/^(RESUMED|PAUSED|STOPPED|STARTED|DESTROYED)$/i.test(trimmed)) {
-      out.push({ key: 'state', value: trimmed });
-    }
-    return out;
-  }
 
-  const INTERESTING_KEYS = /^(state|packageName|processName|pid|uid|taskAffinity|mIntent|mComponent|realActivity|mFocusedApp|mActivityType|mLaunchMode|theme|mResumed|mVisible|mDrawing|mVisibleRequested|mClientVisible|mReportedDrawn|mDeferHidingClient|keysPaused|mLastPausedActivity|autoRemoveRecents|askedCompatMode|noDisplay|forceNewConfig|mDockedInCompatMode|type|mode|displayId|isVisible|userId|bounds|minWidth|minHeight|maxWidth|maxHeight|defaultSize|minimalSize|mBounds|mMaxBounds)$/;
-
-  function attachProp(node, key, value) {
-    if (!node.props) { node.props = {}; node.propList = []; }
-    node.props[key] = value;
-  }
-
-  const hierarchyRe = /^(Display #\d|TaskDisplayArea #\d|RootTask #\d|Task #\d|\*\s+ActivityRecord)/;
-  let currentNode = null;
-  let currentIndent = -1;
-
-  for (const raw of lines) {
-    if (!raw.trim()) continue;
-    let indent = 0;
-    for (let j = 0; j < raw.length; j++) {
-      if (raw[j] === ' ') indent++;
-      else if (raw[j] === '\t') indent += 4;
-      else break;
-    }
-    const trimmed = raw.trim();
-    if (/^(ACTIVITY MANAGER|WINDOW MANAGER)/i.test(trimmed)) continue;
-
-    if (hierarchyRe.test(trimmed)) {
-      const raw = trimmed.replace(/^\*\s+/, '');
-      currentNode = nodeByRaw[raw] || null;
-      currentIndent = indent;
+    // ① Display #N
+    m = t.match(/^(?:Activity)?Display #(\d+)\b(.*)$/);
+    if (m) {
+      const node = createNode('Display #' + m[1]);
+      node.type = 'display';
+      node.name = 'Display ' + m[1];
+      node.label = 'Display ' + m[1];
+      _actSetProps(node, { displayId: m[1] });
+      push(node, indent); curNode = node; curIndent = indent;
       continue;
     }
 
-    if (currentNode && indent > currentIndent) {
-      const props = parsePropLine(trimmed);
-      for (const prop of props) {
-        if (prop && INTERESTING_KEYS.test(prop.key)) {
-          attachProp(currentNode, prop.key, prop.value);
-        }
+    // ② Stack #N:（A9/A10 的 ActivityStack 容器头；A11 起不再打印）
+    m = t.match(/^Stack #(\d+):\s*(.*)$/);
+    if (m) {
+      meta.hasStackHead = true;
+      const rest = m[2] || '';
+      const kv = _actKV(rest, ['type', 'mode']);
+      if (kv.type) meta.hasTaskType = true;
+      const node = createNode('Stack #' + m[1]);
+      node.type = 'stack';
+      node.name = 'Stack #' + m[1];
+      node.label = 'Stack #' + m[1] + (rest ? '  ' + rest.replace(/^type=/, 'type=') : '');
+      _actSetProps(node, { stackId: m[1], activityType: kv.type, windowMode: kv.mode });
+      // A9–A10 部分机型把 `Stack #N:` 顶格打印（与 `Display #0` 同缩进）：
+      // 直接 push 会把 Display 弹掉、Stack 变成第二个根。这里强制挂到最近的 Display 下。
+      let sIndent = indent;
+      if (stack.length > 0) {
+        const _top = stack[stack.length - 1];
+        if (_top.node.type === 'display' && indent <= _top.indent) sIndent = _top.indent + 1;
       }
+      push(node, sIndent); curNode = node; curIndent = sIndent;
+      stackTrailer = 2;
+      pendingTask = null;
+      continue;
+    }
+
+    // ②' A9/A10 独有的 Task 前置块（A11 起已取消，源码实证）：
+    //     ActivityStack.dumpActivitiesLocked() 里对每个 leaf task 先打
+    //         `Task id #N` / `mBounds=` / `mMinWidth=` / `mMinHeight=` / `mLastNonFullscreenBounds=`
+    //     再打 `* TaskRecord{…}` —— 五行的缩进**完全一样**（都是 prefix = 4 空格）。
+    //     也就是说缩进区分不了归属，只有「语义上属于下面那个 Task」这一条。故先寄存在 pendingTask，
+    //     等 TaskRecord 建节点时按 id 认领；不认领的话这几行会被吸收到 Stack 上，把 Task 的 mBounds
+    //     显示成 Stack 的 mBounds（误导性事实错误）。
+    m = t.match(/^Task id #(\d+)$/);
+    if (m) {
+      meta.hasTaskPreBlock = true;
+      pendingTask = { id: m[1], props: {} };
+      stackTrailer = 0;
+      continue;
+    }
+    if (pendingTask && /^(mBounds|mMinWidth|mMinHeight|mLastNonFullscreenBounds)=/.test(t)) {
+      const _pk = t.slice(0, t.indexOf('='));
+      // 注意不要做「剥掉行尾 )」的清洗：mBounds 的值是 Rect(0, 0 - 1080, 2400)，
+      // 剥掉尾部括号会让值变成半截 Rect(...2400。该清洗只对 `...lastAllDrawn=false)` 这类行有用。
+      const _pv = t.slice(t.indexOf('=') + 1).trim();
+      if (_pv && _pv !== 'null') pendingTask.props[_pk] = _pv;
+      stackTrailer = 0;
+      continue;
+    }
+
+    // ③ 任务行：* TaskRecord{…}（A9/A10）或 * Task{…}（A10+）
+    let isRec = false;
+    m = t.match(/^\*\s*TaskRecord\{([0-9a-fA-F]+)\s+#(\d+)\b(.*)$/);
+    if (m) { isRec = true; meta.hasTaskRecord = true; }
+    else {
+      m = t.match(/^\*\s*Task\{([0-9a-fA-F]+)\s+#(\d+)\b(.*)$/);
+      if (m) meta.hasTaskWC = true;
+    }
+    if (m) {
+      const body = m[3] || '';
+      const kv = _actKV(body, ['name', 'type', 'A', 'I', 'aI', 'U', 'StackId', 'rootTaskId',
+        'visible', 'visibleRequested', 'mode', 'translucent', 'sz']);
+      if (kv.type !== undefined) meta.hasTaskType = true;
+      if (kv.visible !== undefined) meta.hasTaskVisible = true;
+      if (kv.visibleRequested !== undefined) meta.hasVisibleRequested = true;
+      if (kv.rootTaskId !== undefined) meta.hasRootTaskId = true;
+      if (kv.StackId !== undefined) meta.hasStackId = true;
+      if (kv.mode !== undefined) meta.hasTaskMode = true;
+      if (kv.sz !== undefined) meta.hasTaskSz = true;
+      if (kv.name !== undefined) meta.hasTaskName = true;
+      if (kv.A !== undefined) meta.hasTaskAffinity = true;
+      const style = isRec ? 'TaskRecord' : 'Task';
+      if (!meta.headKeyword) meta.headKeyword = style;
+      else if (meta.headKeyword !== style) meta.headKeyword = 'mixed';
+
+      const node = createNode(t.replace(/^\*\s*/, ''));
+      node.type = 'task';
+      node.taskRecStyle = isRec;
+      node.taskHash = m[1].toLowerCase();
+      node.taskId = m[2];
+      node.name = 'Task #' + m[2];
+      node.label = 'Task #' + m[2] + (kv.type && kv.type !== 'undefined' ? '  (' + kv.type + ')' : '');
+      const props = { taskId: m[2] };
+      if (isRec) props.taskRecordStyle = 'yes';
+      // 认领 A9/A10 的 Task 前置块（mBounds / mMinWidth / mMinHeight / mLastNonFullscreenBounds）
+      if (pendingTask && pendingTask.id === m[2]) {
+        Object.keys(pendingTask.props).forEach(function (k) { props[k] = pendingTask.props[k]; });
+      }
+      pendingTask = null;
+      const map = {
+        name: 'taskName', type: 'activityType', A: 'taskAffinity', I: 'intentComponent',
+        aI: 'affinityIntent', U: 'userId', visible: 'visible', visibleRequested: 'visibleRequested',
+        mode: 'windowMode', translucent: 'translucent', sz: 'size'
+      };
+      Object.keys(map).forEach(function (k) { if (kv[k] !== undefined) props[map[k]] = kv[k]; });
+      // A12+ 的 A= 被 AOSP 打了 `<uid>:` 前缀（ActivityRecord.computeTaskAffinity()），
+      // A12–A13 在 singleInstance 时前缀是 `<uid>-si:`；A9–A11 无此前缀。
+      // 保留原值（忠实 dump），另派生出「去前缀」的基值供展示与比对。
+      if (props.taskAffinity) {
+        const _am = String(props.taskAffinity).match(/^(\d+)(-si)?:(.*)$/);
+        if (_am) { props.taskAffinityBase = _am[3]; if (_am[2]) props.taskAffinitySI = 'yes'; }
+        else props.taskAffinityBase = props.taskAffinity;
+      }
+      if (kv.StackId !== undefined) { props.rootTaskId = kv.StackId; props.rootTaskIdField = 'StackId'; }
+      else if (kv.rootTaskId !== undefined) { props.rootTaskId = kv.rootTaskId; props.rootTaskIdField = 'rootTaskId'; }
+      _actSetProps(node, props);
+      push(node, indent); curNode = node; curIndent = indent;
+      continue;
+    }
+
+    // ④ 活动行：* Hist #N: ActivityRecord{hash uN pkg/.Cls tN}（A13+ 为双空格；有 Hist 时 Run #N 属重复列表）
+    m = t.match(/^\*\s*(Hist|Run)\s*#(\d+):\s*ActivityRecord\{([0-9a-fA-F]+)\b(.*)$/);
+    let hash = '', tail = '', tag = '', idx = '';
+    if (m) {
+      tag = m[1]; idx = m[2]; hash = m[3].toLowerCase(); tail = m[4] || '';
+      if (tag === 'Run' && hasHist) { meta.runIgnored++; continue; }
+    } else {
+      m = t.match(/^\*\s*(?:#\d+\s+)?ActivityRecord\{([0-9a-fA-F]+)\b(.*)$/);
+      if (!m) m = null;
+      if (m) { hash = m[1].toLowerCase(); tail = m[2] || ''; }
+    }
+    if (m) {
+      const close = tail.indexOf('}');
+      const head = (close >= 0 ? tail.slice(0, close) : tail).trim();
+      const after = close >= 0 ? tail.slice(close + 1).trim() : '';
+      const um = head.match(/^u(\d+)\s+(.*)$/);
+      const userId = um ? um[1] : '';
+      const rest = um ? um[2] : head;
+      const tm = rest.match(/^(.*?)\s+t(\d+)$/);
+      const comp = (tm ? tm[1] : rest).trim();
+      const taskId = tm ? tm[2] : '';
+      const cp = _actComp(comp);
+
+      const node = createNode(comp || head);
+      node.type = 'activity';
+      node.actHash = hash;
+      node.actUser = userId;
+      node.actTaskId = taskId;
+      node.actIndex = idx;
+      node.packageName = cp.pkg;
+      node.className = cp.cls;
+      node.name = comp || head;
+      node.label = (comp || head) + (taskId ? '  (t' + taskId + ')' : '');
+      const props = {};
+      if (cp.pkg) props.packageName = cp.pkg;
+      if (comp) props.realActivity = comp;
+      if (taskId) props.taskId = taskId;
+      if (userId) props.userId = userId;
+      if (after) props.actTailFields = after;
+      _actSetProps(node, props);
+      if (meta.anchors.resumedHash && hash === meta.anchors.resumedHash) node.tags.push({ name: 'resumed', class: 'resumed' });
+      if (meta.anchors.focusedHash && hash === meta.anchors.focusedHash) node.tags.push({ name: 'focused', class: 'focused' });
+      pendingTask = null;
+      push(node, indent); curNode = node; curIndent = indent;
+      continue;
+    }
+
+    // ⑤ 属性行：挂在最近一个层级节点下
+    //    例外：Stack 头块里有【两行与头同缩进】的随行属性（源码实证 `isSleeping=` / `mBounds=`），
+    //    它们比「属性必须更深一层」的通用规则浅，不单独放行就会被整行丢弃（A9–A11 都一样）。
+    if (stackTrailer > 0 && curNode && curNode.type === 'stack' && indent === curIndent &&
+        /^(isSleeping|mBounds)=/.test(t)) {
+      _actAbsorb(curNode, t, meta);
+      stackTrailer--;
+      continue;
+    }
+    stackTrailer = 0;
+    if (curNode && indent > curIndent) {
+      _actAbsorb(curNode, t, meta);
+      continue;
     }
   }
 
-  for (const [id, node] of nodeIndex) {
-    if (!node.props) continue;
-    const state = node.props.state;
-    if (state) {
-      const s = String(state).toLowerCase();
-      if (s === 'resumed' && !node.tags.some(t => t.name === 'resumed')) node.tags.push({ name: 'resumed', class: 'resumed' });
-      if (s === 'paused' && !node.tags.some(t => t.name === 'paused')) node.tags.push({ name: 'paused', class: 'paused' });
-      if (s === 'stopped' && !node.tags.some(t => t.name === 'stopped')) node.tags.push({ name: 'stopped', class: 'stopped' });
-    }
-    if (node.props.mVisibleRequested === 'true' && !node.tags.some(t => t.name === 'visible')) node.tags.push({ name: 'visible', class: 'visible' });
-    if (node.props.isVisible === 'true' && !node.tags.some(t => t.name === 'visible')) node.tags.push({ name: 'visible', class: 'visible' });
-    if (node.props.keysPaused === 'true' && !node.tags.some(t => t.name === 'paused')) node.tags.push({ name: 'paused', class: 'paused' });
-    if (node.props.mResumed === 'true' && !node.tags.some(t => t.name === 'resumed')) node.tags.push({ name: 'resumed', class: 'resumed' });
-    if (node.props) {
-      node.propList = Object.keys(node.props).map(function (k) { return { key: k, value: node.props[k] }; });
-    }
+  if (typeof window !== 'undefined') {
+    window.__actsMeta = meta;
+    window.__actsDiagCache = null;
   }
+  buildIndex(parsedForest);
+  _actTagStates();
+  return parsedForest;
 }
 
 
@@ -2077,6 +2467,7 @@ function renderTree() {
     renderHwcPreview(root);
     return;
   }
+  renderActivitiesPanel();
   const forest = getActiveForest();
   if (forest.length === 0) {
     emptyState.style.display = 'flex';
@@ -2929,24 +3320,6 @@ function renderLayerDetails(node, panel, content) {
 function renderDetails(node) {
   const panel = document.getElementById('details-panel');
   const content = document.getElementById('details-content');
-  // Activities 数据源：详情面板顶部常驻「排查洞察」（与节点详情并存）
-  if (dataSource === 'activities' && nodeIndex.size > 0) {
-    try {
-      const __ins = getActivitiesInsight();
-      if (__ins) {
-        const __sec = document.createElement('div');
-        __sec.className = 'details-section insight-section';
-        const __t = document.createElement('div');
-        __t.className = 'details-section-title';
-        __t.textContent = '🔍 排查洞察（dumpsys activity activities）';
-        __sec.appendChild(__t);
-        const __b = document.createElement('div');
-        __b.innerHTML = __ins;
-        __sec.appendChild(__b);
-        content.appendChild(__sec);
-      }
-    } catch (e) {}
-  }
   if (!panel || !content) return;
   panel.classList.remove('empty');
   content.innerHTML = '';
@@ -3353,7 +3726,7 @@ function parseInput() {
       try { buildContainersHwc(); } catch (e) { console.warn('containers 推导 HWC 失败（不影响窗口树）', e); }
       currentView = 'window';
       zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
-      renderTree(); centerLayout(); renderStats();
+      renderTree(); markCanvasRecenterWindow(1200); centerLayout(); renderStats();
       const vizPanel = document.getElementById('viz-panel');
       if (vizPanel) vizPanel.classList.add('active');
       const inputPanel = document.getElementById('input-panel');
@@ -3372,7 +3745,7 @@ function parseInput() {
       }
       currentView = 'window';
       zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
-      renderTree(); centerLayout(); renderStats();
+      renderTree(); markCanvasRecenterWindow(1200); centerLayout(); renderStats();
       const vizPanel = document.getElementById('viz-panel');
       if (vizPanel) vizPanel.classList.add('active');
       const inputPanel = document.getElementById('input-panel');
@@ -3391,7 +3764,7 @@ function parseInput() {
       }
       currentView = 'window';
       zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
-      renderTree(); centerLayout(); renderStats();
+      renderTree(); markCanvasRecenterWindow(1200); centerLayout(); renderStats();
       const vizPanel = document.getElementById('viz-panel');
       if (vizPanel) vizPanel.classList.add('active');
       const inputPanel = document.getElementById('input-panel');
@@ -3786,6 +4159,24 @@ function exportImage() {
 }
 
 // 将内容坐标系中的某点居中到画布可视区中央（缩放无关，避免 padding/面板偏移误差）
+// 诊断面板浮在画布左上角，居中/定位要把它让出来，否则根节点会被面板条压住。
+// 纵向一律让出「面板高度 + 12px」：即使面板已收起，那条标题栏仍然存在，
+// 而树的根节点恰好落在顶部中间附近，不让开就会被标题栏遮住。
+// 横向只在面板展开时让位（收起后标题栏虽横跨左侧，但纵向已不重叠）。
+function actsDiagInset() {
+  try {
+    if (typeof dataSource === 'undefined' || dataSource !== 'activities') return { x: 0, y: 0 };
+    const el = document.getElementById('acts-diag');
+    if (!el) return { x: 0, y: 0 };
+    if (String(el.style.display) === 'none') return { x: 0, y: 0 };
+    const collapsed = !!(el.classList && typeof el.classList.contains === 'function' && el.classList.contains('collapsed'));
+    return {
+      x: collapsed ? 0 : (el.offsetWidth || 0),
+      y: (el.offsetHeight || 0) + 12
+    };
+  } catch (e) { return { x: 0, y: 0 }; }
+}
+
 function centerOnContentPoint(cx, cy) {
   const root = document.getElementById('tree-root');
   const panel = document.getElementById('tree-panel');
@@ -3799,8 +4190,12 @@ function centerOnContentPoint(cx, cy) {
   const padTop = parseFloat(cs.paddingTop) || 0;
   const sx = rootRect.left + zoom * (padLeft + cx);
   const sy = rootRect.top + zoom * (padTop + cy);
-  const desiredX = panelRect.left + panelRect.width / 2;
-  const desiredY = panelRect.top + panelRect.height / 2;
+  const ins = actsDiagInset();
+  // 面板占据左上角时，把「希望居中的点」右移/下移半个面板尺寸 → 内容落在剩余空白区中心
+  const freeX = Math.max(0, panelRect.width - ins.x);
+  const freeY = Math.max(0, panelRect.height - ins.y);
+  const desiredX = panelRect.left + ins.x + freeX / 2;
+  const desiredY = panelRect.top + ins.y + freeY / 2;
   panX += (desiredX - sx);
   panY += (desiredY - sy);
   applyPan();
@@ -3845,8 +4240,11 @@ function centerOnElement(el) {
   if (er.width === 0 && er.height === 0) return;
   const sx = er.left + er.width / 2;
   const sy = er.top + er.height / 2;
-  const desiredX = panelRect.left + panelRect.width / 2;
-  const desiredY = panelRect.top + panelRect.height / 2;
+  const ins = actsDiagInset();
+  const freeX = Math.max(0, panelRect.width - ins.x);
+  const freeY = Math.max(0, panelRect.height - ins.y);
+  const desiredX = panelRect.left + ins.x + freeX / 2;
+  const desiredY = panelRect.top + ins.y + freeY / 2;
   panX += (desiredX - sx);
   panY += (desiredY - sy);
   applyPan();
@@ -4189,6 +4587,36 @@ const PROP_DICT = {
     desc: '任务亲和性。决定 Activity「想归属哪个 task」。与启动模式(launchMode)配合控制 task 栈合并/新建，是「task 栈异常」排查关键。',
     version: 'A9+',
     values: '包名（如 com.example.app）',
+    container: 'ActivityRecord'
+  },
+  'taskAffinityBase': {
+    desc: 'taskAffinity 去掉 `<uid>:`（A12–A13 singleInstance 为 `<uid>-si:`）前缀后的「原始亲和名」。AOSP 的 ActivityRecord.computeTaskAffinity() 会主动加该前缀，故 Task 行里的 A= 带前缀是正常现象，不是脏数据。判断「同一应用的任务是否被拆到多个根」时用这个基值更直观。',
+    version: 'A12+',
+    values: '包名（如 cn.memobird.study）',
+    container: 'Task'
+  },
+  'taskAffinitySI': {
+    desc: '该 Task 的 affinity 带 `-si:` 段 → 它由 singleInstance 启动模式创建（仅 A12–A13 会这样打标；A14 起 AOSP 去掉了 -si: 段）。',
+    version: 'A12–A13',
+    values: 'yes',
+    container: 'Task'
+  },
+  'allDrawn': {
+    desc: '该 Activity 的所有窗口是否已完成首个完整绘制（allDrawn=true 才算画完）。与 mDrawState/可见性合看：可见却 allDrawn=false 是典型的「白屏 / 卡在首帧」信号。',
+    version: 'A9+',
+    values: 'true / false',
+    container: 'ActivityRecord'
+  },
+  'intentComponent': {
+    desc: 'Task 行 I= 字段：启动该任务的根 Intent 指向的组件（包名/类名），即这个任务的「起始 Activity」。配合 A=（亲和名）判断任务是归属哪个应用主入口拉起的。',
+    version: 'A9+',
+    values: '包名/类名',
+    container: 'Task'
+  },
+  'hostTaskId': {
+    desc: '该 ActivityRecord 所属的宿主 Task id（记录在 Task{} 引用里的 tN 段，与 Hist 行尾的 tN 同源）。与它在树上的实际父 Task 不一致时即为「任务归属错位」。',
+    version: 'A9+',
+    values: '整数（如 227）',
     container: 'ActivityRecord'
   },
   'mIntent': {
@@ -5330,46 +5758,338 @@ function containersRoleDispFrame(role) {
 }
 
 // ─── dumpsys activity activities 示例（ATMS 逻辑层，仅到 ActivityRecord）───
+// 该命令的格式跨版本差异集中在 6 处，故示例【按格式档分版本】提供，绝不用一份数据套所有版本。
+// 下列结论全部来自 AOSP 源码逐版实证（platform_frameworks_base 对应 tag 的
+//    ActivityStackSupervisor.dumpActivities()/dumpHistoryList()、ActivityStack.dump()/dumpActivitiesLocked()/
+//    dumpActivities()、Task.toString()、TaskRecord.toString()、ActivityRecord.dump()），非博客二手转述：
+//
+//   ① 容器头  A9–A11：`  Stack #N: type=.. mode=..`（2 空格；A9/A10 由 AMS 的 ActivityStackSupervisor 打印，
+//                      A11 由 ActivityStack.dump() 里的 headerPrinter 打印，取值已改为 getRootTaskId()）
+//              A12+  ：源码实证 ActivityStack.java 在 A12 已被删除（该路径 HTTP 404），
+//                      树里不再有 Stack 头，`Display #0` 下直接是 `* Task{…}`
+//   ② 栈随行  A9–A11：Stack 头后固定再打两行【与头同缩进（2）】的随行属性 `isSleeping=` / `mBounds=`
+//   ③ Task 前置块 A9–A10 独有：每个 leaf task 先打
+//                      `Task id #N` / `mBounds=` / `mMinWidth=` / `mMinHeight=` / `mLastNonFullscreenBounds=`
+//                      —— 五行都在 4 空格，与紧随其后的 `* TaskRecord{…}`【同缩进】，
+//                      靠缩进无法区分归属，只能按语义认给下面那个 Task。A11 起该前置块已取消（源码实证）。
+//   ④ 任务行  A9–A10：`* TaskRecord{h #id A=.. U=.. StackId=N sz=N}`（无 type / visible / mode）—— 4 空格
+//              A11   ：改名 `* Task{…}`，顺序 visible= type= mode= translucent= A=/I=/aI= U= StackId= sz= —— 4 空格
+//              A12   ：type/A 提前，visible 之后【无】visibleRequested；改打 rootTaskId=
+//              A12L  ：新增 visibleRequested=（紧跟在 visible 之后）
+//              A13+  ：TaskFragment 用 toFullString() 打印
+//                      （type,A,U,rootTaskId,visible,visibleRequested,mode,translucent,sz）
+//              A16   ：Task.toString() 新增 name=（紧跟 #id）与裸标记 nonResizable，
+//                      但二者都是条件字段（仅 Android 16.0.0_r3 起），不影响已有字段的解析
+//   ⑤ Hist 行 A9–A12 单空格 `* Hist #N:`；A13+ 双空格 `* Hist  #N:`
+//   ⑥ affinity A9–A11 裸包名；A12–A13 由 ActivityRecord.computeTaskAffinity() 加 `<uid>:` 前缀
+//              （A12–A13 的 singleInstance 任务是 `<uid>-si:`）；A14+ 去掉 -si: 段 → 只剩 `<uid>:`
+//              该前缀是 AOSP 主动加的，属正常数据，不是脏数据
+//   ⑦ 锚点    A9–A12：`mResumedActivity:` / `mFocusedApp:`；A13+：`ResumedActivity:` / `mFocusedApp=`
+//
+// ★ 缩进台阶（这四档【不一样】，写样例/写解析器都不能凭感觉）：
+//   A9 / A10（AMS，Stack 与 Task 两层）      0 Display → 2 Stack 头 → 2 栈随行 → 4 Task 前置块
+//                                          → 4 `* TaskRecord{…}` → 6 task.dump → 6 `* Hist #N:`
+//                                          → 10 record.dump（dumpHistoryList 的 innerPrefix = "    " + 六空格）
+//   A11（同为两层，但前置块取消）            0 Display → 2 Stack 头 → 2 栈随行
+//                                          → 4 `* Task{…}` → 6 task.dump & Hist → 10 record.dump
+//   A12+（无 Stack，Task 树按嵌套递归）      0 Display → 2/4/6… `* Task{…}`（父任务加深 2）
+//                                          → 任务自身属性 = 任务行 + 2 → Hist = 任务行 + 2 → record.dump = +4
+//   ↑ 关键：A9–A11 的 `* Hist` 与 `task.dump` 输出【同一缩进】，所以解析器不能要求「Hist 必须比 Task 深」。
+//
+// 另有一个必踩的坑：`Resumed activities in task display areas`、`ActivityTaskSupervisor state:`、
+// `Task display areas in top down Z order:`、`Application tokens in top down Z order:` 这几行之后
+// 会把同一棵树再打印一遍（带 task/activity 字样），解析器必须在此截断，否则节点数直接翻倍。
+// 下面 A14 样例里【刻意保留了前两个陷阱段】，用来演示解析器确实做了区间限定。
+// 来源标注：【实测】= 真机抓取；【源码构造】= 按 AOSP 对应 tag 的打印代码逐字构造（字段名/顺序/缩进一致）。
 const ACTIVITIES_SAMPLES = {};
-// Android 11+：ATMS 现代活动层级（TaskDisplayArea → RootTask → ActivityRecord）。
-// 高亮 mResumedActivity / mFocusedApp 指向的 Activity；不含窗口 surface。
-ACTIVITIES_SAMPLES['default'] = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
-  mResumedActivity: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
-  mFocusedApp: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
-  mLastPausedActivity: ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1}
-  mConfigWillChange: false
 
-  Display #0 (activities from top to bottom):
-    TaskDisplayArea #0 bounds=[0,0][1080,2400]
-      RootTask #0: type=home mode=fullscreen, displayId=0, isVisible=true
-        * ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1} type=home mode=fullscreen
+// ── 档 1 · Android 9–10【源码构造】AMS 时代：Display # → Stack #N(2) → TaskRecord(4) → Hist(6) ──
+// 注意 ① affinity 是【裸包名】：A11 及以前没有 computeTaskAffinity()，不会有 <uid>: 前缀；
+//      ② A9/A10 的 ActivityRecord.dump() 里【没有】mNumInterestingWindows= / allDrawn= / windows=，
+//         所以「绘制是否画完」这类判断在该档天然不可得 —— 解析器据此降级，不该报错；
+//      ③ hash 一律是十六进制（System.identityHashCode 的 toHexString）。
+const _ACT_A9 = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  mResumedActivity: ActivityRecord{c41d5c0 u0 net.csdn.csdnplus/.activity.BlogDetailActivity t2967}
+  mFocusedApp: ActivityRecord{c41d5c0 u0 net.csdn.csdnplus/.activity.BlogDetailActivity t2967}
+  mLastPausedActivity: ActivityRecord{b5b0b75 u0 net.csdn.csdnplus/.activity.MainActivity t2967}
+
+Display #0 (activities from top to bottom):
+
+  Stack #1: type=standard mode=fullscreen
+  isSleeping=false
+  mBounds=Rect(0, 0 - 1080, 2400)
+    Task id #2967
+    mBounds=Rect(0, 0 - 1080, 2400)
+    mMinWidth=-1
+    mMinHeight=-1
+    mLastNonFullscreenBounds=null
+    * TaskRecord{8f0a3c1 #2967 A=net.csdn.csdnplus U=0 StackId=1 sz=2}
+      userId=0 effectiveUid=u0a114 mCallingUid=u0a114 mUserSetupComplete=true mCallingPackage=net.csdn.csdnplus
+      affinity=net.csdn.csdnplus
+      * Hist #1: ActivityRecord{c41d5c0 u0 net.csdn.csdnplus/.activity.BlogDetailActivity t2967}
+          packageName=net.csdn.csdnplus processName=net.csdn.csdnplus
+          launchedFromUid=10114 launchedFromPackage=net.csdn.csdnplus userId=0
+          app=ProcessRecord{6d0f1a2 8842:net.csdn.csdnplus/u0a114}
+          Intent { act=android.intent.action.VIEW cat=[android.intent.category.BROWSABLE] dat=https://blog.csdn.net/ flg=0x10000000 cmp=net.csdn.csdnplus/.activity.BlogDetailActivity }
+          frontOfTask=false task=TaskRecord{8f0a3c1 #2967 A=net.csdn.csdnplus U=0 StackId=1 sz=2}
+          taskAffinity=net.csdn.csdnplus
+          realActivity=net.csdn.csdnplus/.activity.BlogDetailActivity
+          stateNotNeeded=false componentSpecified=true mActivityType=standard
+          state=RESUMED stopped=false delayedResume=false finishing=false
+          keysPaused=false inHistory=true visible=true sleeping=false idle=true
+          waitingVisible=false nowVisible=true
+      * Hist #0: ActivityRecord{b5b0b75 u0 net.csdn.csdnplus/.activity.MainActivity t2967}
+          packageName=net.csdn.csdnplus processName=net.csdn.csdnplus
+          launchedFromUid=10114 launchedFromPackage=net.csdn.csdnplus userId=0
+          app=ProcessRecord{6d0f1a2 8842:net.csdn.csdnplus/u0a114}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=net.csdn.csdnplus/.activity.MainActivity }
+          frontOfTask=true task=TaskRecord{8f0a3c1 #2967 A=net.csdn.csdnplus U=0 StackId=1 sz=2}
+          taskAffinity=net.csdn.csdnplus
+          realActivity=net.csdn.csdnplus/.activity.MainActivity
+          stateNotNeeded=false componentSpecified=true mActivityType=standard
+          state=STOPPED stopped=true delayedResume=false finishing=false
+          keysPaused=false inHistory=true visible=false sleeping=false idle=true
+          waitingVisible=false nowVisible=false
+
+  Stack #0: type=home mode=fullscreen
+  isSleeping=false
+  mBounds=Rect(0, 0 - 1080, 2400)
+    Task id #1
+    mBounds=Rect(0, 0 - 1080, 2400)
+    mMinWidth=-1
+    mMinHeight=-1
+    mLastNonFullscreenBounds=null
+    * TaskRecord{c3d91ae #1 A=com.android.launcher3 U=0 StackId=0 sz=1}
+      userId=0 effectiveUid=u0a163 mCallingUid=u0a163 mUserSetupComplete=true mCallingPackage=com.android.launcher3
+      affinity=com.android.launcher3
+      * Hist #0: ActivityRecord{a1b2c3d u0 com.android.launcher3/.Launcher t1}
           packageName=com.android.launcher3 processName=com.android.launcher3
-          mResumed=false mVisible=true mDrawing=false
-      RootTask #1: type=standard mode=fullscreen, displayId=0, isVisible=true
-        * ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991} type=standard mode=fullscreen
-          packageName=com.example.app processName=com.example.app
-          mResumed=true mVisible=true mDrawing=true`;
-ACTIVITIES_SAMPLES['11'] = ACTIVITIES_SAMPLES['default'];
-ACTIVITIES_SAMPLES['12'] = ACTIVITIES_SAMPLES['default'];
-ACTIVITIES_SAMPLES['13'] = ACTIVITIES_SAMPLES['default'];
-ACTIVITIES_SAMPLES['14'] = ACTIVITIES_SAMPLES['default'];
-ACTIVITIES_SAMPLES['15'] = ACTIVITIES_SAMPLES['default'];
-ACTIVITIES_SAMPLES['16'] = ACTIVITIES_SAMPLES['default'];
-// Android 9/10：旧 AMS 形态（ActivityDisplay → ActivityStack → TaskRecord → ActivityRecord）
-ACTIVITIES_SAMPLES['10'] = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
-  mResumedActivity: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
+          launchedFromUid=0 launchedFromPackage=null userId=0
+          app=ProcessRecord{2f81c40 2197:com.android.launcher3/u0a163}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.Launcher }
+          frontOfTask=true task=TaskRecord{c3d91ae #1 A=com.android.launcher3 U=0 StackId=0 sz=1}
+          taskAffinity=com.android.launcher3
+          realActivity=com.android.launcher3/.Launcher
+          stateNotNeeded=true componentSpecified=false mActivityType=home
+          state=STOPPED stopped=true delayedResume=false finishing=false
+          keysPaused=false inHistory=true visible=false sleeping=false idle=true
+          waitingVisible=false nowVisible=false`;
+ACTIVITIES_SAMPLES['9'] = _ACT_A9;
+// A10 与 A9 是同一档：TaskRecord.toString() / ActivityStack(Supervisor) 的打印在两版之间无结构变化（已逐字比对）。
+ACTIVITIES_SAMPLES['10'] = _ACT_A9;
 
-  ActivityDisplay #0 (activities from top to bottom):
-    ActivityStack #0: type=standard mode=fullscreen, isVisible=true
-      TaskRecord #991: ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991}
-        * ActivityRecord{82a1c3 u0 com.example.app/.MainActivity t991} type=standard mode=fullscreen
-          mResumed=true mVisible=true
-    ActivityStack #1: type=home mode=fullscreen, isVisible=true
-      TaskRecord #1: ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1}
-        * ActivityRecord{7c2a10 u0 com.android.launcher3/.Launcher t1} type=home mode=fullscreen
-          mResumed=false mVisible=true`;
-ACTIVITIES_SAMPLES['9'] = ACTIVITIES_SAMPLES['10'];
+// ── 档 2 · Android 11【源码构造】容器头仍是 `Stack #N`，但 Task 前置块已取消；任务行改名 Task ──
+// 缩进台阶：Stack 头(2) → 栈随行(2) → `* Task{…}`(4) → task.dump & Hist(6) → record.dump(10)
+const _ACT_A11 = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  mResumedActivity: ActivityRecord{4a1f0c2 u0 com.android.gallery3d/.GalleryActivity t420}
+  mFocusedApp: ActivityRecord{4a1f0c2 u0 com.android.gallery3d/.GalleryActivity t420}
 
+Display #0 (activities from top to bottom):
+
+  Stack #420: type=standard mode=fullscreen
+  isSleeping=false
+  mBounds=Rect(0, 0 - 1080, 2400)
+    * Task{6b3c921 #420 visible=true type=standard mode=fullscreen translucent=false A=com.android.gallery3d U=0 StackId=420 sz=1}
+      mBounds=Rect(0, 0 - 1080, 2400)
+      mMinWidth=-1 mMinHeight=-1
+      userId=0 effectiveUid=u0a191 mCallingUid=u0a191 mUserSetupComplete=true mCallingPackage=com.android.gallery3d
+      affinity=com.android.gallery3d
+      * Hist #0: ActivityRecord{4a1f0c2 u0 com.android.gallery3d/.GalleryActivity t420}
+          packageName=com.android.gallery3d processName=com.android.gallery3d
+          launchedFromUid=10191 launchedFromPackage=com.android.gallery3d userId=0
+          app=ProcessRecord{3b7c4e9 5123:com.android.gallery3d/u0a191}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.android.gallery3d/.GalleryActivity }
+          frontOfTask=true task=Task{6b3c921 #420 visible=true type=standard mode=fullscreen translucent=false A=com.android.gallery3d U=0 StackId=420 sz=1}
+          taskAffinity=com.android.gallery3d
+          realActivity=com.android.gallery3d/.GalleryActivity
+          stateNotNeeded=false componentSpecified=true mActivityType=standard
+          state=RESUMED stopped=false delayedResume=false finishing=false
+          keysPaused=false inHistory=true visible=true sleeping=false idle=true
+          waitingVisible=false nowVisible=true
+
+  Stack #1: type=home mode=fullscreen
+  isSleeping=false
+  mBounds=Rect(0, 0 - 1080, 2400)
+    * Task{d18e774 #1 visible=false type=home mode=fullscreen translucent=false A=com.android.launcher3 U=0 StackId=1 sz=1}
+      mBounds=Rect(0, 0 - 1080, 2400)
+      mMinWidth=-1 mMinHeight=-1
+      userId=0 effectiveUid=u0a163 mCallingUid=u0a163 mUserSetupComplete=true mCallingPackage=com.android.launcher3
+      affinity=com.android.launcher3
+      * Hist #0: ActivityRecord{9c0ab31 u0 com.android.launcher3/.Launcher t1}
+          packageName=com.android.launcher3 processName=com.android.launcher3
+          launchedFromUid=0 launchedFromPackage=null userId=0
+          app=ProcessRecord{2f81c40 2197:com.android.launcher3/u0a163}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.Launcher }
+          frontOfTask=true task=Task{d18e774 #1 visible=false type=home mode=fullscreen translucent=false A=com.android.launcher3 U=0 StackId=1 sz=1}
+          taskAffinity=com.android.launcher3
+          realActivity=com.android.launcher3/.Launcher
+          stateNotNeeded=true componentSpecified=false mActivityType=home
+          state=STOPPED stopped=true delayedResume=false finishing=false
+          keysPaused=false inHistory=true visible=false sleeping=false idle=true
+          waitingVisible=false nowVisible=false`;
+ACTIVITIES_SAMPLES['11'] = _ACT_A11;
+
+// ── 档 3 · Android 12【源码构造】Stack 头消失；type/A 提前到 U 之前；已用 rootTaskId；无 visibleRequested ──
+const _ACT_A12 = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  mResumedActivity: ActivityRecord{7d4e118 u0 com.tencent.mm/.ui.LauncherUI t31}
+  mFocusedApp: ActivityRecord{7d4e118 u0 com.tencent.mm/.ui.LauncherUI t31}
+
+Display #0 (activities from top to bottom):
+  * Task{2f9a7c4 #2 type=undefined A=10190:com.tencent.mm U=0 rootTaskId=2 visible=true mode=fullscreen translucent=false sz=1}
+    mCreatedByOrganizer=true
+    * Task{b1c8d55 #31 type=standard A=10190:com.tencent.mm U=0 rootTaskId=2 visible=true mode=fullscreen translucent=false sz=2}
+      mBounds=Rect(0, 0 - 1080, 2400)
+      * Hist #1: ActivityRecord{7d4e118 u0 com.tencent.mm/.ui.LauncherUI t31}
+        packageName=com.tencent.mm processName=com.tencent.mm
+        Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.tencent.mm/.ui.LauncherUI }
+        taskAffinity=10190:com.tencent.mm
+        state=RESUMED stopped=false delayedResume=false finishing=false
+        visible=true
+      * Hist #0: ActivityRecord{3e7f092 u0 com.tencent.mm/.plugin.webview.ui.tools.WebViewUI t31}
+        packageName=com.tencent.mm processName=com.tencent.mm
+        Intent { act=android.intent.action.VIEW cmp=com.tencent.mm/.plugin.webview.ui.tools.WebViewUI }
+        taskAffinity=10190:com.tencent.mm
+        state=STOPPED stopped=true delayedResume=false finishing=false
+        visible=false
+  * Task{c0a3b16 #1 type=home A=10163:com.android.launcher3 U=0 rootTaskId=1 visible=false mode=fullscreen translucent=false sz=1}
+    * Hist #0: ActivityRecord{efe0fd3 u0 com.android.launcher3/.Launcher t1}
+      packageName=com.android.launcher3 processName=com.android.launcher3
+      Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.Launcher }
+      taskAffinity=10163:com.android.launcher3
+      state=STOPPED stopped=true delayedResume=false finishing=false
+      visible=false`;
+ACTIVITIES_SAMPLES['12'] = _ACT_A12;
+
+// ── 档 4 · Android 13【源码构造】Hist 变双空格；锚点去掉 m 前缀（ResumedActivity: / mFocusedApp=）；加 visibleRequested ──
+const _ACT_A13 = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+  ResumedActivity: ActivityRecord{5a90c22 u0 com.android.settings/.Settings t224}
+  mFocusedApp=ActivityRecord{5a90c22 u0 com.android.settings/.Settings t224}
+
+Display #0 (activities from top to bottom):
+  * Task{1b7e9f3 #224 type=standard A=1000:com.android.settings U=0 rootTaskId=224 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+    mLastPausedActivity: ActivityRecord{d4c1a08 u0 com.android.settings/.Settings t224}
+    isSleeping=false
+    mBounds=Rect(0, 0 - 1080, 2400)
+    * Hist  #0: ActivityRecord{5a90c22 u0 com.android.settings/.Settings t224}
+      packageName=com.android.settings processName=com.android.settings
+      Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.android.settings/.Settings }
+      taskAffinity=1000:com.android.settings
+      state=RESUMED stopped=false delayedResume=false finishing=false
+      keysPaused=false inHistory=true idle=true
+      mVisibleRequested=true mVisible=true mClientVisible=true reportedDrawn=true reportedVisible=true
+      mNumInterestingWindows=3 mNumDrawnWindows=3 allDrawn=true lastAllDrawn=true
+  * Task{7e2d4b8 #1 type=home A=10163:com.android.launcher3 U=0 rootTaskId=1 visible=false visibleRequested=false mode=fullscreen translucent=false sz=1}
+    isSleeping=false
+    mBounds=Rect(0, 0 - 1080, 2400)
+    * Hist  #0: ActivityRecord{2b6c9f1 u0 com.android.launcher3/.uioverrides.QuickstepLauncher t1}
+      packageName=com.android.launcher3 processName=com.android.launcher3
+      Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher }
+      taskAffinity=10163:com.android.launcher3
+      state=STOPPED stopped=true delayedResume=false finishing=false
+      keysPaused=false inHistory=true idle=true
+      mVisibleRequested=false mVisible=false mClientVisible=false reportedDrawn=false reportedVisible=false
+      allDrawn=true`;
+ACTIVITIES_SAMPLES['13'] = _ACT_A13;
+
+// ── 档 5 · Android 14【实测】真机输出裁剪版（LineageOS 21 / SM-G780G，熄屏+锁屏场景）──
+// 保留了两处「重复树陷阱」（Resumed activities in task display areas / ActivityTaskSupervisor state:），
+// 以及熄屏锁屏的环境标志，用于演示「环境抑制」：关屏时前台不一致属正常现象，不该报成故障。
+const _ACT_A14 = `ACTIVITY MANAGER ACTIVITIES (dumpsys activity activities)
+Display #0 (activities from top to bottom):
+  * Task{ef2061b #2 type=undefined U=0 visible=true visibleRequested=false mode=fullscreen translucent=false sz=2}
+    mCreatedByOrganizer=true
+    * Task{fe2d591 #3 type=undefined U=0 rootTaskId=2 visible=true visibleRequested=false mode=multi-window translucent=false sz=1}
+      mBounds=Rect(0, 1213 - 1080, 2400)
+      mCreatedByOrganizer=true
+      * Task{5d3fb0c #227 type=standard A=10195:cn.memobird.study U=0 rootTaskId=2 visible=true visibleRequested=false mode=multi-window translucent=false sz=1}
+        mLastPausedActivity: ActivityRecord{89eb787 u0 cn.memobird.study/.ui.MainActivity t227}
+        isSleeping=true
+        * Hist  #0: ActivityRecord{89eb787 u0 cn.memobird.study/.ui.MainActivity t227}
+          packageName=cn.memobird.study processName=cn.memobird.study
+          launchedFromUid=10195 launchedFromPackage=cn.memobird.study userId=0
+          app=ProcessRecord{9ef5f36 32577:cn.memobird.study/u0a195}
+          Intent { flg=0x10008000 cmp=cn.memobird.study/.ui.MainActivity (has extras) }
+          rootOfTask=true task=Task{5d3fb0c #227 type=standard A=10195:cn.memobird.study}
+          taskAffinity=10195:cn.memobird.study
+          mActivityComponent=cn.memobird.study/.ui.MainActivity
+          state=STOPPED delayedResume=false finishing=false
+          keysPaused=false inHistory=true idle=true
+          windows=[Window{9dd9657 u0 cn.memobird.study/cn.memobird.study.ui.MainActivity}]
+          mVisibleRequested=false mVisible=false mClientVisible=false reportedDrawn=false reportedVisible=false
+          mAppStopped=true
+          mNumInterestingWindows=3 mNumDrawnWindows=3 allDrawn=true lastAllDrawn=false)
+          nowVisible=false
+          areBoundsLetterboxed=false
+    * Task{420e8f7 #4 type=undefined U=0 rootTaskId=2 visible=true visibleRequested=false mode=multi-window translucent=false sz=1}
+      mBounds=Rect(0, 0 - 1080, 1187)
+      mCreatedByOrganizer=true
+      * Task{2e35d2e #228 type=standard A=10191:com.quark.browser U=0 rootTaskId=2 visible=true visibleRequested=false mode=multi-window translucent=false sz=1}
+        mLastPausedActivity: ActivityRecord{ec0eb25 u0 com.quark.browser/com.ucpro.BrowserActivity t228}
+        isSleeping=true
+        * Hist  #0: ActivityRecord{ec0eb25 u0 com.quark.browser/com.ucpro.BrowserActivity t228}
+          packageName=com.quark.browser processName=com.quark.browser
+          launchedFromUid=10191 launchedFromPackage=com.quark.browser userId=0
+          app=ProcessRecord{3776048 354:com.quark.browser/u0a191}
+          Intent { act=android.intent.action.MAIN cat=[android.intent.category.LAUNCHER] flg=0x10200000 cmp=com.quark.browser/com.ucpro.BrowserActivity bnds=[230,116][437,505] (has extras) }
+          taskAffinity=10191:com.quark.browser
+          state=STOPPED delayedResume=false finishing=false
+          keysPaused=false inHistory=true idle=true
+          mVisibleRequested=false mVisible=false mClientVisible=false reportedDrawn=false reportedVisible=false
+          mNumInterestingWindows=1 mNumDrawnWindows=1 allDrawn=true lastAllDrawn=false)
+          nowVisible=false
+  * Task{e475b83 #1 type=undefined U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+    * Task{63cd828 #211 type=undefined U=0 rootTaskId=1 visible=false visibleRequested=false mode=fullscreen translucent=true sz=1}
+      mLastPausedActivity: ActivityRecord{efe0fd3 u0 com.android.launcher3/.uioverrides.QuickstepLauncher t211}
+      isSleeping=true
+      * Hist  #0: ActivityRecord{efe0fd3 u0 com.android.launcher3/.uioverrides.QuickstepLauncher t211}
+        packageName=com.android.launcher3 processName=com.android.launcher3
+        launchedFromUid=0 launchedFromPackage=null userId=0
+        app=ProcessRecord{e396ffd 2197:com.android.launcher3/u0a163}
+        Intent { act=android.intent.action.MAIN cat=[android.intent.category.HOME] flg=0x10000100 cmp=com.android.launcher3/.uioverrides.QuickstepLauncher (has extras) }
+        taskAffinity=null
+        state=STOPPED stopped=true delayedResume=false finishing=false
+        mVisibleRequested=false mVisible=false
+        allDrawn=true
+
+  Resumed activities in task display areas (from top to bottom):
+    Resumed: ActivityRecord{89eb787 u0 cn.memobird.study/.ui.MainActivity t227}
+
+  ResumedActivity: ActivityRecord{89eb787 u0 cn.memobird.study/.ui.MainActivity t227}
+
+ActivityTaskSupervisor state:
+  topDisplayFocusedRootTask=Task{ef2061b #2 type=undefined}
+  Display: mDisplayId=0 (organized)
+    init=1080x2400 420dpi mMinSizeOfResizeableTaskDp=220 cur=1080x2400 app=1080x2249 rng=1080x943-2312x2249
+
+  mCurrentFocus=Window{7fdf8 u0 NotificationShade}
+  mFocusedApp=ActivityRecord{ec0eb25 u0 com.quark.browser/com.ucpro.BrowserActivity t228}
+
+  mCurTaskIdForUser={0=228}
+  TaskOrganizerController:
+      android.window.ITaskOrganizer$Stub$Proxy@66ec9a0 uid=10160 (active):
+        (multi-window) Task{5d3fb0c #227 type=standard A=10195:cn.memobird.study}
+  VisibleActivityProcess:[]
+  NumNonAppVisibleWindowUidMap:[ 10160:5]
+
+  DisplayPolicy
+    mAwake=false mScreenOnEarly=false mScreenOnFully=false
+    isKeyguardShowing=true
+  KeyguardController:
+    mKeyguardShowing=true
+    mAodShowing=true`;
+ACTIVITIES_SAMPLES['14'] = _ACT_A14;
+// A15 与 A14 同档：toFullString() 的字段顺序与内容在两版之间无变化。
+ACTIVITIES_SAMPLES['15'] = _ACT_A14;
+
+// ── 档 6 · Android 16：直接复用 A14 实测样例 ──
+// 源码实证：`name=` 与 `nonResizable` 是 Android 16.0.0_r3 才加进 Task.toString() 的
+// （r1/r2 里没有），且二者都是【条件字段】——只有 mName != null 时才有 name=、
+// 只有 !isResizeable() 时才有 nonResizable。也就是说 A16 相对 A14 是「字段可以更多」，
+// 而不是「格式变了」：A14 的真实输出在 A16 上依然成立，所以这一档不编造带 name= 的假样例，
+// 改为复用 A14 实测数据；name= / nonResizable 的识别能力由校验用例专门覆盖。
+ACTIVITIES_SAMPLES['16'] = _ACT_A14;
+// 兜底（未选版本）：用最新的实测档
+ACTIVITIES_SAMPLES['default'] = _ACT_A14;
 // ─── dumpsys window containers 示例（WMS 原生入口，与 activity containers 同一棵 WindowContainer 树）───
 // 复用 SAMPLES 内容（格式完全相同），仅替换首行标识使其自洽地表明来自 `dumpsys window containers`。
 const WINDOWCONTAINER_SAMPLES = {};
@@ -5955,55 +6675,476 @@ function renderStackList() {
   }
 }
 
-// ── Activities 排查洞察：多 resumed 冲突 / 前台焦点指向 paused / task 栈深度 / Intent·进程归属 ──
-function getActivitiesInsight() {
-  if (typeof window !== 'undefined' && window.__activitiesInsight) return window.__activitiesInsight;
-  const acts = [];
+// ── Activities 诊断引擎 ─────────────────────────────────────────────────────────
+// 规则全部基于 dump 真实字段，按 `dumpsys activity activities` 在实际排查中的用途分组：
+//   G1 前台与焦点归属 / G2 生命周期状态 / G3 绘制与启动 / G4 Task 栈结构 /
+//   G5 Intent 与进程归属 / G6 多窗口·转屏·兼容
+// 两条纪律：
+//   ① 每条规则都由 meta 能力清单门控 —— 该版本没这个字段就跳过，绝不因为"读不到"报异常；
+//   ② G0 先判环境（熄屏 / 锁屏 / AOD / 无可见进程），命中时把相关项降级为「环境」，
+//      避免把"屏幕熄了"这种正常现象报成故障（真实设备上最常见的一类误报）。
+const ACT_DIAG_GROUPS = [
+  { id: 'G1', name: '前台与焦点归属', hint: '谁在前台、焦点落在谁身上' },
+  { id: 'G2', name: '生命周期状态', hint: 'state 与可见性是否自洽' },
+  { id: 'G3', name: '绘制与启动', hint: '窗口是否画完、启动是否失败（白屏排查）' },
+  { id: 'G4', name: 'Task 栈结构', hint: '任务的嵌套、规模与归属' },
+  { id: 'G5', name: 'Intent 与进程归属', hint: '谁拉起的、跑在哪个进程' },
+  { id: 'G6', name: '多窗口·转屏·兼容', hint: '分屏 / PIP / letterbox / 方向' }
+];
+
+function actVersionNote(meta) {
+  if (!meta) return '未知版本';
+  // 注意 A11 也有 `Stack #N` 头，所以「有 Stack 头」不能单独判定为 9–10，
+  // 必须再看任务行是 TaskRecord（A9/A10）还是 Task（A11 已改名）。
+  const pre = meta.hasTaskPreBlock ? ' + Task id # 前置块' : '';
+  if (meta.hasStackHead && meta.headKeyword === 'TaskRecord') return 'Android 9–10（Stack #N' + pre + ' + TaskRecord{}）';
+  if (meta.headKeyword === 'TaskRecord') return 'Android 9–10（Stack #N + TaskRecord{}）';
+  if (meta.headKeyword === 'Task' && meta.hasVisibleRequested) return 'Android 13+（rootTaskId + visibleRequested）';
+  if (meta.headKeyword === 'Task' && meta.hasRootTaskId) return 'Android 12（rootTaskId，无 visibleRequested）';
+  if (meta.headKeyword === 'Task' && meta.hasStackId) return 'Android 11（Stack #N + Task{}，用 StackId）';
+  if (meta.headKeyword === 'Task') return 'Android 10+（Task{}）';
+  return '未能判定';
+}
+
+function analyzeActivitiesDiag() {
+  const meta = (typeof window !== 'undefined' && window.__actsMeta) || {};
+  const cache = (typeof window !== 'undefined' && window.__actsDiagCache) || null;
+  if (cache && cache.meta === meta) return cache.data;
+
+  const A = meta.anchors || {}, E = meta.env || {};
+  const acts = [], tasks = [];
+  let roots = 0;
   for (const [id, node] of nodeIndex) {
-    if (node.type !== 'activity') continue;
-    const p = node.props || {};
-    const tm = (node.label || '').match(/t(\d+)/);
-    const taskId = tm ? tm[1] : (p.taskId || '?');
-    let state = '?';
-    if (node.tags.some(function (t) { return t.name === 'resumed'; })) state = 'RESUMED';
-    else if (node.tags.some(function (t) { return t.name === 'paused'; })) state = 'PAUSED';
-    else if (node.tags.some(function (t) { return t.name === 'stopped'; })) state = 'STOPPED';
-    else if (p.mResumed === 'true') state = 'RESUMED';
-    else if (p.mVisible === 'true') state = 'VISIBLE(未RESUMED)';
-    const focused = node.tags.some(function (t) { return t.name === 'focused'; });
-    const visible = p.mVisible === 'true' || node.tags.some(function (t) { return t.name === 'visible'; });
-    let cmp = '';
-    if (p.mIntent) { const cm = p.mIntent.match(/cmp=([^\s}]+)/); if (cm) cmp = cm[1]; }
-    acts.push({ label: node.label, name: p.packageName || p.processName || node.name, pkg: p.packageName, proc: p.processName, uid: p.uid, pid: p.pid, taskAffinity: p.taskAffinity, mIntent: p.mIntent, cmp: cmp, mFocusedApp: p.mFocusedApp, mLastPaused: p.mLastPausedActivity, mResumed: p.mResumed, mVisible: p.mVisible, mDrawing: p.mDrawing, state: state, taskId: taskId, visible: visible, focused: focused });
+    if (node.type === 'activity') acts.push(node);
+    else if (node.type === 'task' || node.type === 'stack') tasks.push(node);
   }
-  const anoms = [];
-  const resumed = acts.filter(function (a) { return a.state === 'RESUMED'; });
-  if (resumed.length > 1) anoms.push('⚠ 多个 Activity 同时处于 RESUMED（' + resumed.length + ' 个）。系统通常只允许 1 个前台可交互 Activity，可能存在「前台 activity 错乱」。');
-  acts.forEach(function (a) {
-    if (a.focused && a.state !== 'RESUMED') anoms.push('⚠ 焦点(mFocusedApp)指向 ' + (a.label || a.name) + '，但其状态为 ' + a.state + '（可能卡顿/未恢复，前台焦点与实际状态不一致）。');
-    if (a.state === 'STOPPED' && a.visible) anoms.push('⚠ ' + (a.label || a.name) + ' 状态 STOPPED 却仍可见（可能未正确隐藏/卡死）。');
-  });
-  const byTask = {};
-  acts.forEach(function (a) { (byTask[a.taskId] = byTask[a.taskId] || []).push(a); });
-  Object.keys(byTask).forEach(function (tk) {
-    if (byTask[tk].length > 1) anoms.push('ℹ️ Task t' + tk + ' 含 ' + byTask[tk].length + ' 个 Activity（回退栈深度，若异常可能是任务栈未清理）。');
-  });
-  let html = '';
-  html += '<div class="insight-summary">共 ' + acts.length + ' 个 Activity、' + Object.keys(byTask).length + ' 个 Task；RESUMED：' + resumed.length + ' 个。</div>';
-  if (anoms.length > 0) {
-    html += '<div class="insight-anoms">';
-    anoms.forEach(function (a) { html += '<div class="insight-anom">' + escHtml(a) + '</div>'; });
-    html += '</div>';
+  for (let i = 0; i < parsedForest.length; i++) if (parsedForest[i].type === 'display' || parsedForest[i].type === 'root') roots++;
+  const byHash = {};
+  acts.forEach(function (n) { if (n.actHash) byHash[n.actHash] = n; });
+
+  const PV = function (n, k) { return n && n.props ? n.props[k] : undefined; };
+  const T = function (x) { return x === 'true'; };
+  const lbl = function (n) {
+    if (!n) return '(未找到对应 ActivityRecord)';
+    return (n.props && (n.props.realActivity || n.props.packageName)) || n.label || n.name;
+  };
+  // Task / Stack 统一标签。tasks[] 里同时收 type='task' 与 type='stack'，而 Stack 节点没有 taskId，
+  // 早期一律拼 `'Task #' + tk.taskId` 会打出「Task #undefined」—— 把跨版本格式差异伪装成解析失败。
+  const tLabel = function (tk) {
+    if (!tk) return 'Task #?';
+    if (tk.type === 'stack') {
+      const sid = PV(tk, 'stackId') !== undefined ? PV(tk, 'stackId') : tk.taskId;
+      return 'Stack #' + (sid === undefined || sid === null ? '?' : sid);
+    }
+    const tid = tk.taskId !== undefined && tk.taskId !== null ? tk.taskId : PV(tk, 'taskId');
+    return 'Task #' + (tid === undefined || tid === null ? '?' : tid);
+  };
+  const idsOf = function () {
+    const o = [];
+    for (let i = 0; i < arguments.length; i++) { if (arguments[i]) o.push(arguments[i].id); }
+    return o;
+  };
+
+  // ── G0 环境判定（决定是否抑制"伪异常"）
+  // 坑：上面的 pick() 在匹配不到时返回的是 null（不是 undefined）。早期这里只用 `!== undefined`
+  // 判「环境已知」，于是 A9–A12 这类【整份 dump 根本没有屏幕/锁屏字段】的输入也被判成环境已知，
+  // 面板会照样打出「屏幕已点亮 / 未锁屏」—— 没有依据的事实结论。统一改成按「非空」判定。
+  const hasEnv = function (v) { return v !== undefined && v !== null && v !== ''; };
+  const screenOff = (E.mScreenOnFully === 'false') || (E.mScreenOnEarly === 'false');
+  const keyguard = E.isKeyguardShowing === 'true';
+  const aod = E.mAodShowing === 'true';
+  const awake = hasEnv(E.mAwake) ? (E.mAwake === 'true') : null;
+  const noVisProc = E.visibleProcs !== undefined && E.visibleProcs !== null && String(E.visibleProcs).trim() === '';
+  const envKnown = hasEnv(E.mAwake) || hasEnv(E.mScreenOnFully) || hasEnv(E.isKeyguardShowing);
+  const envReasons = [];
+  if (hasEnv(E.mAwake)) envReasons.push('mAwake=' + E.mAwake);
+  if (hasEnv(E.mScreenOnFully)) envReasons.push('mScreenOnFully=' + E.mScreenOnFully);
+  if (hasEnv(E.isKeyguardShowing)) envReasons.push('isKeyguardShowing=' + E.isKeyguardShowing);
+  if (hasEnv(E.mAodShowing)) envReasons.push('mAodShowing=' + E.mAodShowing);
+  if (noVisProc) envReasons.push('VisibleActivityProcess 为空');
+  const envSuppress = envKnown && (screenOff || keyguard);
+
+  const items = [];
+  function add(level, group, title, detail, nodeIds, envSensitive) {
+    items.push({ level: level, group: group, title: title, detail: detail, ids: nodeIds || [], envSensitive: !!envSensitive, envNote: '' });
+  }
+
+  const rNode = (A.resumedHash && byHash[A.resumedHash]) || null;
+  const fNode = (A.focusedHash && byHash[A.focusedHash]) || null;
+
+  // ── G1 前台与焦点归属
+  if (A.resumedFound && A.focusedFound && A.resumedHash !== A.focusedHash) {
+    add('bad', 'G1', '前台归属不一致：ResumedActivity ≠ mFocusedApp',
+      'ResumedActivity = ' + lbl(rNode) + '；mFocusedApp = ' + lbl(fNode) +
+      '。系统把「正在运行」与「焦点给谁」分给了两个不同的 Activity，是前台错乱的直接证据。',
+      idsOf(rNode, fNode), true);
+  }
+  if (!A.resumedFound) {
+    add('info', 'G1', '该版本输出不含 ResumedActivity 锚点',
+      '本机 dump 里没有 mResumedActivity/ResumedActivity 行，无法据此判定前台归属；改由每个 ActivityRecord 自身的 state= 与可见性字段推断。', []);
+  }
+  if (rNode) {
+    const st = String(PV(rNode, 'state') || '').toUpperCase();
+    if (st && st !== 'RESUMED') {
+      add('bad', 'G1', 'ResumedActivity 自身状态不是 RESUMED',
+        lbl(rNode) + ' 被登记为当前 ResumedActivity，但它自己的 state=' + st + ' —— 前台卡死最直接的证据。', idsOf(rNode), true);
+    }
+    if (T(PV(rNode, 'finishing'))) {
+      add('bad', 'G1', 'ResumedActivity 正在结束（finishing=true）',
+        lbl(rNode) + ' 既是当前前台又在执行 finish，可能卡在切换过程中。', idsOf(rNode), true);
+    }
+  }
+  if (A.focusedFound && !fNode) {
+    add('bad', 'G1', 'mFocusedApp 指向的活动不在任何 Task 中',
+      'mFocusedApp 指向 hash=' + A.focusedHash + '，但整棵树里找不到该 ActivityRecord —— 焦点悬空，通常是活动已被移除而焦点未清理。', []);
+  }
+  if (A.focusWindow && fNode) {
+    const winName = String(A.focusWindow).split(/\s+/).slice(1).join(' ');
+    const fp = String(fNode.packageName || '').toLowerCase();
+    const wn = winName.toLowerCase();
+    const sysWin = /^(statusbar|navigationbar|notification|shade|inputmethod|ime|wallpaper|taskbar|screendecor|magnification)/.test(wn);
+    if (fp && wn && !sysWin && wn.indexOf(fp) < 0 && fp.indexOf(wn.split('/')[0]) < 0) {
+      add('info', 'G1', 'mCurrentFocus 窗口不属于 mFocusedApp 的包',
+        'mCurrentFocus = ' + winName + '，而 mFocusedApp = ' + lbl(fNode) + '（两者不同应用）。若当前显示的是系统窗口则属正常。', idsOf(fNode));
+    }
+  }
+
+  // ── G2 生命周期状态
+  if (meta.hasState) {
+    acts.forEach(function (n) {
+      const st = String(PV(n, 'state') || '').toUpperCase();
+      if (!st) return;
+      const mv = PV(n, 'mVisible'), nv = PV(n, 'nowVisible');
+      if (st === 'RESUMED' && (mv === 'false' || nv === 'false')) {
+        add('bad', 'G2', 'state=RESUMED 但不可见',
+          lbl(n) + '：state=RESUMED 而 ' + (mv !== undefined ? 'mVisible=' + mv + ' ' : '') + (nv !== undefined ? 'nowVisible=' + nv : '') +
+          '。界面"活着"却不可见，典型的状态卡死。', idsOf(n), true);
+      }
+      if (st === 'STOPPED' && (mv === 'true' || nv === 'true')) {
+        add('bad', 'G2', 'state=STOPPED 却仍可见',
+          lbl(n) + '：state=STOPPED 但 ' + (mv === 'true' ? 'mVisible=true' : 'nowVisible=true') + '，已停止的活动还留在屏幕上。', idsOf(n), true);
+      }
+      if (T(PV(n, 'delayedResume'))) {
+        add('warn', 'G2', '恢复被延迟（delayedResume=true）',
+          lbl(n) + '：系统想 resume 它但被推迟，表现出来就是"点了没反应"。', idsOf(n));
+      }
+      if (T(PV(n, 'finishing'))) {
+        add('bad', 'G2', 'finishing=true 但仍留在历史栈中',
+          lbl(n) + '：已请求结束却仍挂在 Task 里，可能造成返回栈残留。', idsOf(n));
+      }
+      const stoppedField = PV(n, 'mAppStopped') !== undefined ? 'mAppStopped' : (PV(n, 'stopped') !== undefined ? 'stopped' : '');
+      if (stoppedField && T(PV(n, stoppedField)) && (st === 'RESUMED' || st === 'PAUSED')) {
+        add('warn', 'G2', '进程已标记停止但 state 仍为 ' + st,
+          lbl(n) + '：' + stoppedField + '=true 而 state=' + st + '，状态与进程状态打架。', idsOf(n), true);
+      }
+      if (T(PV(n, 'keysPaused')) && st !== 'PAUSED') {
+        add('warn', 'G2', 'keysPaused=true 但 state≠PAUSED',
+          lbl(n) + '：输入通道仍处暂停态（keysPaused=true），state=' + st + ' —— 按键/输入法可能无响应。', idsOf(n));
+      }
+      if (T(PV(n, 'mVisibleRequested')) && PV(n, 'mClientVisible') === 'false') {
+        add('warn', 'G2', '可见性协商未完成',
+          lbl(n) + '：mVisibleRequested=true 但 mClientVisible=false（客户端尚未确认可见），可能出现短暂白屏。', idsOf(n));
+      }
+    });
   } else {
-    html += '<div class="insight-ok">✅ 未检测到明显异常（前台/状态/task 栈均自洽）。</div>';
+    add('info', 'G2', '该版本输出不含 state= 字段', '无法做状态自洽性检查，仅保留可见性徽章。', []);
   }
-  html += '<table class="insight-tbl"><tr><th>Activity</th><th>状态</th><th>进程 / uid</th><th>task</th><th>Intent(component)</th></tr>';
-  acts.forEach(function (a) {
-    html += '<tr><td>' + escHtml(a.label || a.name || '?') + '</td><td>' + a.state + (a.mResumed !== undefined || a.mVisible !== undefined ? '<br><span class="ins-dim">' + (a.mResumed !== undefined ? ('mR=' + a.mResumed + ' ') : '') + (a.mVisible !== undefined ? ('mV=' + a.mVisible + ' ') : '') + (a.mDrawing !== undefined ? ('mD=' + a.mDrawing) : '') + '</span>' : '') + '</td><td>' + (a.proc || '?') + (a.uid ? ' / uid ' + a.uid : '') + (a.pid ? ' / pid ' + a.pid : '') + '</td><td>t' + a.taskId + (a.taskAffinity ? '<br><span class="ins-dim">aff=' + escHtml(a.taskAffinity) + '</span>' : '') + '</td><td>' + (a.cmp ? escHtml(a.cmp) : (a.mIntent ? escHtml(a.mIntent) : '—')) + '</td></tr>';
+
+  // ── G3 绘制与启动
+  if (meta.hasDrawn) {
+    acts.forEach(function (n) {
+      const vis = T(PV(n, 'visible')) || T(PV(n, 'mVisible')) || T(PV(n, 'nowVisible'));
+      const it = parseInt(PV(n, 'mNumInterestingWindows'), 10);
+      const dr = parseInt(PV(n, 'mNumDrawnWindows'), 10);
+      if (vis && !isNaN(it) && !isNaN(dr) && dr < it) {
+        add('bad', 'G3', '可见但窗口未画完（可能白屏）',
+          lbl(n) + '：可见窗口 ' + it + ' 个、已绘制 ' + dr + ' 个（mNumDrawnWindows < mNumInterestingWindows）。', idsOf(n), true);
+      }
+      if (T(PV(n, 'nowVisible')) && PV(n, 'allDrawn') === 'false') {
+        add('bad', 'G3', '已可见但 allDrawn=false（可能白屏）',
+          lbl(n) + '：nowVisible=true 而 allDrawn=false —— 界面已显示却没画完。', idsOf(n), true);
+      }
+      if (String(PV(n, 'state') || '').toUpperCase() === 'RESUMED' && PV(n, 'reportedDrawn') === 'false') {
+        add('warn', 'G3', '已 RESUMED 但未上报绘制完成',
+          lbl(n) + '：reportedDrawn=false 而 state=RESUMED，客户端可能还没画完第一帧。', idsOf(n), true);
+      }
+    });
+  }
+  acts.forEach(function (n) {
+    if (T(PV(n, 'launchFailed'))) {
+      add('bad', 'G3', '启动失败（launchFailed=true）', lbl(n) + '：该活动最近一次启动失败。', idsOf(n));
+    }
   });
-  html += '</table>';
-  if (typeof window !== 'undefined') window.__activitiesInsight = html;
-  return html;
+
+  // ── G4 Task 栈结构
+  const affinityMap = {};
+  tasks.forEach(function (tk) {
+    const kids = tk.children || [];
+    const childActs = kids.filter(function (c) { return c.type === 'activity'; });
+    const childTasks = kids.filter(function (c) { return c.type === 'task' || c.type === 'stack'; });
+    const sz = parseInt(PV(tk, 'size'), 10);
+    if (tk.type === 'task' && !isNaN(sz) && sz !== childActs.length && childTasks.length === 0) {
+      add('bad', 'G4', tLabel(tk) + ' 的 sz 与实际活动数不符',
+        'sz=' + sz + ' 但树里只有 ' + childActs.length + ' 个 ActivityRecord。', idsOf(tk));
+    }
+    childActs.forEach(function (c) {
+      const at = String(PV(c, 'taskId') || c.actTaskId || '');
+      if (at && tk.taskId && at !== tk.taskId) {
+        add('bad', 'G4', '活动归属与宿主 Task 不一致',
+          lbl(c) + ' 自身记录 t' + at + '，却挂在 ' + tLabel(tk) + ' 下 —— 任务归属错位。', idsOf(c, tk));
+      }
+    });
+    if (childActs.length === 0 && childTasks.length === 0) {
+      add('info', 'G4', tLabel(tk) + (tk.type === 'stack' ? ' 下没有任何 Task' : ' 是空任务'),
+        tk.type === 'stack'
+          ? '该 Stack 下既没有 Task 也没有 ActivityRecord。A9/A10 里 Stack 与 Task 是两层，空的 fullscreen/home Stack 属正常残留，不是故障。'
+          : '该 Task 下没有任何 ActivityRecord' + (PV(tk, 'activityType') ? '（type=' + PV(tk, 'activityType') + '）' : '') + '，常见于刚创建或清理中的占位任务。',
+        idsOf(tk));
+    }
+    const aff = PV(tk, 'taskAffinityBase') || PV(tk, 'taskAffinity');
+    if (aff) {
+      let root = tk;
+      while (root.parent && (root.parent.type === 'task' || root.parent.type === 'stack')) root = root.parent;
+      const key = root.taskId || root.id;
+      (affinityMap[aff] = affinityMap[aff] || {})[key] = true;
+    }
+  });
+  Object.keys(affinityMap).forEach(function (aff) {
+    const rs = Object.keys(affinityMap[aff]);
+    if (rs.length > 1) {
+      add('bad', 'G4', '同一 taskAffinity 分裂到多个根任务',
+        aff + ' 同时出现在根任务 #' + rs.join(' / #') + ' —— 同一应用的任务被拆到多个根，返回栈会异常。', []);
+    }
+  });
+
+  // ── G5 Intent 与进程归属
+  const uidByTask = {};
+  acts.forEach(function (n) {
+    const pkg = PV(n, 'packageName'), proc = PV(n, 'processName'), uid = PV(n, 'uidCode');
+    if (pkg && proc && pkg !== proc) {
+      add('info', 'G5', '进程名与包名不同',
+        lbl(n) + '：packageName=' + pkg + '，processName=' + proc + ' —— 多进程应用的正常现象，说明它跑在 ' + proc + ' 进程。', idsOf(n));
+    }
+    if (!proc) {
+      add('warn', 'G5', '缺少进程信息', lbl(n) + '：该 ActivityRecord 没有 processName/app= 记录，可能尚未绑定进程。', idsOf(n));
+    }
+    if (!PV(n, 'intentComponent')) {
+      if (PV(n, 'mIntent') === undefined) {
+        add('warn', 'G5', '缺少 Intent 记录', lbl(n) + '：既无 Intent 行也无 cmp=，启动来源不可知。', idsOf(n));
+      } else {
+        add('info', 'G5', 'Intent 为隐式（无 cmp=）',
+          lbl(n) + '：Intent 未指定组件，由系统解析到当前活动。Intent: ' + PV(n, 'mIntent'), idsOf(n));
+      }
+    }
+    const hostT = PV(n, 'hostTaskId');
+    if (hostT) {
+      let host = n.parent;
+      while (host && host.type !== 'task' && host.type !== 'stack') host = host.parent;
+      if (host && host.taskId && host.taskId !== hostT) {
+        add('bad', 'G5', '活动记录的宿主 task 与树中位置不符',
+          lbl(n) + '：自身记录 task=#' + hostT + '，实际挂在 Task #' + host.taskId + ' 下。', idsOf(n));
+      }
+    }
+    if (uid) {
+      let host2 = n.parent;
+      while (host2 && host2.type !== 'task' && host2.type !== 'stack') host2 = host2.parent;
+      if (host2 && host2.taskId) (uidByTask[host2.taskId] = uidByTask[host2.taskId] || {})[uid] = true;
+    }
+  });
+  Object.keys(uidByTask).forEach(function (tk) {
+    const u = Object.keys(uidByTask[tk]);
+    if (u.length > 1) {
+      add('bad', 'G5', '同一 Task 内出现多个 uid', 'Task #' + tk + ' 内含 uid：' + u.join(' / ') + ' —— 不同应用/用户的活动混在同一任务里。', []);
+    }
+  });
+
+  // ── G6 多窗口 / PIP / 转屏 / 兼容
+  acts.forEach(function (n) {
+    const mode = PV(n, 'windowMode') || (n.parent ? PV(n.parent, 'windowMode') : undefined);
+    if (meta.hasMultiWindowReport) {
+      if (mode === 'multi-window' && PV(n, 'mLastReportedMultiWindowMode') === 'false') {
+        add('warn', 'G6', '分屏状态未上报给客户端',
+          lbl(n) + '：窗口模式为 multi-window，但 mLastReportedMultiWindowMode=false，应用可能仍按全屏布局渲染。', idsOf(n));
+      }
+      if (PV(n, 'mLastReportedPictureInPictureMode') === 'true' && mode && mode !== 'pinned') {
+        add('warn', 'G6', 'PIP 状态与窗口模式不一致',
+          lbl(n) + '：mLastReportedPictureInPictureMode=true 但窗口模式为 ' + mode + '。', idsOf(n));
+      }
+    }
+    if (PV(n, 'areBoundsLetterboxed') === 'true') {
+      add('info', 'G6', '存在 letterbox（黑边）',
+        lbl(n) + '：areBoundsLetterboxed=true，界面被加了黑边（常见于宽高比或兼容模式限制）。', idsOf(n));
+    }
+    const req = PV(n, 'requestedOrientation'), ov = PV(n, 'overrideOrientation');
+    if (req && ov && req !== ov) {
+      add('info', 'G6', '请求方向被覆盖', lbl(n) + '：requestedOrientation=' + req + '，实际生效 overrideOrientation=' + ov + '。', idsOf(n));
+    }
+  });
+
+  // ── 环境抑制：熄屏/锁屏时把相关项降级，不当作故障
+  if (envSuppress) {
+    items.forEach(function (it) {
+      if (it.envSensitive && (it.level === 'bad' || it.level === 'warn')) {
+        it.envNote = '当前环境：' + envReasons.join(' · ') + ' —— 熄屏/锁屏期间该现象通常属正常，建议先点亮屏幕复现。';
+        it.level = 'env';
+      }
+    });
+  }
+
+  const counts = { bad: 0, warn: 0, info: 0, env: 0 };
+  items.forEach(function (it) { counts[it.level] = (counts[it.level] || 0) + 1; });
+  counts.envSensitiveSuppressed = items.filter(function (i) { return !!i.envNote; }).length;
+
+  const data = {
+    items: items, counts: counts, acts: acts, tasks: tasks, roots: roots,
+    env: { screenOff: screenOff, keyguard: keyguard, aod: aod, awake: awake, noVisProc: noVisProc, known: envKnown, reasons: envReasons },
+    anchors: A, meta: meta,
+    versionNote: actVersionNote(meta),
+    anchorResumedText: rNode ? lbl(rNode) + '  [state=' + (PV(rNode, 'state') || '?') + ']' : (A.resumedFound ? (A.resumedRaw || '(已记录)') : '该版本无此锚点'),
+    anchorFocusedText: fNode ? lbl(fNode) + '  [state=' + (PV(fNode, 'state') || '?') + ']' : (A.focusedFound ? (A.focusedRaw || '(已记录)') : '该版本无此锚点'),
+    anchorFocusWinText: A.focusWindowName ? (A.focusWindowName + '  [#' + A.focusWindow + ']') : (A.focusWindow ? ('#' + A.focusWindow) : '—'),
+    anchorRootText: A.topFocusRootTask ? ('Task #' + A.topFocusRootTask) : '—'
+  };
+  if (typeof window !== 'undefined') window.__actsDiagCache = { meta: meta, data: data };
+  return data;
+}
+
+function buildActivitiesPanelHtml(d) {
+  const E = d.env;
+  let h = '';
+  h += '<div class="ad-head" id="acts-diag-head">';
+  h += '<span class="ad-title">状态诊断</span>';
+  h += '<span class="ad-scope">dumpsys activity activities</span>';
+  h += '<span class="ad-counts">';
+  if (d.counts.bad) h += '<span class="ad-c bad">异常 ' + d.counts.bad + '</span>';
+  if (d.counts.warn) h += '<span class="ad-c warn">可疑 ' + d.counts.warn + '</span>';
+  if (d.counts.env) h += '<span class="ad-c env">环境 ' + d.counts.env + '</span>';
+  if (d.counts.info) h += '<span class="ad-c info">信息 ' + d.counts.info + '</span>';
+  if (!d.counts.bad && !d.counts.warn && !d.counts.env) h += '<span class="ad-c ok">未发现异常</span>';
+  else if (!d.counts.bad && !d.counts.warn) h += '<span class="ad-c ok">无异常（环境项已抑制）</span>';
+  h += '</span>';
+  h += '<span class="ad-toggle"></span>';
+  h += '</div>';
+
+  h += '<div class="ad-body">';
+
+  // 「字段能力」放正文第一行：跨版本对齐时最怕的不是缺数据，而是分不清
+  // 「该版本没有这个字段」和「解析失败」—— 灰显的项就是该版本确实不打印的，
+  // 一眼可辨，不用去翻源码。放最上面是因为面板有 max-height，正文可滚动，
+  // 放行尾会被挤出可视区（实测 A9 档就是这样）。title 里带字段原名，缩写不丢信息。
+  const M = d.meta || {};
+  h += '<div class="ad-caps"><b>字段能力</b>';
+  const cap = function (label, full, ok) {
+    h += '<span class="ad-cap ' + (ok ? 'on' : 'off') + '" title="' + escHtml(full + (ok ? '：本机 dump 有' : '：本机 dump 无此字段')) + '">' + escHtml(label) + '</span>';
+  };
+  cap('状态', 'state=', !!M.hasState);
+  cap('绘制', 'mNumInterestingWindows= / allDrawn=', !!M.hasDrawn);
+  cap('Intent', 'Intent { … cmp= }', !!M.hasIntentCmp);
+  cap('进程', 'app=ProcessRecord{…}', !!M.hasProcessRec);
+  cap('可见性', 'visibleRequested=', !!M.hasVisibleRequested);
+  cap('多窗口', 'mLastReportedMultiWindowMode=', !!M.hasMultiWindowReport);
+  cap('letterbox', 'areBoundsLetterboxed=', !!M.hasLetterbox);
+  cap('环境', 'mAwake= / mScreenOnFully= / isKeyguardShowing=', !!d.env.known);
+  cap('Stack', 'Stack #N: 容器头', !!M.hasStackHead);
+  cap('前置块', 'Task id #N + mBounds/mMinWidth/mMinHeight', !!M.hasTaskPreBlock);
+  h += '</div>';
+
+  h += '<div class="ad-env"><b>环境</b> ';
+  if (d.env.known) {
+    h += '<span class="ad-chip ' + (E.screenOff ? 'bad' : 'ok') + '">屏幕' + (E.screenOff ? '未点亮' : '已点亮') + '</span>';
+    h += '<span class="ad-chip ' + (E.keyguard ? 'warn' : 'ok') + '">' + (E.keyguard ? '锁屏显示中' : '未锁屏') + '</span>';
+    if (E.aod) h += '<span class="ad-chip warn">AOD 开启</span>';
+    if (E.noVisProc) h += '<span class="ad-chip warn">无可见 Activity 进程</span>';
+    h += '<span class="ad-dim">' + escHtml(E.reasons.join(' · ')) + '</span>';
+  } else {
+    h += '<span class="ad-dim">该版本 dump 未包含屏幕/锁屏字段，无法判定环境</span>';
+  }
+  h += '</div>';
+
+  h += '<div class="ad-anchors">';
+  const card = function (k, v, cls) {
+    return '<div class="ad-anchor"><div class="ad-ak">' + k + '</div><div class="ad-av ' + (cls || '') + '">' + escHtml(String(v)) + '</div></div>';
+  };
+  h += card('ResumedActivity', d.anchorResumedText, 'resumed');
+  h += card('mFocusedApp', d.anchorFocusedText, 'focused');
+  h += card('mCurrentFocus', d.anchorFocusWinText, '');
+  h += card('topDisplayFocusedRootTask', d.anchorRootText, '');
+  h += '</div>';
+
+  h += '<div class="ad-sum">树规模：' + d.roots + ' 个 Display · ' + d.tasks.length + ' 个 Task · ' + d.acts.length + ' 个 ActivityRecord</div>';
+
+
+  ACT_DIAG_GROUPS.forEach(function (g) {
+    const gi = d.items.filter(function (x) { return x.group === g.id; });
+    if (!gi.length) return;
+    h += '<div class="ad-group"><div class="ad-gtitle">' + g.id + ' ' + escHtml(g.name) + ' <span class="ad-dim">' + escHtml(g.hint) + '</span></div>';
+    gi.forEach(function (x) {
+      h += '<div class="ad-item ' + x.level + '"><div class="ad-it">' + escHtml(x.title) + '</div>';
+      h += '<div class="ad-id">' + escHtml(x.detail) + '</div>';
+      if (x.envNote) h += '<div class="ad-envnote">' + escHtml(x.envNote) + '</div>';
+      if (x.ids && x.ids.length) {
+        h += '<div class="ad-links">';
+        x.ids.forEach(function (id) {
+          const n = nodeIndex.get(id);
+          if (!n) return;
+          const nm = (n.props && (n.props.realActivity || n.props.packageName)) || n.label || n.name;
+          h += '<span class="ad-link" data-nid="' + id + '">定位 ' + escHtml(String(nm).slice(0, 46)) + '</span>';
+        });
+        h += '</div>';
+      }
+      h += '</div>';
+    });
+    h += '</div>';
+  });
+
+  h += '<div class="ad-foot">规则按该命令的实际排查用途分组（前台/状态/绘制/栈结构/归属/多窗口）。本机格式识别为 <b>' + escHtml(d.versionNote) + '</b>；缺失字段一律跳过不报，不作猜测。</div>';
+  h += '</div>';
+  return h;
+}
+
+// 兼容旧调用名
+function getActivitiesInsight() {
+  if (dataSource !== 'activities' || nodeIndex.size === 0) return '';
+  try { return buildActivitiesPanelHtml(analyzeActivitiesDiag()); } catch (e) { return ''; }
+}
+
+// 把诊断面板渲染到画布上方的浮层（可折叠；事件不外泄，避免干扰画布拖拽）
+function renderActivitiesPanel() {
+  const host = document.getElementById('acts-diag');
+  if (!host) return;
+  const usable = dataSource === 'activities' && nodeIndex.size > 0 &&
+    currentView !== 'hwc' && currentView !== 'windowlist' && currentView !== 'sf-tree';
+  if (!usable) {
+    host.style.display = 'none';
+    host.innerHTML = '';
+    return;
+  }
+  let d = null;
+  try { d = analyzeActivitiesDiag(); } catch (e) { host.style.display = 'none'; return; }
+  host.style.display = 'block';
+  host.innerHTML = buildActivitiesPanelHtml(d);
+  // 默认展开策略：只在「有真问题」（红/黄）时默认展开；全清或只有环境项时默认收起，
+  // 否则 640px 宽的面板会把画布左半边压住，树反而看不见（用户要看结论时点一下即可展开）。
+  // 仅在同一份解析结果首次渲染时套用默认值，之后保留用户自己的展开/收起选择。
+  if (host.__lastMeta !== window.__actsMeta) {
+    host.__lastMeta = window.__actsMeta;
+    const hasIssue = (d.counts.bad || 0) > 0 || (d.counts.warn || 0) > 0;
+    if (host.classList && typeof host.classList.toggle === 'function') host.classList.toggle('collapsed', !hasIssue);
+  }
+  if (!host.__wired) {
+    host.__wired = true;
+    host.addEventListener('mousedown', function (e) { e.stopPropagation(); });
+    host.addEventListener('wheel', function (e) { e.stopPropagation(); }, { passive: true });
+    host.addEventListener('click', function (e) {
+      const t = e.target;
+      if (t && t.closest && t.closest('.ad-head')) { host.classList.toggle('collapsed'); return; }
+      const lk = t && t.closest ? t.closest('[data-nid]') : null;
+      if (lk) {
+        const n = nodeIndex.get(parseInt(lk.getAttribute('data-nid'), 10));
+        if (n) { expandToNode(n); selectNode(n); centerOnElement(n); }
+      }
+    });
+  }
 }
 
 function renderWindowDump() {
@@ -7294,6 +8435,7 @@ window.addEventListener('DOMContentLoaded', function() {
     tp.addEventListener('mousedown', onCanvasPanStart);
     tp.addEventListener('wheel', onCanvasWheel, { passive: false });
   }
+  installCanvasResizeRecenter();
   updateDataSourceUI();
   applyZoomUI();
   // 先探测桥接实际端口（顺延场景），再检查状态

@@ -3,7 +3,7 @@
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
 > 支持 `dumpsys activity containers` / `dumpsys activity activities` / `am stack list` / `dumpsys window containers` / `dumpsys SurfaceFlinger` / `dumpsys window`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.37-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.40-green.svg)](#版本)
 
 ---
 
@@ -147,8 +147,8 @@ bash start-tool.sh
 | --- | --- |
 | Android 版本 | 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 |
 | 数据源 | `dumpsys activity containers`、`dumpsys activity activities`、`am stack list`、`dumpsys window containers`、`dumpsys SurfaceFlinger`、`dumpsys window` |
-| 视图 | 容器树、Activities 树、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
-| 解析格式 | A9–11 扁平 `Visible/HWC layers`；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy` |
+| 视图 | 容器树、Activities 树 + 诊断面板、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
+| 解析格式 | 容器：A9–11 扁平；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy`。Activities：A9–10 `Stack #N` + `Task id #` 前置块 + `TaskRecord{}`；A11 `Stack #N` + `Task{}`（前置块已取消）；A12 起无 Stack 头；A13+ `Hist` 双空格 |
 
 ---
 
@@ -168,9 +168,59 @@ bash start-tool.sh
 ### 4. 窗口图层（Windows）
 解析 `dumpsys window windows`，按 Z 序（降序）排列每个窗口卡片，标出焦点窗口 `★`，并展示 `mDrawState`、尺寸、属性等关键参数。
 
-### 5. Activities 树（dumpsys activity activities）
-解析 `dumpsys activity activities`，从 ATMS **逻辑生命周期**视角还原 `TaskDisplayArea → RootTask → ActivityRecord` 层级（只到 ActivityRecord，不含窗口 surface）。除骨架树外，工具对输出做**第二遍扫描**，把排查用得上的关键字段挂到对应节点（点击节点在详情面板可见，每个字段都有中文说明）：`state`（RESUMED/PAUSED/STOPPED）、`packageName` / `processName` / `pid` / `uid`、`taskAffinity`、`mIntent`（含 `cmp=` 真正要启动的组件）、`mResumed` / `mVisible` / `mDrawing` / `mVisibleRequested` / `isVisible` / `keysPaused`、`displayId` / `bounds` 等，并在节点上打 `resumed` / `paused` / `stopped` / `visible` / `focused` 状态徽章。自动高亮 `mResumedActivity` / `mFocusedApp` 指向的 Activity，并可用「⚡ 定位 Resumed」一键跳转。
-**更重要的是「排查洞察」面板**：切到 Activities 后，详情面板顶部自动生成，直接服务于「便于排查问题」：① 自动检测**多个 Activity 同时 RESUMED**（前台冲突）；② 检测 **mFocusedApp 焦点指向 paused/非 RESUMED**（前台焦点与实际状态不一致，可能卡死）；③ 检测 **STOPPED 却仍可见**；④ 按 task 统计**回退栈深度**（任务栈异常）；⑤ 汇总**每个 Activity 的 Intent(component) / 进程名 / uid / pid / taskAffinity 归属表**。无需自己从骨架树里找——异常会被红字标出。
+### 5. Activities 树 + 顶部诊断面板（dumpsys activity activities）
+
+解析 `dumpsys activity activities`，从 ATMS **逻辑生命周期**视角还原容器层级，并**直接给出排查结论**。呈现分两层：画布上是**层级树**（`Display #0 → Task → … → ActivityRecord`，只到 ActivityRecord，不含窗口 surface），画布左上角浮层是**诊断面板**（可折叠）。
+
+**为什么是「顶部诊断面板」而不是单纯画树**：树只回答「结构长什么样」，而这条命令被用到的场合几乎都是「某个界面不对了，看看活动栈现在什么状态」。所以工具把结论前置——打开即给异常，每条结论可点击定位到树上节点。
+
+诊断按该命令**真正被用来做什么**分 6 组：
+
+| 组 | 关注点 | 典型检查 |
+| --- | --- | --- |
+| G1 前台与焦点归属 | 谁在前台、焦点落在谁身上 | `ResumedActivity` ≠ `mFocusedApp`；`mFocusedApp` 指向的活动不在任何 Task 中（悬空）；`mCurrentFocus` 指向非 Activity 窗口（如输入法 / 通知栏） |
+| G2 生命周期状态 | `state=` 与可见性是否自洽 | `RESUMED` 却不 `mVisible`；`STOPPED` 却可见；该版本输出无 `state=`（跳过不报） |
+| G3 绘制与启动 | 窗口画完没、启动是否失败 | 可见但 `allDrawn=false` / `reportedDrawn=false`（**白屏 / 卡在首帧**）；`launchFailed=true` |
+| G4 Task 栈结构 | 任务的嵌套、规模与归属 | `sz=` 与实际活动数不符；Activity 记录的任务 id 与它在树上的宿主 Task 不一致（**归属错位**）；同一 `taskAffinity` 分裂到多个根任务；空任务 |
+| G5 Intent 与进程归属 | 谁拉起的、跑在哪个进程 | 缺 `Intent` / `cmp=`；`packageName ≠ processName`（多进程）；`launchedFromUid` 与包名不符 |
+| G6 多窗口·转屏·兼容 | 分屏 / PIP / letterbox / 方向 | `letterboxed=true`；`overrideOrientation` 与 `requestedOrientation` 不一致；多窗口栈下的尺寸异常 |
+
+**环境抑制（重要）**：熄屏 / 锁屏 / AOD 时，「前台不一致」「ResumedActivity 不是 RESUMED」都是**正常现象**。面板先判定 `mAwake` / `mScreenOnEarly` / `mScreenOnFully` / `isKeyguardShowing` / `mAodShowing` / `VisibleActivityProcess`，若处于「屏幕关闭 / 锁屏 / 无可见应用进程」，就把受环境影响的红黄项**降级为灰色「环境项」**并注明原因——不把「手机在口袋里」报成故障。
+
+> 若这份 dump **整段都没有**屏幕 / 锁屏字段（A9–A12 常见，这类字段本来就在 `ActivityTaskSupervisor state:` 之后的 `DisplayPolicy` 段），面板会明确写「**该版本 dump 未包含屏幕/锁屏字段，无法判定环境**」，**不会**假装「环境已知」并打出「屏幕已点亮」这种没有依据的结论。
+
+**锚点对照**：面板顶部集中列出 `ResumedActivity` / `mFocusedApp` / `mCurrentFocus` / `topDisplayFocusedRootTask` 四个权威锚点及其在树上的定位链接。
+
+**版本适配（全版本容错 + 能力降级）**：输出按**实际出现的字段**解析，缺失字段一律跳过不报，绝不用几何猜，也绝不把「该版本没这个字段」显示成「未知」。逐版源码实证（`platform_frameworks_base` 对应 tag）得到的格式差异：
+
+| 版本 | 容器头 | Task 前置块 | 任务行 | `Hist` 行 | `taskAffinity` |
+| --- | --- | --- | --- | --- | --- |
+| 9–10 | `Display #N` + `  Stack #N:`（头后**同缩进**再打 `isSleeping=` / `mBounds=`） | **有**：`Task id #N` + `mBounds=` / `mMinWidth=` / `mMinHeight=` / `mLastNonFullscreenBounds=` | `* TaskRecord{h #id A= U= StackId= sz=}`（**无** type/visible/mode） | `* Hist #N:` 单空格 | 裸包名 |
+| 11 | 同上（`Stack #N` 仍在，取值改为 rootTaskId） | **无**（已取消） | `* Task{…}`，顺序 `visible= type= mode= translucent= A= U= StackId= sz=` | 单空格 | 裸包名 |
+| 12 | **无 Stack 头**（`ActivityStack` 类已删除），`Display #N` 下直接 `* Task{…}` | — | `type=`/`A=` 提前，改打 `rootTaskId=`，**无** `visibleRequested=` | 单空格 | `<uid>:` |
+| 12L | 同上 | — | 新增 `visibleRequested=`（紧跟在 `visible=` 后） | 单空格 | `<uid>-si:` / `<uid>:` |
+| 13–15 | 同上 | — | `toFullString()` 形态（`type,A,U,rootTaskId,visible,visibleRequested,mode,translucent,sz`） | `* Hist  #N:` **双空格** | `<uid>:` |
+| 16 | 同上 | — | 追加 `name=`（仅 `Task.toString()`，16.0.0_r3 起且 `mName != null` 时） | 双空格 | `<uid>:` |
+
+**缩进台阶（四档不一样，写样例 / 写解析器都不能凭感觉）**：
+
+| 版本 | Display | Stack 头 | 栈随行属性 | Task 前置块 | Task 行 | task.dump | `Hist` 行 | record.dump |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 9–10 | 0 | 2 | **2**（与头同缩进） | **4**（与 Task 行同缩进） | 4 | 6 | 6 | 10 |
+| 11 | 0 | 2 | **2** | — | 4 | 6 | 6 | 10 |
+| 12+ | 0 | — | — | — | 2 / 4 / 6…（按嵌套 +2） | Task 行 +2 | Task 行 +2 | +4 |
+
+> 关键：**A9–A11 的 `* Hist #N:` 与 `task.dump` 输出同一缩进**（`ActivityStack.dumpActivitiesLocked()` 里 `final String prefix = "    "`，Hist 走同一 prefix），所以解析器**不能**要求「Hist 必须比 Task 更深」。
+> 而 A9/A10 的 `Task id #N` 前置块五行与 `* TaskRecord{…}` **完全同缩进**，靠缩进区分不了归属，只能按语义认给**下面那个 Task**（源码：`pw.println(prefix + "* " + task)` 紧跟在 `mBounds=` 之后）。
+> 这两条都不是推测，是逐行读 AOSP 打印代码得到的；工具据此把前置块「寄存 → 按 id 认领」，不会把 Task 的 `mBounds` 显示成 Stack 的。
+
+> **字段能力一行**：诊断面板正文第一行逐项标注**本机这份 dump 到底有哪些字段**（状态 / 绘制 / Intent / 进程 / 可见性 / 多窗口 / letterbox / 环境 / Stack / 前置块），**有的绿显、没有的灰显**。跨版本对齐时最怕的不是缺数据，而是分不清「该版本没有这个字段」和「解析失败」——灰显项即该版本确实不打印的，一眼可辨，不必去翻源码。鼠标悬停可见字段原名。
+
+> **关于 `A=10195:cn.memobird.study` 这种前缀**：这是 **AOSP 自己加的**（`ActivityRecord.computeTaskAffinity()`，A12 起才有），不是脏数据——A12–A13 的 singleInstance 任务是 `<uid>-si:`。工具**保留 dump 原值**（忠实），另派生一个去前缀的「基名」用于比对与展示。
+
+> **重复树陷阱**：`Resumed activities in task display areas`、`ActivityTaskSupervisor state:`、`Task display areas in top down Z order:`、`Application tokens in top down Z order:` 这几行之后会把**同一棵树再打印一遍**。解析器在这些行处截断——否则节点数直接翻倍。
+
+> **示例数据**按 `9–10 / 11 / 12 / 13 / 14–16` 五个格式档分版本提供，并注明来源：A14 为**真机实测**（LineageOS 21 / SM-G780G）；其余按 AOSP 对应 tag 的打印代码**逐字构造**（字段顺序与取值域一致），不编造。
 
 ### 6. Window Containers 树（dumpsys window containers）
 解析 `dumpsys window containers`——这是 WMS **原生入口** dump 的同一棵 WindowContainer 树（与 Activity Containers 结构完全一致，只是视角从「窗口管理」出发，常带更多可见性 / 动画 / surface 信息）。与 📦 Activity Containers 互为印证，用来核对窗口怎么挂、surface 归属哪里。**关于「surface 归属」如何看**：每个 `ActivityRecord` 之下会挂一个窗口 token 子节点（形如 `#N <hash> <包名/类>`），那**就是该 Activity 的实际渲染面（surface 归属）**——本工具已自动标注为 `🪟 <包名/类> ← surface 归属: <ActivityRecord>`，点击该节点还会在详情面板显示「🪟 surface 归属: …」关系，无需再猜哪块 surface 属于哪个 Activity。
@@ -261,7 +311,16 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.38**（当前）：三项修复 ——
+- **v1.40**（当前）：用 AOSP 源码逐版复核 Activities 的**缩进台阶**，据此修 6 处——
+  ① **A9/A10 的「Task 前置块」**：`Task id #N` 与 `mBounds=` / `mMinWidth=` / `mMinHeight=` / `mLastNonFullscreenBounds=` 五行都打在 4 空格，与紧随其后的 `* TaskRecord{…}` **同缩进**（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进区分不了归属；此前这几行会被吸收到上级 Stack 上，把 **Task 的 `mBounds` 显示成 Stack 的 `mBounds`**（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；**A11 起该前置块已取消**（源码实证）。
+  ② **Stack 头块的随行属性**：Stack 头后面固定再打两行**与头同缩进**的 `isSleeping=` / `mBounds=`（A9–A11 皆然），原先被「属性必须比节点更深」的规则**整行丢弃**，现单独放行两行。
+  ③ **诊断标签统一走 `tLabel()`**：`tasks[]` 同时收 Stack 与 Task 节点，而 Stack 没有 `taskId`，旧写法会在 A9/A10 的 dump 上打出「**Task #undefined 是空任务**」——把跨版本格式差异**伪装成解析失败**。
+  ④ **内置 A9/A11 样例按源码重构**：此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报（焦点悬空 / sz 不符 / 空任务 / 缺 Intent）。
+  ⑤ **环境判定修正**：`pick()` 取不到时返回 `null` 而 `envKnown` 只判 `!== undefined`，导致 A9–A12 这类**整份 dump 没有屏幕/锁屏字段**的输入也被判成「环境已知」并显示「**屏幕已点亮**」；现按非空判定，缺失时明确写「该版本 dump 未包含屏幕/锁屏字段」。
+  ⑥ **诊断面板新增「字段能力」行**（正文第一行）：逐项标注该版本 dump 有哪些字段，缺失项**灰显**，跨版本对齐时一眼可辨；顺带修掉 `Rect` 型字段（`mBounds` 等）取值被**按空白截断**成 `Rect(0,` 的显示 bug，并清掉一处误重复的版本说明。
+- **v1.39**：**重做 Activities 数据源**（按实际排查用途，不照抄 am stack list）——
+  ①**解析层推翻重写**：此前解析器在真实 `dumpsys activity activities` 输出上几乎全失效（不认 `* Task{…}` / `* Hist  #N:`，锚点 `mResumedActivity:` / `mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在重复树段处截断。②**保留层级树 + 新增顶部诊断面板**：按该命令实际用途分 **G1–G6 六组**（前台焦点 / 生命周期 / 绘制启动 / Task 结构 / Intent 进程 / 多窗口兼容），每条结论可点击定位；新增**环境抑制**——熄屏 / 锁屏 / AOD 时把受环境影响的红黄项降级为环境项并注明原因。③**全版本容错 + 能力降级**：逐版源码实证 A9–A16 的容器头 / 任务行 / `Hist` 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异，缺失字段一律跳过不报、不猜；示例按 `9–10 / 11 / 12 / 13 / 14–16` 五档分版本提供并注明来源。④`activities` 数据源最低支持版本从 A10 下调到 **A9**（A9 的该命令由 AMS 提供，确实存在）。⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。
+- **v1.38**：三项修复 ——
   ① **启动器不再与桥接重复打开浏览器**：此前 `start-tool.bat` / `start-tool.sh` 与 `adb-bridge.js` **各打开一次**，会开出**两个工具页面标签**。现在只由**桥接**用真实端口打开（端口被占顺延后也正确），启动器仅在**桥接退出码非 0**（启动失败：无 Node / 7788–7798 全被占 / 脚本异常）时兜底打开本地降级页。**注意：没连设备、没装 adb 都不会导致桥接启动失败** —— 页面照常打开，只是「从设备抓取」不可用。
   ② **Stack List 完全画布化**：旧 CSS（`.stacklist-root{overflow:auto;height:100%}`）让它成了**原生滚动容器**，与画布 `panX/panY` 的 `transform` 平移语义冲突 —— 拖拽像「搬动一个带滚动条的框」，内容不跟随滚动、滚动条还杵在右边。现改为内容自然撑开（`overflow:visible; height:auto`），完全走画布变换：**拖拽平移 + 滚轮缩放 + 重置布局**，与 window 树视图手感一致；并区分「拖拽」与「点击」（位移 > 5px 不触发 task 卡点击），「定位可见 Task」由 `scrollIntoView` 改为画布居中。
   ③ **`am stack list` 按版本差异适配**：容器头兼容 `Stack id=N`（A9/A10）与 `RootTask id=N`（A11+，RootTask 即 Stack 改名），**字段顺序无关、字段可缺**；`configuration` 行可缺（A8/A9 部分机型没有）→ 缺失时布局 / 可见性一律标注**「该版本无此字段」**，不再显示「未知」、也不用 bounds 几何猜；task 行支持早期只有 `taskId=N: pkg/act`（无 bounds / visible / topActivity）的格式，此时直接用 `pkg/act` 解析出 topPkg / topClass。示例数据按 **A9 / A10 / A11–13 / A14+ 四个格式档**分版本提供（均为检索到的**真实设备输出**并注明来源），不再「8 个版本共用一份 A14 数据」。
