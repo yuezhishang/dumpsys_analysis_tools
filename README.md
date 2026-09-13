@@ -3,7 +3,7 @@
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
 > 支持 7 条命令，按命令族合并为 **📦 Activity** / **🪟 Window** / **🖥 SurfaceFlinger** / **🗂 Stack List** 四个入口：`dumpsys activity containers`、`dumpsys activity activities`、`dumpsys activity top`、`dumpsys window containers`、`dumpsys window windows`、`dumpsys SurfaceFlinger`、`am stack list`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.44-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.46-green.svg)](#版本)
 
 ---
 
@@ -404,6 +404,7 @@ node adb-bridge.js
   ① **两种呈现可切换（保留回退）**：View Top 专属工具条最左加「🌳 大纲 / 🎯 聚焦」切换；大纲即 v1.44 的竖向可折叠大纲，聚焦为新增的「只显示当前聚焦节点子树 + 顶部面包屑（根 → … → 当前），点节点下钻、面包屑上溯」。两者共用同一份按 TASK 分段的解析结果（`window.__viewTopTasks`），纯前端状态切换、不重新解析，切回原状完全保留——用户想对比两种观感、或聚焦不顺手时随时切回大纲。
   ② **修复「有滚动条但不能滚动」**：画布平移/缩放的 `wheel` / `mousedown` 监听原本绑在 `.tree-panel` 上、对 View Top 模式无差别 `preventDefault`，把大纲的原生滚轮滚动吃掉；已为这两个监听加 `dataSource === 'viewtop'` 守卫（非 viewtop 仍保留画布缩放），并在 View Top 下把 `.tree-panel` 游标从 `grab` 改回默认。
   ③ 校验脚本 `harness_v143.js` 296 项全绿（新增滚动守卫断言、聚焦视图渲染/下钻/面包屑/与大纲互切回退断言）。
+- **v1.46**（当前）：**修复 v1.45 工具栏「🌳 大纲 / 🎯 聚焦」切换按钮未渲染**——v1.45 的 JS（`setVtViewMode` / 聚焦渲染）与 `#vt-focus` 容器都已提交，但 `#vt-toolbar` 的 HTML 改造漏提（模式切换按钮与 `vt-controls-*` 包裹层没进文件），导致工具条只显示旧版筛选框、看不到切换按钮。本版补回按钮与 `vt-controls-outline`/`vt-controls-focus` 包裹层，并给校验脚本加「直接读 `index.html` 文本、断言 4 个 id 与按钮文本存在」的硬校验（301 项全绿），杜绝「JS 写了但 HTML 没接」这类回归。徽章此前也漏升到 v1.45，本版一并补到 v1.46。
 
 - **v1.44**：**View Top 从「横向画布树」改为「竖向可折叠大纲」**——
   ① **渲染形态**：深度常达十几层的 View 树改用**竖向可折叠大纲**（仿 Layout Inspector / 文件树），自上而下缩进、逐节点展开折叠，深度再深也一眼看全；不再用横向画布树（横向铺开、滚动找不全、读着累）。
