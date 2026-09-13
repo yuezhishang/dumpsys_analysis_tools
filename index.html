@@ -271,6 +271,7 @@ select.btn{
 
 /* ============================== Tree Diagram ============================== */
 .tree-panel{position:relative;background:var(--bg-primary);overflow:hidden;cursor:grab}
+.tree-panel.vt-mode{cursor:default}
 .tree-panel.panning{cursor:grabbing}
 .diagram-root{position:relative;min-width:100%;min-height:100%;padding:40px;box-sizing:border-box}
 .diagram-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
@@ -360,6 +361,18 @@ select.btn{
 .vt-vis.visible{background:#3fb950}
 .vt-vis.invisible{background:#e3b341}
 .vt-vis.gone{background:#8b949e}
+
+/* View Top 呈现切换 + 面包屑/子树聚焦 */
+.vt-mode-switch{display:flex;gap:4px;flex:0 0 auto}
+.vt-mode-switch .seg-btn{padding:5px 10px;font-size:12.5px}
+.vt-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vt-focus{position:absolute;inset:0;overflow:auto;padding:10px 14px 48px}
+.vt-breadcrumb{position:sticky;top:0;z-index:5;display:flex;flex-wrap:wrap;align-items:center;gap:4px;padding:8px 10px;margin:-10px -14px 12px;background:var(--bg-secondary,#141a28);border-bottom:1px solid var(--border-light,#2a3142);font-size:12.5px}
+.vt-crumb{color:var(--accent,#4aa3ff);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;padding:1px 5px;border-radius:4px}
+.vt-crumb:hover{background:rgba(74,163,255,.15)}
+.vt-crumb.current{color:var(--text-primary,#e6e9ef);cursor:default;font-weight:600}
+.vt-crumb-sep{color:var(--text-secondary,#9aa4b2);opacity:.6}
+.vt-focus-root{padding:4px 0}
 
 /* 合成图层树节点配色 */
 .diagram-node.layer-root{border-color:#94a3b8;background:rgba(148,163,184,.10);border-style:dashed}
@@ -1066,6 +1079,7 @@ select.btn{
       </div>
       <div class="tree-root" id="tree-root" style="display:none"></div>
       <div class="vt-outline" id="vt-outline" style="display:none"></div>
+      <div class="vt-focus" id="vt-focus" style="display:none"></div>
       <div class="hwc-overlays" id="hwc-overlays"></div>
       <div class="acts-diag" id="acts-diag" style="display:none"></div>
     </div>
@@ -1105,7 +1119,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.44'; // v1.44 把 View Top 从「横向画布树」改为「竖向可折叠大纲」：按 TASK 分段（每个 TASK 一段 View Hierarchy，带 Task id / 包名 / Activity 表头），节点竖向缩进、可展开折叠，ViewGroup 橙色区分；顶部专属工具条提供「类名/资源 id/tag 筛选」+「展开/折叠全部」；隐藏画布工具栏与统计条。v1.43 新增第七种数据源「🌳 View Top」（dumpsys activity top / dumpsys activity <component> 的 View 层级树：按 class{hash 9+8 位标志位 bounds} 缩进建树，覆盖 A9–A16；详情面板新增 VIEW_PROP_DICT 字段注释；输入框新增「目标 Activity」可选栏，留空看前台、填 <包名/类名> 指定某个 Activity；ViewGroup 节点以橙色描边区分）。v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
+const APP_VERSION = 'v1.45'; // v1.44 把 View Top 从「横向画布树」改为「竖向可折叠大纲」：按 TASK 分段（每个 TASK 一段 View Hierarchy，带 Task id / 包名 / Activity 表头），节点竖向缩进、可展开折叠，ViewGroup 橙色区分；顶部专属工具条提供「类名/资源 id/tag 筛选」+「展开/折叠全部」；隐藏画布工具栏与统计条。v1.43 新增第七种数据源「🌳 View Top」（dumpsys activity top / dumpsys activity <component> 的 View 层级树：按 class{hash 9+8 位标志位 bounds} 缩进建树，覆盖 A9–A16；详情面板新增 VIEW_PROP_DICT 字段注释；输入框新增「目标 Activity」可选栏，留空看前台、填 <包名/类名> 指定某个 Activity；ViewGroup 节点以橙色描边区分）。v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1125,6 +1139,9 @@ let collapsedNodeIds = new Set();
 // 视图模式：'window' = 窗口层级树（containers 数据源）；'hwc' = HWC 合成预览（surfaceflinger 数据源）
 let currentView = 'window';
 let vtFilterValue = '';
+let vtViewMode = 'outline';      // View Top 两种呈现：'outline' 竖向可折叠大纲 / 'focus' 面包屑+子树聚焦
+let vtFocusNodeId = null;        // 聚焦模式下当前聚焦的节点 id（null = 默认第一个 task 的根）
+
 // 数据源：'containers' = dumpsys activity containers；'surfaceflinger' = dumpsys SurfaceFlinger
 let dataSource = 'containers';
 if (typeof refreshVersionOptions === 'function') refreshVersionOptions();
@@ -2727,10 +2744,16 @@ function switchView(v) {
   showToast(tips[v] || '已切换视图', 'success');
 }
 
+function renderViewTop() {
+  if (vtViewMode === 'focus') renderViewTopFocus();
+  else renderViewTopOutline();
+}
 function renderTree() {
   const vto = document.getElementById('vt-outline');
+  const vtf = document.getElementById('vt-focus');
   if (vto) vto.style.display = 'none';
-  if (dataSource === 'viewtop') { renderViewTopOutline(); return; }
+  if (vtf) vtf.style.display = 'none';
+  if (dataSource === 'viewtop') { renderViewTop(); return; }
   const root = document.getElementById('tree-root');
   const emptyState = document.getElementById('empty-state');
   root.innerHTML = '';
@@ -2844,7 +2867,10 @@ function buildOutlineNode(node, depth, container, q) {
   vb.title = '可见性：' + vis;
   row.appendChild(vb);
 
-  row.onclick = function () { selectViewTopNode(node); };
+  row.onclick = function () {
+    if (vtViewMode === 'focus') selectViewTopFocusNode(node);
+    else selectViewTopNode(node);
+  };
   entry.appendChild(row);
   if (kids) entry.appendChild(kids);
   container.appendChild(entry);
@@ -2947,6 +2973,79 @@ function expandAllVt() {
   if (!host) return;
   host.querySelectorAll('.vt-children').forEach(function (ch) { ch.style.display = 'block'; });
   host.querySelectorAll('.vt-caret:not(.leaf)').forEach(function (c) { c.textContent = '▾'; });
+}
+
+// ---- View Top 方案三：面包屑 + 子树聚焦 ----
+// 默认只显示「当前聚焦节点」的子树；顶部常驻面包屑（根 → … → 当前），
+// 点面包屑上溯、点子树内节点下钻。适合沿单条路径深挖，但全局结构较弱。
+function selectViewTopFocusNode(node) {
+  vtFocusNodeId = node.id;
+  renderViewTopFocus();
+  selectViewTopNode(node); // 同步刷新右侧详情面板
+}
+function vtFocusReset() {
+  vtFocusNodeId = null;
+  renderViewTopFocus();
+}
+function renderViewTopFocus() {
+  const host = document.getElementById('vt-focus');
+  if (!host) return;
+  const root = document.getElementById('tree-root'); if (root) root.style.display = 'none';
+  const ov = document.getElementById('hwc-overlays'); if (ov) ov.innerHTML = '';
+  const emptyState = document.getElementById('empty-state');
+  const tasks = (typeof window !== 'undefined' && window.__viewTopTasks) ? window.__viewTopTasks : [];
+  if (tasks.length === 0 || parsedForest.length === 0) {
+    host.innerHTML = ''; host.style.display = 'none';
+    if (emptyState) {
+      emptyState.style.display = 'flex';
+      const et = emptyState.querySelector('.empty-text');
+      if (et) et.innerHTML = '未检测到 View 层级数据，请确认是 <code>dumpsys activity top</code> 输出（含 <code>View Hierarchy:</code> 段）。';
+    }
+    return;
+  }
+  if (emptyState) emptyState.style.display = 'none';
+  host.innerHTML = '';
+  let focus = (vtFocusNodeId != null) ? nodeIndex.get(vtFocusNodeId) : null;
+  if (!focus) { const t0 = tasks[0]; focus = t0.roots[0]; vtFocusNodeId = focus ? focus.id : null; }
+  if (!focus) { host.style.display = 'none'; return; }
+  // 面包屑：从根到当前聚焦节点的路径
+  const path = []; let cur = focus; while (cur) { path.unshift(cur); cur = cur.parent; }
+  const bc = document.createElement('div'); bc.className = 'vt-breadcrumb';
+  path.forEach(function (n, i) {
+    if (i > 0) {
+      const sep = document.createElement('span'); sep.className = 'vt-crumb-sep'; sep.textContent = '›';
+      bc.appendChild(sep);
+    }
+    const c = document.createElement('span');
+    c.className = 'vt-crumb' + (i === path.length - 1 ? ' current' : '');
+    c.textContent = n.label; c.title = n.viewClass;
+    if (i < path.length - 1) c.onclick = function () { vtFocusNodeId = n.id; renderViewTopFocus(); };
+    bc.appendChild(c);
+  });
+  host.appendChild(bc);
+  // 聚焦节点的子树（含自身为根）
+  const subtree = document.createElement('div'); subtree.className = 'vt-focus-root';
+  buildOutlineNode(focus, 0, subtree, '');
+  host.appendChild(subtree);
+  host.style.display = 'block';
+}
+
+// 在「竖向可折叠大纲」与「面包屑+子树聚焦」两种 View Top 呈现间切换（可随时回退）
+function setVtViewMode(mode) {
+  vtViewMode = (mode === 'focus') ? 'focus' : 'outline';
+  const o = document.getElementById('vt-mode-outline');
+  const f = document.getElementById('vt-mode-focus');
+  if (o) o.classList.toggle('active', vtViewMode === 'outline');
+  if (f) f.classList.toggle('active', vtViewMode === 'focus');
+  const co = document.getElementById('vt-controls-outline');
+  const cf = document.getElementById('vt-controls-focus');
+  if (co) co.style.display = (vtViewMode === 'outline') ? '' : 'none';
+  if (cf) cf.style.display = (vtViewMode === 'focus') ? '' : 'none';
+  const vo = document.getElementById('vt-outline');
+  const vf = document.getElementById('vt-focus');
+  if (vo) vo.style.display = (vtViewMode === 'outline') ? 'block' : 'none';
+  if (vf) vf.style.display = (vtViewMode === 'focus') ? 'block' : 'none';
+  renderViewTop();
 }
 
 const HWC_SCREEN = { w: 150, h: 300 };
@@ -3567,6 +3666,8 @@ function resetZoom() {
 }
 
 function onCanvasWheel(e) {
+  // View Top 大纲/聚焦用原生滚动，画布缩放不拦截滚轮
+  if (dataSource === 'viewtop') return;
   e.preventDefault();
   const panel = document.getElementById('tree-panel');
   const r = panel.getBoundingClientRect();
@@ -3577,6 +3678,8 @@ function onCanvasWheel(e) {
 
 function onCanvasPanStart(e) {
   if (e.button !== 0) return;
+  // View Top 模式下不平移画布，让大纲能正常选中/拖动文本
+  if (dataSource === 'viewtop') return;
   const t = e.target;
   // 点在节点 / 折叠按钮上 → 交给节点拖拽，不平移画布
   if (t && t.closest && t.closest('.diagram-node')) return;
@@ -4252,6 +4355,7 @@ function parseInput() {
       }
       currentView = 'window';
       vtFilterValue = '';
+      vtFocusNodeId = null;   // 新数据：聚焦模式从根重新开始
       renderTree();
       const sb2 = document.getElementById('stats-bar'); if (sb2) sb2.style.display = 'none';
       const vizPanel = document.getElementById('viz-panel');
@@ -9371,6 +9475,21 @@ function updateDataSourceUI() {
   const mainToolbar = document.querySelector('.viz-toolbar');
   if (vtToolbar) vtToolbar.style.display = (dataSource === 'viewtop') ? '' : 'none';
   if (mainToolbar) mainToolbar.style.display = (dataSource === 'viewtop') ? 'none' : '';
+  // View Top 模式下 tree-panel 不平移画布，游标恢复默认（Scroll bug 修复配套）
+  const tp = document.getElementById('tree-panel');
+  if (tp) tp.classList.toggle('vt-mode', dataSource === 'viewtop');
+  // 同步 View Top 模式按钮（切入 viewtop 时回到大纲视图）
+  if (dataSource === 'viewtop') {
+    vtViewMode = 'outline';
+    const o = document.getElementById('vt-mode-outline');
+    const f = document.getElementById('vt-mode-focus');
+    if (o) o.classList.add('active');
+    if (f) f.classList.remove('active');
+    const co = document.getElementById('vt-controls-outline');
+    const cf = document.getElementById('vt-controls-focus');
+    if (co) co.style.display = '';
+    if (cf) cf.style.display = 'none';
+  }
 }
 
 function openPerspectiveModal() {

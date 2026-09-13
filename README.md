@@ -192,7 +192,7 @@ bash start-tool.sh
 | --- | --- |
 | Android 版本 | 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 |
 | 数据源 | 7 条命令按命令族合并为 **4 个入口**：📦 Activity（`activity containers` / `activity activities` / `activity top`）、🪟 Window（`window containers` / `window windows`）、🖥 SurfaceFlinger（`SurfaceFlinger`）、🗂 Stack List（`am stack list`）—— 多子项入口点击弹菜单 |
-| 视图 | 容器树、Activities 树 + 诊断面板、View Top 竖向可折叠大纲（按 TASK 分段）、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
+| 视图 | 容器树、Activities 树 + 诊断面板、View Top（竖向可折叠大纲 / 面包屑+子树聚焦，可切换）、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
 | 解析格式 | 容器：A9–11 扁平；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy`。Activities：A9–10 `Stack #N` + `Task id #` 前置块 + `TaskRecord{}`；A11 `Stack #N` + `Task{}`（前置块已取消）；A12 起无 Stack 头；A13+ `Hist` 双空格 |
 
 ---
@@ -290,6 +290,15 @@ bash start-tool.sh
 - 🔍 **筛选**：按 View 类名 / 资源 id / tag 实时过滤，自动保留祖先链、隐藏无关分支；
 - **展开全部 / 折叠全部**：一键控制整棵大纲的展开状态；
 - 点任意节点 → 右侧详情面板按 `VIEW_PROP_DICT` 给出 `class` / `hash` / `visibility` / `bounds` / `id` / `res` / `tag` / `flags` / `aid` 九个字段的中文注释；`ViewGroup`（有子节点的容器型 View）以**橙色**区分。
+
+**两种呈现，工具条一键互切（可随时回退）**：View Top 专属工具条最左是一组视图切换按钮，两种呈现都基于同一份按 TASK 分段的解析结果，只是「怎么看」不同：
+
+- 🌳 **大纲（默认）**：上面描述的竖向可折叠大纲，适合**通览整棵树的全局结构**，多 task 并排分段、逐节点展开折叠。
+- 🎯 **聚焦**：只显示**当前聚焦节点**的子树，顶部常驻**面包屑**（`根 → … → 当前`）；点子树内的节点即**下钻**进它的子树，点面包屑任一段即**上溯**。适合**沿单条路径深挖某个控件链**，但全局结构较弱。
+
+> 切换是纯前端状态（`vtViewMode`），不重新解析；解析后两种视图共用 `window.__viewTopTasks`，任一切回都即时渲染，无数据损失。若觉得聚焦视图不顺手，切回「大纲」即可，原状完全保留。
+
+**滚动修复（v1.45）**：View Top 大纲/聚焦容器原生滚动，已为画布平移/缩放的 `wheel` / `mousedown` 监听在 View Top 模式下加了守卫，不再 `preventDefault` 吃掉滚轮——此前「有滚动条但不能滚动」即由此而来。
 
 **节点格式（A9–A16 稳定）**：每个 View 打印成一行 `class{hash 9+8 位标志位 bounds} [Activity 类名]`，例如：
 
@@ -391,7 +400,12 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.44**（当前）：**View Top 从「横向画布树」改为「竖向可折叠大纲」**——
+- **v1.45**（当前）：**View Top 新增「面包屑 + 子树聚焦」可选呈现 + 修复大纲滚动 bug**——
+  ① **两种呈现可切换（保留回退）**：View Top 专属工具条最左加「🌳 大纲 / 🎯 聚焦」切换；大纲即 v1.44 的竖向可折叠大纲，聚焦为新增的「只显示当前聚焦节点子树 + 顶部面包屑（根 → … → 当前），点节点下钻、面包屑上溯」。两者共用同一份按 TASK 分段的解析结果（`window.__viewTopTasks`），纯前端状态切换、不重新解析，切回原状完全保留——用户想对比两种观感、或聚焦不顺手时随时切回大纲。
+  ② **修复「有滚动条但不能滚动」**：画布平移/缩放的 `wheel` / `mousedown` 监听原本绑在 `.tree-panel` 上、对 View Top 模式无差别 `preventDefault`，把大纲的原生滚轮滚动吃掉；已为这两个监听加 `dataSource === 'viewtop'` 守卫（非 viewtop 仍保留画布缩放），并在 View Top 下把 `.tree-panel` 游标从 `grab` 改回默认。
+  ③ 校验脚本 `harness_v143.js` 296 项全绿（新增滚动守卫断言、聚焦视图渲染/下钻/面包屑/与大纲互切回退断言）。
+
+- **v1.44**：**View Top 从「横向画布树」改为「竖向可折叠大纲」**——
   ① **渲染形态**：深度常达十几层的 View 树改用**竖向可折叠大纲**（仿 Layout Inspector / 文件树），自上而下缩进、逐节点展开折叠，深度再深也一眼看全；不再用横向画布树（横向铺开、滚动找不全、读着累）。
   ② **按 TASK 分段**：`dumpsys activity top` 会 dump 每个 task 的前台 Activity，输出里出现多个 `View Hierarchy:` 段是正常现象（每段对应一个 task，不是按 RootTask 机械地每个都打）；工具**每段渲染成一个带 `Task #id` / 包名 / Activity 类名表头的段**，段内是该 task 的 View 树，多 task 自然分段、互不融合。
   ③ **专属工具条**：进入 View Top 后隐藏通用画布工具条（缩放 / 导出图片 / 定位等），改用大纲专属工具条——🔍 按类名 / 资源 id / tag 实时筛选（保留祖先链、隐藏无关分支）+ 展开全部 / 折叠全部；点节点仍复用右侧详情面板（`VIEW_PROP_DICT` 九字段注释、`ViewGroup` 橙色区分）。
