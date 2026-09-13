@@ -3,7 +3,7 @@
 > 一个**单文件、零依赖**的 Android 窗口层级可视化工具：把 `adb dumpsys` 的庞杂文本，变成可缩放、可搜索、可折叠的层级树与图层卡片。
 > 支持 7 条命令，按命令族合并为 **📦 Activity** / **🪟 Window** / **🖥 SurfaceFlinger** / **🗂 Stack List** 四个入口：`dumpsys activity containers`、`dumpsys activity activities`、`dumpsys activity top`、`dumpsys window containers`、`dumpsys window windows`、`dumpsys SurfaceFlinger`、`am stack list`，覆盖 **Android 9 – 16**。
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.43-green.svg)](#版本)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE) [![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-lightgrey.svg)](#快速开始) [![Version](https://img.shields.io/badge/version-v1.44-green.svg)](#版本)
 
 ---
 
@@ -17,7 +17,7 @@
 - **HWC 合成预览**：`dumpsys SurfaceFlinger` 中真实合层（Hardware Composer）的图层清单与几何，标注焦点窗口。
 - **SF 层级树**：Android 14+ 整合的 `Layer Hierarchy` 段，呈现 SurfaceFlinger 侧的完整层级。
 - **窗口图层**：`dumpsys window` 的每个窗口卡片，按 Z 序排列，并标出 **5 种 `mDrawState`** 状态。
-- **View 层级树**：`dumpsys activity top`（或 `dumpsys activity <包名/类名>`）的 View 树（DecorView → ViewGroup → View），按 `class{hash 9+8 位标志位 bounds}` 缩进建树，覆盖 **A9–A16**，每个节点带字段注释。
+- **View 层级树（竖向可折叠大纲）**：`dumpsys activity top`（或 `dumpsys activity <包名/类名>`）的 View 树（DecorView → ViewGroup → View），按 `class{hash 9+8 位标志位 bounds}` 缩进建树，覆盖 **A9–A16**；`dumpsys activity top` 会 dump **每个 task 的前台 Activity**，故按 **TASK 分段**（每段带 Task id / 包名 / Activity 表头），节点竖向缩进、可展开折叠，深度再深也一眼看全；每个节点带字段注释。
 
 无需安装任何 npm 包、无需构建步骤——下载即用。
 
@@ -64,7 +64,7 @@
 | --- | --- | --- | --- | --- | --- |
 | `dumpsys activity activities` | ATMS：活动 / 任务**逻辑生命周期** | Task / ActivityRecord 状态（RESUMED / PAUSED / STOPPED）、Intent、进程名、焦点 | 前台 activity 错乱、状态卡死、task 栈异常、Intent / 进程归属 | — | 📦 **Activity → 🎯 Activities**（树视图高亮 Resumed / Focused；画布左上「诊断面板」按实际用途分 G1–G6，结论可点击定位，熄屏·锁屏等环境因素降级为灰色环境项） |
 | `dumpsys activity containers` | 经 ATMS 入口看 **WindowContainer 容器树** | 容器嵌套（到 WindowState），节点父子关系 | 容器父子关系、窗口层级嵌套、谁在谁下面 | 与 `window containers` 渲染的是**同一棵 WindowContainer 树**（内存里是同一批节点对象，只是由不同服务打印）。本命令经 **ATMS（ActivityTaskManager）** 入口打印，侧重**容器嵌套结构**：DisplayContent → TaskDisplayArea → Task → ActivityRecord → WindowToken → WindowState，适合理清「谁在谁里面、窗口层级怎么嵌套」。**不含**窗口的可见性 / 动画 / surface 归属等窗口管理属性。 | 📦 **Activity → 📦 Containers** |
-| `dumpsys activity top` / `dumpsys activity <component>` | **应用层 View 树**（DecorView → ViewGroup → View） | 每个 View 的类名 / hash / 可见性（V/I/G）/ 屏幕坐标 bounds / 资源 id / 所属 Activity | 布局层级错乱、某个 View 没出来、View 嵌套太深、想看清某个 Activity 的 UI 组成 | 与上面几条命令**不是同一棵树**：`containers`/`activities`/`window*` 看的是 `WindowContainer`（窗口管理维度，一个窗口一个节点）；本命令看的是**应用自己 inflate 出来的 View 树**（一个控件一个节点），属于**绘制渲染维度**。一条命令默认看**前台 Activity**（`dumpsys activity top`），填 `<包名/类名>` 可指定某个 Activity（`dumpsys activity <component>`，可能含多段 View Hierarchy——每个 Activity 一段，工具逐段解析为多个根并标「多 Activity」）。View 节点格式 `class{hash 9+8 位标志位 bounds}` 自 A9 起基本稳定，本工具按缩进建树、覆盖 A9–A16。 | 📦 **Activity → 🌳 View Top**（输入框上方「目标 Activity」可选：留空看前台、填 `<包名/类名>` 指定；详情面板按 `VIEW_PROP_DICT` 给出 class/hash/visibility/bounds/id/res/tag/flags 字段注释） |
+| `dumpsys activity top` / `dumpsys activity <component>` | **应用层 View 树**（DecorView → ViewGroup → View） | 每个 View 的类名 / hash / 可见性（V/I/G）/ 屏幕坐标 bounds / 资源 id / 所属 Activity | 布局层级错乱、某个 View 没出来、View 嵌套太深、想看清某个 Activity 的 UI 组成 | 与上面几条命令**不是同一棵树**：`containers`/`activities`/`window*` 看的是 `WindowContainer`（窗口管理维度，一个窗口一个节点）；本命令看的是**应用自己 inflate 出来的 View 树**（一个控件一个节点），属于**绘制渲染维度**。**每一个 task 的前台 Activity 都会打印一段自己的 View 树**——`dumpsys activity top` 会 dump 所有 task，所以输出里出现多个 `View Hierarchy:` 段是正常现象（每段对应一个 task，不是按 RootTask 机械地每个都打）。工具**按 TASK 分段**渲染：每段一个带 `Task #id` / 包名 / Activity 类名的表头，段内 View 竖向缩进、可展开折叠；默认看**前台 Activity**（`dumpsys activity top`），填 `<包名/类名>` 可指定某个 Activity（`dumpsys activity <component>`，可能含多段）。View 节点格式 `class{hash 9+8 位标志位 bounds}` 自 A9 起基本稳定，按缩进建树、覆盖 A9–A16。 | 📦 **Activity → 🌳 View Top**（竖向可折叠大纲，按 TASK 分段；输入框上方「目标 Activity」可选：留空看前台、填 `<包名/类名>` 指定；详情面板按 `VIEW_PROP_DICT` 给出 class/hash/visibility/bounds/id/res/tag/flags 字段注释） |
 | `dumpsys window containers` | WMS **原生入口**看同一棵树（窗口管理视角） | 窗口可见性 / 动画 / surface 归属（与 activity containers 同结构） | 与 activity containers 互为印证，看窗口怎么挂、surface 归属 | 与 `activity containers` 渲染的是**同一棵 WindowContainer 树**。本命令经 **WMS（WindowManager）原生入口** 打印同一批节点，侧重**窗口管理视角**：窗口可见性、动画状态、surface 归属（ActivityRecord 下的窗口 token 已标注 🪟 surface 归属）。**树结构与 activity containers 完全一致**，但多了窗口层的 WM 属性；两者互为印证，结构不一致即说明某层状态异常。 | 🪟 **Window → 🪟 Containers**（同树；ActivityRecord 下的窗口 token 已标注 🪟 surface 归属） |
 | `dumpsys window windows` | WMS：**每个 Window 自己的布局与绘制状态** | 窗口 frame / 可见性 / 5 种 `mDrawState`（NO_SURFACE → DRAW_PENDING → COMMIT_DRAW_PENDING → READY_TO_SHOW → HAS_DRAWN） | 窗口绘制卡顿、白屏、窗口没上屏、`mDrawState` 停在非 HAS_DRAWN | — | 🪟 **Window → 🖼 Windows**（窗口卡片视图，可按 `mDrawState` 筛选） |
 | `dumpsys SurfaceFlinger` | 独立 native 进程，**真实合成图层**（屏幕像素） | 按 Z 序排列的 Layer（扁平，无 task 嵌套）、HWC、几何、buffer | 黑屏、图层遮挡、HWC 合层失败、Z 序错乱、窗口没上屏 | — | 🖥 **SurfaceFlinger**（HWC 合成预览 / 层级树） |
@@ -192,7 +192,7 @@ bash start-tool.sh
 | --- | --- |
 | Android 版本 | 9 / 10 / 11 / 12 / 13 / 14 / 15 / 16 |
 | 数据源 | 7 条命令按命令族合并为 **4 个入口**：📦 Activity（`activity containers` / `activity activities` / `activity top`）、🪟 Window（`window containers` / `window windows`）、🖥 SurfaceFlinger（`SurfaceFlinger`）、🗂 Stack List（`am stack list`）—— 多子项入口点击弹菜单 |
-| 视图 | 容器树、Activities 树 + 诊断面板、View 层级树、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
+| 视图 | 容器树、Activities 树 + 诊断面板、View Top 竖向可折叠大纲（按 TASK 分段）、Window Containers 树、HWC 合成预览、SF 层级树（A14+）、窗口图层 |
 | 解析格式 | 容器：A9–11 扁平；A12/13 分散旧格式（TimeStats → Offscreen Layers）；A14+ 树形 `Layer Hierarchy`。Activities：A9–10 `Stack #N` + `Task id #` 前置块 + `TaskRecord{}`；A11 `Stack #N` + `Task{}`（前置块已取消）；A12 起无 Stack 头；A13+ `Hist` 双空格 |
 
 ---
@@ -272,14 +272,24 @@ bash start-tool.sh
 
 > 小结：`activity activities` 管「谁在跑」，`activity containers` / `window containers` 管「窗口怎么挂」，`SurfaceFlinger` 管「屏幕画了啥」——前三者共享同一棵树，最后一个在独立进程只看真实图层。
 
-### 7. View 层级树（View Top，dumpsys activity top / <component>）
+### 7. View Top 竖向可折叠大纲（dumpsys activity top / <component>）
 
-解析 `dumpsys activity top`（默认看前台 Activity）或 `dumpsys activity <包名/类名>`（指定某个 Activity）的 **View 树**——这是**应用自己 inflate 出来的 UI 控件树**（DecorView → ViewGroup → View），和上面几条命令看的 `WindowContainer` 树是**两个维度**：窗口管理维度一个窗口一个节点，应用渲染维度一个控件一个节点。
+把 `dumpsys activity top`（默认看前台 Activity）或 `dumpsys activity <包名/类名>`（指定某个 Activity）的 **View 树**渲染成**竖向可折叠大纲**——这是**应用自己 inflate 出来的 UI 控件树**（DecorView → ViewGroup → View），和上面几条命令看的 `WindowContainer` 树是**两个维度**：窗口管理维度一个窗口一个节点，应用渲染维度一个控件一个节点。
 
-**默认前台 / 指定 Activity**：工具输入框上方多了一个「🎯 目标 Activity」可选栏——
+**为什么改成竖向大纲、不再用横向画布树**：View 树深度常达十几层（如 Launcher 全应用抽屉可达 14 层），横向画布树会横向铺开、滚动找不全、读起来很累。竖向大纲仿 Layout Inspector / 文件树——自上而下缩进、逐节点展开折叠，深度再深也一眼看全。
 
-- **留空**：等同于 `dumpsys activity top`，看当前前台 Activity 的 View 树；
-- **填入 `<包名/类名>`**（如 `com.android.launcher3/.uioverrides.QuickstepLauncher`）：等同于 `dumpsys activity <component>`，看指定那个 Activity。指定命令可能输出**多段 `View Hierarchy`**（一个 Activity 一段），工具逐段解析为**多个根**，并在标题标注「N 个 Activity」。
+**按 TASK 分段**：`dumpsys activity top` 会 dump **每个 task 的前台 Activity**，所以输出里出现多个 `View Hierarchy:` 段是正常现象——每段对应一个 task（不是按 RootTask 机械地每个都打）。工具**每个 TASK 渲染成一段**，段头带 `Task #id` / 包名 / Activity 类名与「N 个 View」计数，段内是该 task 的 View 树；段头可点击整体折叠 / 展开。
+
+**默认前台 / 指定 Activity**：工具输入框上方多了「🎯 目标 Activity」可选栏——
+
+- **留空**：等同于 `dumpsys activity top`，看当前**前台** Activity 的 View 树；
+- **填入 `<包名/类名>`**（如 `com.android.launcher3/.uioverrides.QuickstepLauncher`）：等同于 `dumpsys activity <component>`，看指定那个 Activity。指定命令可能输出**多段 `View Hierarchy`**（一个 Activity 一段），工具逐段解析、按所属 task 归并。
+
+**专属工具条（替换画布工具条）**：进入 View Top 后，通用画布工具条（缩放 / 导出图片 / 定位等）隐藏，改用大纲专属工具条——
+
+- 🔍 **筛选**：按 View 类名 / 资源 id / tag 实时过滤，自动保留祖先链、隐藏无关分支；
+- **展开全部 / 折叠全部**：一键控制整棵大纲的展开状态；
+- 点任意节点 → 右侧详情面板按 `VIEW_PROP_DICT` 给出 `class` / `hash` / `visibility` / `bounds` / `id` / `res` / `tag` / `flags` / `aid` 九个字段的中文注释；`ViewGroup`（有子节点的容器型 View）以**橙色**区分。
 
 **节点格式（A9–A16 稳定）**：每个 View 打印成一行 `class{hash 9+8 位标志位 bounds} [Activity 类名]`，例如：
 
@@ -293,8 +303,6 @@ com.android.launcher3.allapps.AllAppsRecyclerView{b2f14 VFED..... ......ID 0,214
 - `bounds`：`(left,top)-(right,bottom)`，后方推导宽 × 高；
 - `#7f090089 app:id/apps_list_view`：资源 id + 名称；`aid=` 为 DecorView 的窗口关联 id（连 WMS 侧 WindowState）；
 - `[…]`：`DecorView` 独有，方括号内是该树所属的 Activity 类名。
-
-工具按**缩进**建树（容器型节点即 `ViewGroup`，以橙色描边区分），详情面板对 `class` / `hash` / `visibility` / `bounds` / `id` / `res` / `tag` / `flags` / `aid` 九个字段给出中文注释（见 `VIEW_PROP_DICT`）。
 
 > **版本适配**：`View.dump()` 的这串格式自 Android 4 起基本稳定，A9–A16 走同一解析——差异只在命令形态（`top` 只看前台、`<component>` 可能多段），解析层不按任何特定版本特化。
 
@@ -383,7 +391,13 @@ node adb-bridge.js
 
 ## 版本
 
-- **v1.43**（当前）：**新增第七种数据源「🌳 View Top」**——
+- **v1.44**（当前）：**View Top 从「横向画布树」改为「竖向可折叠大纲」**——
+  ① **渲染形态**：深度常达十几层的 View 树改用**竖向可折叠大纲**（仿 Layout Inspector / 文件树），自上而下缩进、逐节点展开折叠，深度再深也一眼看全；不再用横向画布树（横向铺开、滚动找不全、读着累）。
+  ② **按 TASK 分段**：`dumpsys activity top` 会 dump 每个 task 的前台 Activity，输出里出现多个 `View Hierarchy:` 段是正常现象（每段对应一个 task，不是按 RootTask 机械地每个都打）；工具**每段渲染成一个带 `Task #id` / 包名 / Activity 类名表头的段**，段内是该 task 的 View 树，多 task 自然分段、互不融合。
+  ③ **专属工具条**：进入 View Top 后隐藏通用画布工具条（缩放 / 导出图片 / 定位等），改用大纲专属工具条——🔍 按类名 / 资源 id / tag 实时筛选（保留祖先链、隐藏无关分支）+ 展开全部 / 折叠全部；点节点仍复用右侧详情面板（`VIEW_PROP_DICT` 九字段注释、`ViewGroup` 橙色区分）。
+  ④ 同步把解析器从「按 View Hierarchy 段」升级为「按 TASK 聚合」（捕获每个 TASK / ACTIVITY 上下文，将每段 View 树归属到所属 task，`window.__viewTopTasks` 分段存储、每段带 nodeCount）；`parsedForest` 仍保留全部根的并集供索引 / 搜索 / 详情。
+  ⑤ 内置样例从单 task Launcher 摘录**替换为完整 3-task 真机输出**（LineageOS 21 / A14，来源用户提供），多 TASK 分段在默认样例里即可见。
+- **v1.43**：**新增第七种数据源「🌳 View Top」**——
   ① 把 `dumpsys activity top`（默认看前台 Activity）与 `dumpsys activity <包名/类名>`（指定某个 Activity）的 **View 层级树**纳入工具，按 `class{hash 9+8 位标志位 bounds}` 缩进建树（DecorView → ViewGroup → View），覆盖 **A9–A16**；指定命令可能含多段 `View Hierarchy`（一个 Activity 一段），工具逐段解析为多个根并标「N 个 Activity」。
   ② 输入框上方新增「🎯 目标 Activity」可选栏：**留空看前台、填 `<包名/类名>` 指定**——默认 `top`，用户指定时以 `<component>` 为主。
   ③ 详情面板对 View 节点**九个字段给出中文注释**（新增 `VIEW_PROP_DICT`：`class` / `hash` / `visibility` / `bounds` / `id` / `res` / `tag` / `flags` / `aid`），只在本类型节点上生效，不影响既有容器/窗口节点。
