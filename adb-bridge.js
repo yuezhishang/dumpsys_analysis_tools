@@ -10,7 +10,8 @@
  *     GET /ping                                  -> { ok:true, port }
  *     GET /devices                               -> { devices:[{serial,state,model,product,transportId}] }
  *     GET /dump?device=<serial>&command=<cmd>    -> 原始 dumpsys 文本（text/plain）
- *   cmd 取值：containers | activities | windowcontainers | surfaceflinger | window
+ *   cmd 取值：containers | activities | viewtop | windowcontainers | surfaceflinger | window
+ *     viewtop 可附加 &target=<包名/类名>：有值时命令变为 `dumpsys activity <component>`（指定某个 Activity），否则为 `dumpsys activity top`（前台）
  *   cmd 取值：containers | surfaceflinger | window
  *
  * 运行：先确保本机已装 adb 并在 PATH 中，然后：
@@ -66,6 +67,7 @@ function gracefulShutdown() {
 const COMMAND_MAP = {
   containers: ['shell', 'dumpsys', 'activity', 'containers'],
   activities: ['shell', 'dumpsys', 'activity', 'activities'],
+  viewtop: ['shell', 'dumpsys', 'activity', 'top'],
   amstack: ['shell', 'am', 'stack', 'list'],
   windowcontainers: ['shell', 'dumpsys', 'window', 'containers'],
   surfaceflinger: ['shell', 'dumpsys', 'SurfaceFlinger'],
@@ -235,11 +237,17 @@ const server = http.createServer(async (req, res) => {
     if (path === '/dump') {
       const device = (url.searchParams.get('device') || '').trim();
       const command = (url.searchParams.get('command') || '').trim();
+      const target = (url.searchParams.get('target') || '').trim();
       if (!COMMAND_MAP[command]) {
-        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|amstack|windowcontainers|surfaceflinger|window）');
+        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|viewtop|amstack|windowcontainers|surfaceflinger|window）');
         return;
       }
-      const args = device ? ['-s', device].concat(COMMAND_MAP[command]) : COMMAND_MAP[command].slice();
+      let args = COMMAND_MAP[command].slice();
+      if (command === 'viewtop' && target) {
+        // 指定 Activity：dumpsys activity <component>（top 关键字替换为 component）
+        args = ['shell', 'dumpsys', 'activity'].concat(target.split(/\s+/).filter(Boolean));
+      }
+      if (device) args = ['-s', device].concat(args);
       const r = await runAdb(args, { timeout: DUMP_TIMEOUT });
       if (r.spawnError) {
         sendText(res, 500, '执行 adb 失败：' + (r.stderr || r.code));

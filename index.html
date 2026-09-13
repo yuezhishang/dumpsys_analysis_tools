@@ -319,6 +319,16 @@ select.btn{
 .diagram-node.system{border-color:#94a3b8;background:rgba(148,163,184,.12)}
 .diagram-node.window{border-color:#cbd5e1;background:rgba(203,213,225,.12)}
 .diagram-node.other{border-color:#e879f9;background:rgba(232,121,249,.12)}
+/* View 层级树节点（dumpsys activity top）：叶子 View 与 ViewGroup 容器区分配色 */
+.diagram-node.view{border-color:#f59e0b;background:rgba(245,158,11,.10)}
+.diagram-node.view.is-group{border-color:#fb923c;background:rgba(251,146,60,.14);border-style:solid}
+.diagram-node.view .node-type{background:#f59e0b;color:#1a1205}
+/* 「目标 Activity」输入框（仅 viewtop 数据源显示） */
+.view-target-box{display:flex;align-items:center;gap:8px;margin-bottom:8px;padding:6px 10px;background:var(--bg-tertiary,#1b2030);border:1px solid var(--border-light,#2a3142);border-radius:6px;font-size:12.5px}
+.view-target-box label{color:var(--text-secondary,#9aa4b2);white-space:nowrap;font-weight:600}
+.view-target-box input{flex:1;min-width:0;padding:5px 8px;border:1px solid var(--border-light,#2a3142);border-radius:5px;background:var(--bg-primary,#0f1320);color:var(--text-primary,#e6e9ef);font-size:12.5px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.view-target-box input:focus{outline:none;border-color:var(--accent,#4aa3ff)}
+.view-target-hint{color:var(--text-secondary,#9aa4b2);white-space:nowrap}
 
 /* 合成图层树节点配色 */
 .diagram-node.layer-root{border-color:#94a3b8;background:rgba(148,163,184,.10);border-style:dashed}
@@ -859,6 +869,11 @@ select.btn{
     <button class="btn" id="input-toggle-btn" onclick="toggleInputPanel()" title="收起 / 展开输入框">▲ 收起</button>
   </div>
   <div class="input-body" id="input-body">
+    <div class="view-target-box" id="view-target-box" style="display:none">
+      <label for="view-target-input">🎯 目标 Activity（可选）</label>
+      <input type="text" id="view-target-input" placeholder="留空 = 前台(top)；填入如 com.example/.MainActivity 即指定该 Activity" autocomplete="off" spellcheck="false" />
+      <span class="view-target-hint" id="view-target-hint"></span>
+    </div>
     <textarea id="input-textarea" placeholder="在此粘贴 dumpsys activity containers 输出...&#10;&#10;使用方法：&#10;1. 先选择「目标 Android 版本」（仅影响解析策略，不会加载数据）&#10;2. 在 Android 设备上执行 adb shell dumpsys activity containers&#10;3. 复制完整输出粘贴到上方文本框&#10;4. 点击「解析」按钮&#10;&#10;也可以先选择版本，再点「加载示例数据」快速体验"></textarea>
     <div class="input-actions">
       <button class="btn primary" onclick="parseInput()">🔍 解析</button>
@@ -872,6 +887,7 @@ select.btn{
         containers: { min: 10, note: "WindowContainer 统一树自 Android 10（Q）起" },
         windowcontainers: { min: 10, note: "WMS WindowContainer 树自 Android 10（Q）起" },
         window: { min: 9, note: "Android 9 起 WindowState/mDrawState 格式稳定" },
+        viewtop: { min: 9, note: "dumpsys activity top 各版本 View 树格式稳定（class{hash 9+8 位标志位 bounds}）；指定包名/类名时用 dumpsys activity <component>，后者可能含多个 View Hierarchy 段（一个 Activity 一段）" },
         surfaceflinger: { min: 9, note: "HWC 预览 A9+；层级树 A14+" }
       };
       window.VERSION_LIST = [
@@ -1048,7 +1064,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.42'; // v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
+const APP_VERSION = 'v1.43'; // v1.43 新增第七种数据源「🌳 View Top」（dumpsys activity top / dumpsys activity <component> 的 View 层级树：按 class{hash 9+8 位标志位 bounds} 缩进建树，覆盖 A9–A16；详情面板新增 VIEW_PROP_DICT 字段注释；输入框新增「目标 Activity」可选栏，留空看前台、填 <包名/类名> 指定某个 Activity；ViewGroup 节点以橙色描边区分）。v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -1902,6 +1918,170 @@ function _actTagStates() {
     }
   }
 }
+
+/* ========================================================================
+   dumpsys activity top / dumpsys activity <component> 分析（View 层级树）
+   ------------------------------------------------------------------------
+   职责：把「View Hierarchy:」段里缩进的 View 节点解析成窗口容器树同构的森林。
+   跨版本：View 节点格式（class{hash 9+8 位标志位 bounds}）自 Android 4 起基本稳定，
+   故 A9–A16 走同一解析；差异只在命令形态——`top` 只看前台、`<component>` 可能含多段
+   （每个 Activity 一段 View Hierarchy）。解析层不关心命令，只认 `View Hierarchy:` 段。
+   ======================================================================== */
+const VIEW_NODE_RE = /^(\s*)(\S+)\{([0-9a-fA-F]+)\s+(\S+)\s+(\S+)\s+(\d+,\d+-\d+,\d+)(?:\s+(.*?))?\}\s*(?:\[(.+?)\])?\s*$/i;
+
+// 可见性首字符解码（mViewFlags 的 VISIBILITY_MASK）
+function decodeVisChar(c) {
+  if (c === 'V') return 'VISIBLE';
+  if (c === 'I') return 'INVISIBLE';
+  if (c === 'G') return 'GONE';
+  return '未知';
+}
+
+function makeViewNode(m) {
+  const indent = m[1].length;
+  const fullClass = m[2];
+  const hash = m[3];
+  const flags1 = m[4];       // 第 1 组 9 字符：mViewFlags
+  const flags2 = m[5];       // 第 2 组 8 字符：mPrivateFlags(2/3)
+  const bounds = m[6];
+  const extra = (m[7] || '').trim();
+  const tag = (m[8] || '').trim();
+  const shortClass = fullClass.split('.').pop().split('$').pop();
+  const node = {
+    id: nextNodeId++,
+    rawContent: fullClass + '{' + hash + ' ' + flags1 + ' ' + flags2 + ' ' + bounds + (extra ? ' ' + extra : '') + '}' + (tag ? '[' + tag + ']' : ''),
+    type: 'view',
+    name: fullClass,
+    label: shortClass,
+    badgeText: shortClass,
+    id_value: null,
+    layerRange: null,
+    children: [],
+    props: {},
+    propList: [],
+    parent: null,
+    tags: [],
+    el: null,
+    viewClass: fullClass,
+    viewHash: hash,
+    viewFlags1: flags1,
+    viewFlags2: flags2,
+    viewBounds: bounds
+  };
+  const mb = bounds.match(/(\d+),(\d+)-(\d+),(\d+)/);
+  let bx = null;
+  if (mb) {
+    const l = +mb[1], t = +mb[2], r = +mb[3], b = +mb[4];
+    bx = { left: l, top: t, right: r, bottom: b, w: r - l, h: b - t };
+  }
+  node.propList.push({ key: 'class', value: fullClass });
+  node.propList.push({ key: 'hash', value: '#' + hash });
+  node.propList.push({ key: 'visibility', value: decodeVisChar(flags1[0]) + ' (' + flags1[0] + ')' });
+  node.propList.push({ key: 'bounds', value: bx ? ('[' + bx.left + ',' + bx.top + '-' + bx.right + ',' + bx.bottom + ']  ' + bx.w + '×' + bx.h) : bounds });
+  if (extra) {
+    if (extra.indexOf('aid=') === 0) {
+      node.propList.push({ key: 'aid', value: extra.split('=')[1] });
+    } else if (extra.indexOf('#') === 0) {
+      const sp = extra.indexOf(' ');
+      const idHex = sp < 0 ? extra.slice(1) : extra.slice(1, sp);
+      const res = sp < 0 ? '' : extra.slice(sp + 1).trim();
+      node.propList.push({ key: 'id', value: '0x' + idHex });
+      if (res) node.propList.push({ key: 'res', value: res });
+    }
+  }
+  if (tag) node.propList.push({ key: 'tag', value: tag });
+  node.propList.push({ key: 'flags', value: flags1 + ' ' + flags2 });
+  return { node: node, indent: indent };
+}
+
+function parseViewTopDump(text) {
+  parsedForest = [];
+  nodeIndex = new Map();
+  nextNodeId = 0;
+  if (typeof window !== 'undefined') window.__viewTopText = text;
+  const lines = text.split('\n');
+  const trees = [];     // 每个 Activity 一段 View Hierarchy → { roots:[], stack:[] }
+  let cur = null;
+  for (let li = 0; li < lines.length; li++) {
+    const raw = lines[li];
+    if (/^\s*View Hierarchy:/i.test(raw)) {
+      cur = { roots: [], stack: [] };
+      trees.push(cur);
+      continue;
+    }
+    if (!cur) continue;
+    const m = raw.match(VIEW_NODE_RE);
+    if (!m) {
+      // 离开本段树（遇到 Looper 等非 View 行即结束该 Activity 的树）
+      if (/^\s*Looper\s/.test(raw)) cur = null;
+      continue;
+    }
+    const built = makeViewNode(m);
+    const node = built.node, indent = built.indent;
+    while (cur.stack.length && cur.stack[cur.stack.length - 1].indent >= indent) cur.stack.pop();
+    if (cur.stack.length === 0) cur.roots.push(node);
+    else { cur.stack[cur.stack.length - 1].node.children.push(node); node.parent = cur.stack[cur.stack.length - 1].node; }
+    cur.stack.push({ node: node, indent: indent });
+  }
+  for (const tree of trees) {
+    for (const r of tree.roots) parsedForest.push(r);
+  }
+  // 标记 ViewGroup（有子节点即容器型 View），供 UI 区分着色
+  (function () {
+    function mark(n) {
+      n.isViewGroup = n.children.length > 0;
+      for (const c of n.children) mark(c);
+    }
+    for (const r of parsedForest) mark(r);
+  })();
+  buildIndex(parsedForest);
+  const meta = { treeCount: trees.length, nodeCount: nodeIndex.size, hasMultiple: trees.length > 1 };
+  if (typeof window !== 'undefined') window.__viewTopMeta = meta;
+  return parsedForest;
+}
+
+// View 节点字段注释（详情面板「属性」区按 key 命中）
+const VIEW_PROP_DICT = {
+  'class': {
+    desc: 'View 的完整类名（包名 + 类名），对应代码里的具体 View 子类（如 TextView / LinearLayout / DecorView）。同一布局里同名 View 会有多个实例，靠 hash 区分。',
+    version: 'A9+'
+  },
+  'hash': {
+    desc: '该 View 实例的 System.identityHashCode(this) 十六进制值，是运行时内存对象的唯一标识。每次进程启动都会变化，仅用于区分同一类的不同实例、或在同一次 dump 内串联父子关系。',
+    version: 'A9+'
+  },
+  'visibility': {
+    desc: 'View 可见性（来自 mViewFlags 的 VISIBILITY_MASK）：V=VISIBLE（可见）、I=INVISIBLE（不可见但仍占位）、G=GONE（不可见且不参与布局）。对应节点标志串的第 1 个字符。',
+    version: 'A9+',
+    values: 'V / I / G'
+  },
+  'bounds': {
+    desc: 'View 在屏幕上的矩形区域 (left,top)-(right,bottom)，来自 mLeft/mTop/mRight/mBottom（单位 px）。如 0,0-1080,2400=占据整屏；0,0-0,0=零尺寸（GONE 或未布局）。后方 w×h 为推导宽高。',
+    version: 'A9+',
+    values: 'left,top-right,bottom'
+  },
+  'id': {
+    desc: 'View 的资源 id（十六进制，如 0x7f090196）。由 XML 里的 @+id/xxx 编译而来；纯数字 id（如 0x11）是代码动态 setId() 分配的。',
+    version: 'A9+',
+    values: '0x + 十六进制'
+  },
+  'res': {
+    desc: '资源 id 对应的名称（如 app:id/icon、android:id/content），来自 aapt 编译的 resources.arsc；动态分配的 id 通常没有这个名字。',
+    version: 'A9+'
+  },
+  'tag': {
+    desc: '仅 DecorView 带：方括号内是该 Activity 的类名（如 QuickstepLauncher），表明这棵 View 树属于哪个 Activity。',
+    version: 'A9+'
+  },
+  'flags': {
+    desc: 'View 的两组内部状态标志位。第 1 组 9 字符 = mViewFlags（第 1 字符是可见性 V/I/G，其余常见 F=可聚焦、E=启用、C=可点击、L=长按、X=上下文点击，完整含义以 Android View.dump() 源码为准）；第 2 组 8 字符 = mPrivateFlags / mPrivateFlags2 / mPrivateFlags3（绘制与内部状态机，如 D=已绘制、I=已布局/可交互、R=请求焦点）。本工具按惯例解读，各版本基本一致。',
+    version: 'A9+'
+  },
+  'aid': {
+    desc: 'DecorView 的窗口关联 id（WindowToken 维度），用于把 View 树与 WMS 侧的 WindowState 对应起来。',
+    version: 'A12+'
+  }
+};
 
 function parseActivitiesDump(text) {
   parsedForest = [];
@@ -2938,6 +3118,9 @@ function createDiagramNode(entry) {
     if (node.isHwc) cls += ' hwc';
     if (node.visible === false) cls += ' layer-hidden';
   }
+  if (node.type === 'view' && node.isViewGroup) {
+    cls += ' is-group';
+  }
   el.className = cls;
   if (node.manualPos) {
     el.style.left = node.manualPos.left + 'px';
@@ -2952,7 +3135,7 @@ function createDiagramNode(entry) {
 
   const typeEl = document.createElement('div');
   typeEl.className = 'node-type';
-  typeEl.textContent = node.isLayer ? layerTypeLabel(node) : node.type;
+  typeEl.textContent = node.isLayer ? layerTypeLabel(node) : (node.badgeText || node.type);
   el.appendChild(typeEl);
 
   if (node.isSurfaceView) {
@@ -3446,7 +3629,7 @@ function renderDetails(node) {
     const list = document.createElement('div');
     list.className = 'prop-list';
     for (const prop of node.propList) {
-      const hasDesc = !!PROP_DICT[prop.key];
+      const hasDesc = !!(PROP_DICT[prop.key] || (node.type === 'view' && VIEW_PROP_DICT[prop.key]));
       const row = document.createElement('div');
       row.className = 'prop-row' + (hasDesc ? ' has-desc' : '');
       const key = document.createElement('span');
@@ -3469,7 +3652,7 @@ function renderDetails(node) {
         row.appendChild(infoIcon);
         const explanation = document.createElement('div');
         explanation.className = 'prop-explanation';
-        const info = PROP_DICT[prop.key];
+        const info = PROP_DICT[prop.key] || (node.type === 'view' ? VIEW_PROP_DICT[prop.key] : null);
         var descHtml = '<div class="desc-label">' + prop.key + '</div>';
         descHtml += '<div>' + info.desc + '</div>';
         if (info.version) descHtml += '<span class="desc-version">' + info.version + '</span>';
@@ -3784,6 +3967,23 @@ function parseInput() {
       for (const [id, node] of nodeIndex) { if (node.type === 'root') { firstStack = node; break; } }
       if (firstStack) selectNode(firstStack);
       showToast('解析成功！共 ' + nodeIndex.size + ' 个节点（已高亮可见 / 前台 Task）', 'success');
+    } else if (dataSource === 'viewtop') {
+      parseViewTopDump(text);
+      if (parsedForest.length === 0) {
+        showToast('未检测到 View 层级数据，请确认是 dumpsys activity top 输出（含 View Hierarchy: 段）', 'error');
+        return;
+      }
+      currentView = 'window';
+      zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
+      renderTree(); markCanvasRecenterWindow(1200); centerLayout(); renderStats();
+      const vizPanel = document.getElementById('viz-panel');
+      if (vizPanel) vizPanel.classList.add('active');
+      const inputPanel = document.getElementById('input-panel');
+      if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
+      const headerInfo = document.getElementById('header-info');
+      const vtMeta = (typeof window !== 'undefined' && window.__viewTopMeta) ? window.__viewTopMeta : null;
+      if (headerInfo) headerInfo.textContent = '已解析 ' + nodeIndex.size + ' 个 View 节点' + (vtMeta && vtMeta.hasMultiple ? '（' + vtMeta.treeCount + ' 个 Activity）' : '');
+      showToast('解析成功！共 ' + nodeIndex.size + ' 个 View 节点', 'success');
     } else if (dataSource === 'surfaceflinger') {
       parseSurfaceFlinger(text);
       if (hwcLayers.length === 0 && (sfForest || []).length === 0) {
@@ -3872,13 +4072,16 @@ function loadSelectedSample() {
         ? (AMSTACK_SAMPLES[version] || AMSTACK_SAMPLES['default'])
         : dataSource === 'windowcontainers'
           ? (WINDOWCONTAINER_SAMPLES[version] || WINDOWCONTAINER_SAMPLES['default'])
-          : (SAMPLES[version] || null);
+          : dataSource === 'viewtop'
+            ? (VIEW_TOP_SAMPLES[version] || VIEW_TOP_SAMPLES['14'] || VIEW_TOP_SAMPLES['default'])
+            : (SAMPLES[version] || null);
   if (!sample) {
     showToast(dataSource === 'surfaceflinger' ? '未找到 SurfaceFlinger 示例数据'
       : (dataSource === 'window' ? '未找到 Window 示例数据'
     : (dataSource === 'activities' ? '未找到 Activities 示例数据'
         : (dataSource === 'amstack' ? '未找到 Stack List 示例数据'
-          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据' : '请先选择目标 Android 版本')))), 'error');
+          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据'
+            : (dataSource === 'viewtop' ? '未找到 View Top 示例数据' : '请先选择目标 Android 版本'))))), 'error');
     return;
   }
   const ta = document.getElementById('input-textarea');
@@ -4958,6 +5161,363 @@ const CONTAINER_DICT = {
 };
 
 const SAMPLES = {};
+const VIEW_TOP_SAMPLES = {
+  '14': `TASK null id=211 userId=0 displayId=0(type=INTERNAL)
+  ACTIVITY com.android.launcher3/.uioverrides.QuickstepLauncher efe0fd3 pid=2197 userId=0 uid=10163 displayId=0(type=INTERNAL)
+    Local Activity b7c6c7e State:
+      mResumed=false mStopped=true mFinished=false
+      mIsInMultiWindowMode=false mIsInPictureInPictureMode=false
+      mChangingConfigurations=false
+      mCurrentConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}
+      mLoadersStarted=true
+      FragmentManager misc state:
+        mHost=android.app.Activity$HostCallbacks@788983e
+        mContainer=android.app.Activity$HostCallbacks@788983e
+        mCurState=3 mStateSaved=true mDestroyed=false
+    ViewRoot:
+      mAdded=true
+      mRemoved=false
+      mStopped=true
+      mPausedForTransition=false
+      mConsumeBatchedInputScheduled=false
+      mConsumeBatchedInputImmediatelyScheduled=false
+      mPendingInputEventCount=0
+      mProcessInputEventsScheduled=false
+      mTraversalScheduled=false
+      mReportNextDraw=false
+      mLastPerformTraversalsFailedReason=view_not_visible
+      mLastReportedMergedConfiguration={mGlobalConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.20 fontWeightAdjustment=0} mOverrideConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}}
+      mLastConfigurationFromResources={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}
+      mIsAmbientMode=false
+      mUnbufferedInputSource=0
+      mAttachInfo=       AttachInfo:
+        mHasWindowFocus=false
+        mWindowVisibility=8
+        mInTouchMode=true
+        mUnbufferedDispatchRequested=false
+      android.view.ViewRootImpl$NativePreImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$ImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$NativePostImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$WindowInputEventReceiver
+       mInputChannel: 21a44ab com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher (client)
+       mSeqMap: {}
+       mReceiverPtr:
+        mInputConsumer:
+          mResampleTouch = true
+          mChannel = 21a44ab com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher (client)
+          mMsgDeferred: false
+          Batches:
+              <empty>
+          mSeqChains:
+              <empty>
+          mConsumeTimes:
+              <empty>
+          
+        mBatchedInputEventPending: false
+        mOutboundQueue:
+          <empty>
+        
+    Choreographer:
+      mFrameScheduled=false
+      mLastFrameTime=173174532 (4721286 ms ago)
+    InsetsController:
+      InsetsState
+        mDisplayFrame=Rect(0, 0 - 1080, 2400)
+        mDisplayCutout=DisplayCutout{insets=Rect(0, 88 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(512, 0 - 568, 88), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 0,0 M 0,12.25101276465640 a 10.60613009248640,10.60613009248640 0 1,0 0,21.21226018497290 a 10.60613009248640,10.60613009248640 0 1,0 0,-21.21226018497290 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}
+        mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=84, center=Point(84, 84)}, RoundedCorner{position=TopRight, radius=84, center=Point(996, 84)}, RoundedCorner{position=BottomRight, radius=84, center=Point(996, 2316)}, RoundedCorner{position=BottomLeft, radius=84, center=Point(84, 2316)}]}
+        mRoundedCornerFrame=Rect(0, 0 - 1080, 2400)
+        mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(827, 0 - 1043, 88) rotation=0}
+        mDisplayShape=DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}
+          InsetsSource id=f14a0000 type=statusBars frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=f14a0005 type=mandatorySystemGestures frame=[0,0][1080,120] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=f14a0006 type=tappableElement frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=3 type=ime frame=[0,0][0,0] visibleFrame=[0,1416][1080,2400] visible=false flags= sideHint=NONE boundingRects=null
+          InsetsSource id=27 type=displayCutout frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=e20001 type=navigationBars frame=[0,2337][1080,2400] visible=true flags=SUPPRESS_SCRIM sideHint=BOTTOM boundingRects=null
+          InsetsSource id=e20004 type=systemGestures frame=[0,0][78,2400] visible=true flags= sideHint=LEFT boundingRects=null
+          InsetsSource id=e20005 type=mandatorySystemGestures frame=[0,2316][1080,2400] visible=true flags= sideHint=BOTTOM boundingRects=null
+          InsetsSource id=e20006 type=tappableElement frame=[0,0][0,0] visible=true flags= sideHint=NONE boundingRects=null
+          InsetsSource id=e20024 type=systemGestures frame=[1002,0][1080,2400] visible=true flags= sideHint=RIGHT boundingRects=null
+    WindowOnBackDispatcher:
+        Top Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda11@149bdf2
+        Callbacks: 
+          Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda11@149bdf2 Priority=0
+    View Hierarchy:
+      com.android.internal.policy.DecorView{17fe69f I.E...... R.....ID 0,0-1080,2400 aid=0}[QuickstepLauncher]
+        android.widget.LinearLayout{9b3d3ec V.E...... .......D 0,0-1080,2400}
+          android.view.ViewStub{ab53b5 G.E...... ......I. 0,0-0,0 #10201cb android:id/action_mode_bar_stub}
+          android.widget.FrameLayout{f71fa4a V.E...... .......D 0,0-1080,2400 #1020002 android:id/content}
+            com.android.launcher3.LauncherRootView{d064dbb V.E...... .......D 0,0-1080,2400 #7f0901b9 app:id/launcher}
+              com.android.launcher3.dragndrop.DragLayer{10042d8 V.E...... .......D 0,0-1080,2400 #7f09011e app:id/drag_layer}
+                com.android.launcher3.views.AccessibilityActionsView{c8a7631 V.E...... ........ 0,88-1080,2337}
+                com.android.launcher3.Workspace{1dd7116 V.ED..... .......D 0,0-1080,2400 #7f09038f app:id/workspace}
+                  com.android.launcher3.CellLayout{c20a97 V.ED..... .......D 0,88-1080,2092}
+                    com.android.launcher3.ShortcutAndWidgetContainer{9a2b484 V.E...... .......D 23,28-1057,1976}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{f5f446d VFED..CL. ......ID 0,0-207,389 #11}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{bb788a2 VFED..CL. ......ID 207,0-414,389 #d}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{812b933 VFED..CL. ......ID 414,0-621,389 #e}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{4d894f0 VFED..CL. ......ID 621,0-828,389 #f}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{f38ba69 VFED..CL. ......ID 828,0-1035,389 #10}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{a298cee VFED..CL. ......ID 0,389-207,778 #c}
+                  com.android.launcher3.CellLayout{ab5b58f V.ED..... ......ID 1108,88-2188,2092}
+                    com.android.launcher3.ShortcutAndWidgetContainer{84a101c V.E...... ......ID 23,28-1057,1976}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{a199425 VFED..CL. ......ID 207,1556-414,1945 #9}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{1a589fa VFED..CL. ......ID 414,1556-621,1945 #a}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{4e21bab VFED..CL. ......ID 621,1556-828,1945 #b}
+                      com.android.launcher3.widget.LauncherAppWidgetHostView{9f61208 VFE....L. R.....ID 16,16-1019,762 #6}
+                        android.widget.FrameLayout{1744da1 V.E...... ......ID 0,0-1003,746 #7f0a0254 app:id/themed_root}
+                          android.widget.LinearLayout{9b24bc6 VFE...C.. ......ID 0,0-1003,746 #1020000 android:id/background}
+                            android.widget.TextClock{524c787 V.ED..... ......ID 238,184-764,461 #7f0a009c app:id/clock}
+                            android.widget.LinearLayout{ede46b4 V.E...... ......ID 381,423-621,536 #7f0a0074 app:id/bottom_view}
+                              android.widget.TextClock{16722dd V.ED..... ......ID 0,0-240,62 #7f0a00b8 app:id/date}
+                              android.widget.ImageView{9775e52 G.ED..... ......ID 0,0-0,0 #7f0a019c app:id/nextAlarmIcon}
+                              android.widget.TextView{bfc5523 G.ED..... ......ID 0,0-0,0 #7f0a019b app:id/nextAlarm}
+                            android.widget.ListView{8731a20 V.ED.VC.. ......ID 42,562-961,562 #7f0a029d app:id/world_city_list}
+                com.android.launcher3.Hotseat{fb80fd9 V.ED..... .......D 0,2127-1080,2400 #7f09018a app:id/hotseat}
+                  com.android.launcher3.ShortcutAndWidgetContainer{1090d9e V.E...... .......D 23,0-1057,166}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{c6c8b95 VFED..CL. ......ID 0,0-207,166 #1}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{6fd04aa VFED..CL. ......ID 207,0-414,166 #2}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{6a2f89b VFED..CL. ......ID 414,0-621,166 #3}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{e054438 VFED..CL. ......ID 621,0-828,166 #4}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{e574c11 VFED..CL. ......ID 828,0-1035,166 #5}
+                  android.view.View{935207f V.ED..... ........ 540,147-540,147}
+                com.android.launcher3.pageindicators.PageIndicatorDots{cbfb84c V.ED..... ........ 0,2064-1080,2127 #7f09023a app:id/page_indicator}
+                com.android.launcher3.DropTargetBar{e90d095 I.E...... ......ID 11,172-1069,319 #7f09011f app:id/drop_target_bar}
+                  com.android.launcher3.DeleteDropTarget{b7465aa V.ED..... ......ID 250,0-492,147 #7f090101 app:id/delete_target_text}
+                  com.android.launcher3.SecondaryDropTarget{305459b V.ED..... ......ID 566,0-808,147 #7f09034f app:id/uninstall_target_text}
+                com.android.launcher3.views.ScrimView{5560d38 V.ED..... ......ID 0,0-1080,2400 #7f090288 app:id/scrim_view}
+                com.android.quickstep.views.LauncherRecentsView{efae111 I.ED..... .......D 0,0-1080,2400 #7f090238 app:id/overview_panel}
+                  com.android.quickstep.views.TaskView{58b3276 VFED..C.. .......D 467,187-1201,1986 #7f090309 app:id/task}
+                    com.android.quickstep.views.TaskThumbnailView{2e8a077 V.ED..... ......ID 0,168-734,1799 #7f0902bd app:id/snapshot}
+                    android.widget.ImageView{fac4e4 V.ED..... ......ID 655,0-734,79 #7f0902b3 app:id/show_windows}
+                    com.android.quickstep.views.IconView{f1b7d4d V.ED..CL. ......ID 304,0-430,126 #7f090196 app:id/icon}
+                  com.android.quickstep.views.ClearAllButton{5700002 VFED..... ......ID 173,1023-425,1149 #7f0900c7 app:id/clear_all}
+                com.android.quickstep.views.OverviewActionsView{43ccd13 V.E...... ........ 0,1986-1080,2400 #7f090237 app:id/overview_actions_view}
+                  android.widget.LinearLayout{4114b50 I.E...... .......D 0,63-1080,189 #7f090040 app:id/action_buttons}
+                    android.widget.Space{2fa149 I.ED..... ......I. 0,0-398,3}
+                    android.widget.Button{ee21a4e VFED..C.. ......ID 398,0-682,126 #7f090057 app:id/action_screenshot}
+                    android.widget.Space{9d276f G.ED..... ......I. 0,0-0,0 #7f09005a app:id/action_split_space}
+                    android.widget.Button{3c7cc7c GFED..C.. ......I. 0,0-0,0 #7f090059 app:id/action_split}
+                    android.widget.Space{480905 I.ED..... ......I. 682,0-1080,3}
+                    android.widget.Space{498d5a G.ED..... ......I. 0,0-0,0 #7f09022f app:id/oav_three_button_space}
+                com.android.launcher3.allapps.LauncherAllAppsContainerView{5fecb8b G.ED..... ......ID 0,0-1080,2400 #7f09008b app:id/apps_view}
+                  android.widget.FrameLayout{8033468 G.E...... ......I. 0,0-0,0 #7f0900a5 app:id/bottom_sheet_background}
+                    android.view.View{3c53081 V.ED..... ......I. 0,0-0,0 #7f0900a7 app:id/bottom_sheet_handle_area}
+                    android.view.View{4832526 V.ED..... ......I. 0,0-0,0 #7f0900a6 app:id/bottom_sheet_handle}
+                  com.android.launcher3.allapps.SearchRecyclerView{28c9567 GFED..... ......I. 0,0-0,0 #7f09029f app:id/search_results_list_view}
+                  com.android.launcher3.allapps.AllAppsRecyclerView{b2f14 VFED..... ......ID 0,214-1080,2400 #7f090089 app:id/apps_list_view aid=1073741825}
+                    com.android.launcher3.BubbleTextView{a9353bd VFED..CL. ......ID 0,63-216,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{56c6db2 VFED..CL. ......ID 216,63-432,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{2432103 VFED..CL. ......ID 432,63-648,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{5f62880 VFED..CL. ......ID 648,63-864,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{d266eb9 VFED..CL. ......ID 864,63-1080,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{b2fb2fe VFED..CL. ......ID 0,378-216,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{a4cca5f VFED..CL. ......ID 216,378-432,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{cd54cac VFED..CL. ......ID 432,378-648,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{d363d75 VFED..CL. ......ID 648,378-864,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{450010a VFED..CL. ......ID 864,378-1080,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{e1dad7b VFED..CL. ......ID 0,693-216,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{5a08798 VFED..CL. ......ID 216,693-432,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{63a3bf1 VFED..CL. ......ID 432,693-648,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{27523d6 VFED..CL. ......ID 648,693-864,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{a4fa657 VFED..CL. ......ID 864,693-1080,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{6e28544 VFED..CL. ......ID 0,1008-216,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{9a5a62d VFED..CL. ......ID 216,1008-432,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{7f7a762 VFED..CL. ......ID 432,1008-648,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{13e50f3 VFED..CL. ......ID 648,1008-864,1323 #7f090196 app:id/icon}
+                  com.android.launcher3.allapps.FloatingHeaderView{9597554 V.E...... ........ 0,214-1080,335 #7f09006b app:id/all_apps_header}
+                    com.android.launcher3.appprediction.PredictionRowView{324b1b0 G.E...... ......I. 0,0-0,0 #7f090250 app:id/prediction_row}
+                      com.android.launcher3.BubbleTextView{2e37829 GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{22cd7ae GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{563094f GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{a1b38dc GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{f126de5 GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                    com.android.launcher3.appprediction.AppsDividerView{c72c0ba G.ED..... ......I. 0,0-0,0 #7f090088 app:id/apps_divider_view}
+                    com.android.launcher3.workprofile.PersonalWorkSlidingTabStrip{d70eb6b G.E...... ......I. 0,0-0,0 #7f0902f3 app:id/tabs}
+                      android.widget.Button{9106c8 VFED..C.. ......I. 0,0-0,0 #7f0902f0 app:id/tab_personal}
+                      android.widget.Button{4810361 VFED..C.. ......I. 0,0-0,0 #7f0902f1 app:id/tab_work}
+                  android.widget.TextView{7fc2e86 V.ED..... ......ID 833,240-1030,403 #7f09013c app:id/fast_scroller_popup}
+                  com.android.launcher3.views.RecyclerViewFastScroller{e30d347 V.ED..... ........ 996,240-1148,2400 #7f09013b app:id/fast_scroller}
+                  com.android.launcher3.allapps.search.AppsSearchContainerLayout{b13c774 VFED..CL. ......ID 8,151-1071,293 #7f090295 app:id/search_container_all_apps aid=1073741824}`,
+  'default': `TASK null id=211 userId=0 displayId=0(type=INTERNAL)
+  ACTIVITY com.android.launcher3/.uioverrides.QuickstepLauncher efe0fd3 pid=2197 userId=0 uid=10163 displayId=0(type=INTERNAL)
+    Local Activity b7c6c7e State:
+      mResumed=false mStopped=true mFinished=false
+      mIsInMultiWindowMode=false mIsInPictureInPictureMode=false
+      mChangingConfigurations=false
+      mCurrentConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}
+      mLoadersStarted=true
+      FragmentManager misc state:
+        mHost=android.app.Activity$HostCallbacks@788983e
+        mContainer=android.app.Activity$HostCallbacks@788983e
+        mCurState=3 mStateSaved=true mDestroyed=false
+    ViewRoot:
+      mAdded=true
+      mRemoved=false
+      mStopped=true
+      mPausedForTransition=false
+      mConsumeBatchedInputScheduled=false
+      mConsumeBatchedInputImmediatelyScheduled=false
+      mPendingInputEventCount=0
+      mProcessInputEventsScheduled=false
+      mTraversalScheduled=false
+      mReportNextDraw=false
+      mLastPerformTraversalsFailedReason=view_not_visible
+      mLastReportedMergedConfiguration={mGlobalConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.20 fontWeightAdjustment=0} mOverrideConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}}
+      mLastConfigurationFromResources={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=home mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.2 fontWeightAdjustment=0}
+      mIsAmbientMode=false
+      mUnbufferedInputSource=0
+      mAttachInfo=       AttachInfo:
+        mHasWindowFocus=false
+        mWindowVisibility=8
+        mInTouchMode=true
+        mUnbufferedDispatchRequested=false
+      android.view.ViewRootImpl$NativePreImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$ImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$NativePostImeInputStage: mQueueLength=0
+      android.view.ViewRootImpl$WindowInputEventReceiver
+       mInputChannel: 21a44ab com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher (client)
+       mSeqMap: {}
+       mReceiverPtr:
+        mInputConsumer:
+          mResampleTouch = true
+          mChannel = 21a44ab com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher (client)
+          mMsgDeferred: false
+          Batches:
+              <empty>
+          mSeqChains:
+              <empty>
+          mConsumeTimes:
+              <empty>
+          
+        mBatchedInputEventPending: false
+        mOutboundQueue:
+          <empty>
+        
+    Choreographer:
+      mFrameScheduled=false
+      mLastFrameTime=173174532 (4721286 ms ago)
+    InsetsController:
+      InsetsState
+        mDisplayFrame=Rect(0, 0 - 1080, 2400)
+        mDisplayCutout=DisplayCutout{insets=Rect(0, 88 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(512, 0 - 568, 88), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 0,0 M 0,12.25101276465640 a 10.60613009248640,10.60613009248640 0 1,0 0,21.21226018497290 a 10.60613009248640,10.60613009248640 0 1,0 0,-21.21226018497290 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}
+        mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=84, center=Point(84, 84)}, RoundedCorner{position=TopRight, radius=84, center=Point(996, 84)}, RoundedCorner{position=BottomRight, radius=84, center=Point(996, 2316)}, RoundedCorner{position=BottomLeft, radius=84, center=Point(84, 2316)}]}
+        mRoundedCornerFrame=Rect(0, 0 - 1080, 2400)
+        mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(827, 0 - 1043, 88) rotation=0}
+        mDisplayShape=DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}
+          InsetsSource id=f14a0000 type=statusBars frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=f14a0005 type=mandatorySystemGestures frame=[0,0][1080,120] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=f14a0006 type=tappableElement frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=3 type=ime frame=[0,0][0,0] visibleFrame=[0,1416][1080,2400] visible=false flags= sideHint=NONE boundingRects=null
+          InsetsSource id=27 type=displayCutout frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=e20001 type=navigationBars frame=[0,2337][1080,2400] visible=true flags=SUPPRESS_SCRIM sideHint=BOTTOM boundingRects=null
+          InsetsSource id=e20004 type=systemGestures frame=[0,0][78,2400] visible=true flags= sideHint=LEFT boundingRects=null
+          InsetsSource id=e20005 type=mandatorySystemGestures frame=[0,2316][1080,2400] visible=true flags= sideHint=BOTTOM boundingRects=null
+          InsetsSource id=e20006 type=tappableElement frame=[0,0][0,0] visible=true flags= sideHint=NONE boundingRects=null
+          InsetsSource id=e20024 type=systemGestures frame=[1002,0][1080,2400] visible=true flags= sideHint=RIGHT boundingRects=null
+    WindowOnBackDispatcher:
+        Top Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda11@149bdf2
+        Callbacks: 
+          Callback: android.view.ViewRootImpl$$ExternalSyntheticLambda11@149bdf2 Priority=0
+    View Hierarchy:
+      com.android.internal.policy.DecorView{17fe69f I.E...... R.....ID 0,0-1080,2400 aid=0}[QuickstepLauncher]
+        android.widget.LinearLayout{9b3d3ec V.E...... .......D 0,0-1080,2400}
+          android.view.ViewStub{ab53b5 G.E...... ......I. 0,0-0,0 #10201cb android:id/action_mode_bar_stub}
+          android.widget.FrameLayout{f71fa4a V.E...... .......D 0,0-1080,2400 #1020002 android:id/content}
+            com.android.launcher3.LauncherRootView{d064dbb V.E...... .......D 0,0-1080,2400 #7f0901b9 app:id/launcher}
+              com.android.launcher3.dragndrop.DragLayer{10042d8 V.E...... .......D 0,0-1080,2400 #7f09011e app:id/drag_layer}
+                com.android.launcher3.views.AccessibilityActionsView{c8a7631 V.E...... ........ 0,88-1080,2337}
+                com.android.launcher3.Workspace{1dd7116 V.ED..... .......D 0,0-1080,2400 #7f09038f app:id/workspace}
+                  com.android.launcher3.CellLayout{c20a97 V.ED..... .......D 0,88-1080,2092}
+                    com.android.launcher3.ShortcutAndWidgetContainer{9a2b484 V.E...... .......D 23,28-1057,1976}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{f5f446d VFED..CL. ......ID 0,0-207,389 #11}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{bb788a2 VFED..CL. ......ID 207,0-414,389 #d}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{812b933 VFED..CL. ......ID 414,0-621,389 #e}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{4d894f0 VFED..CL. ......ID 621,0-828,389 #f}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{f38ba69 VFED..CL. ......ID 828,0-1035,389 #10}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{a298cee VFED..CL. ......ID 0,389-207,778 #c}
+                  com.android.launcher3.CellLayout{ab5b58f V.ED..... ......ID 1108,88-2188,2092}
+                    com.android.launcher3.ShortcutAndWidgetContainer{84a101c V.E...... ......ID 23,28-1057,1976}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{a199425 VFED..CL. ......ID 207,1556-414,1945 #9}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{1a589fa VFED..CL. ......ID 414,1556-621,1945 #a}
+                      com.android.launcher3.views.DoubleShadowBubbleTextView{4e21bab VFED..CL. ......ID 621,1556-828,1945 #b}
+                      com.android.launcher3.widget.LauncherAppWidgetHostView{9f61208 VFE....L. R.....ID 16,16-1019,762 #6}
+                        android.widget.FrameLayout{1744da1 V.E...... ......ID 0,0-1003,746 #7f0a0254 app:id/themed_root}
+                          android.widget.LinearLayout{9b24bc6 VFE...C.. ......ID 0,0-1003,746 #1020000 android:id/background}
+                            android.widget.TextClock{524c787 V.ED..... ......ID 238,184-764,461 #7f0a009c app:id/clock}
+                            android.widget.LinearLayout{ede46b4 V.E...... ......ID 381,423-621,536 #7f0a0074 app:id/bottom_view}
+                              android.widget.TextClock{16722dd V.ED..... ......ID 0,0-240,62 #7f0a00b8 app:id/date}
+                              android.widget.ImageView{9775e52 G.ED..... ......ID 0,0-0,0 #7f0a019c app:id/nextAlarmIcon}
+                              android.widget.TextView{bfc5523 G.ED..... ......ID 0,0-0,0 #7f0a019b app:id/nextAlarm}
+                            android.widget.ListView{8731a20 V.ED.VC.. ......ID 42,562-961,562 #7f0a029d app:id/world_city_list}
+                com.android.launcher3.Hotseat{fb80fd9 V.ED..... .......D 0,2127-1080,2400 #7f09018a app:id/hotseat}
+                  com.android.launcher3.ShortcutAndWidgetContainer{1090d9e V.E...... .......D 23,0-1057,166}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{c6c8b95 VFED..CL. ......ID 0,0-207,166 #1}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{6fd04aa VFED..CL. ......ID 207,0-414,166 #2}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{6a2f89b VFED..CL. ......ID 414,0-621,166 #3}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{e054438 VFED..CL. ......ID 621,0-828,166 #4}
+                    com.android.launcher3.views.DoubleShadowBubbleTextView{e574c11 VFED..CL. ......ID 828,0-1035,166 #5}
+                  android.view.View{935207f V.ED..... ........ 540,147-540,147}
+                com.android.launcher3.pageindicators.PageIndicatorDots{cbfb84c V.ED..... ........ 0,2064-1080,2127 #7f09023a app:id/page_indicator}
+                com.android.launcher3.DropTargetBar{e90d095 I.E...... ......ID 11,172-1069,319 #7f09011f app:id/drop_target_bar}
+                  com.android.launcher3.DeleteDropTarget{b7465aa V.ED..... ......ID 250,0-492,147 #7f090101 app:id/delete_target_text}
+                  com.android.launcher3.SecondaryDropTarget{305459b V.ED..... ......ID 566,0-808,147 #7f09034f app:id/uninstall_target_text}
+                com.android.launcher3.views.ScrimView{5560d38 V.ED..... ......ID 0,0-1080,2400 #7f090288 app:id/scrim_view}
+                com.android.quickstep.views.LauncherRecentsView{efae111 I.ED..... .......D 0,0-1080,2400 #7f090238 app:id/overview_panel}
+                  com.android.quickstep.views.TaskView{58b3276 VFED..C.. .......D 467,187-1201,1986 #7f090309 app:id/task}
+                    com.android.quickstep.views.TaskThumbnailView{2e8a077 V.ED..... ......ID 0,168-734,1799 #7f0902bd app:id/snapshot}
+                    android.widget.ImageView{fac4e4 V.ED..... ......ID 655,0-734,79 #7f0902b3 app:id/show_windows}
+                    com.android.quickstep.views.IconView{f1b7d4d V.ED..CL. ......ID 304,0-430,126 #7f090196 app:id/icon}
+                  com.android.quickstep.views.ClearAllButton{5700002 VFED..... ......ID 173,1023-425,1149 #7f0900c7 app:id/clear_all}
+                com.android.quickstep.views.OverviewActionsView{43ccd13 V.E...... ........ 0,1986-1080,2400 #7f090237 app:id/overview_actions_view}
+                  android.widget.LinearLayout{4114b50 I.E...... .......D 0,63-1080,189 #7f090040 app:id/action_buttons}
+                    android.widget.Space{2fa149 I.ED..... ......I. 0,0-398,3}
+                    android.widget.Button{ee21a4e VFED..C.. ......ID 398,0-682,126 #7f090057 app:id/action_screenshot}
+                    android.widget.Space{9d276f G.ED..... ......I. 0,0-0,0 #7f09005a app:id/action_split_space}
+                    android.widget.Button{3c7cc7c GFED..C.. ......I. 0,0-0,0 #7f090059 app:id/action_split}
+                    android.widget.Space{480905 I.ED..... ......I. 682,0-1080,3}
+                    android.widget.Space{498d5a G.ED..... ......I. 0,0-0,0 #7f09022f app:id/oav_three_button_space}
+                com.android.launcher3.allapps.LauncherAllAppsContainerView{5fecb8b G.ED..... ......ID 0,0-1080,2400 #7f09008b app:id/apps_view}
+                  android.widget.FrameLayout{8033468 G.E...... ......I. 0,0-0,0 #7f0900a5 app:id/bottom_sheet_background}
+                    android.view.View{3c53081 V.ED..... ......I. 0,0-0,0 #7f0900a7 app:id/bottom_sheet_handle_area}
+                    android.view.View{4832526 V.ED..... ......I. 0,0-0,0 #7f0900a6 app:id/bottom_sheet_handle}
+                  com.android.launcher3.allapps.SearchRecyclerView{28c9567 GFED..... ......I. 0,0-0,0 #7f09029f app:id/search_results_list_view}
+                  com.android.launcher3.allapps.AllAppsRecyclerView{b2f14 VFED..... ......ID 0,214-1080,2400 #7f090089 app:id/apps_list_view aid=1073741825}
+                    com.android.launcher3.BubbleTextView{a9353bd VFED..CL. ......ID 0,63-216,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{56c6db2 VFED..CL. ......ID 216,63-432,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{2432103 VFED..CL. ......ID 432,63-648,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{5f62880 VFED..CL. ......ID 648,63-864,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{d266eb9 VFED..CL. ......ID 864,63-1080,378 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{b2fb2fe VFED..CL. ......ID 0,378-216,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{a4cca5f VFED..CL. ......ID 216,378-432,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{cd54cac VFED..CL. ......ID 432,378-648,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{d363d75 VFED..CL. ......ID 648,378-864,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{450010a VFED..CL. ......ID 864,378-1080,693 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{e1dad7b VFED..CL. ......ID 0,693-216,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{5a08798 VFED..CL. ......ID 216,693-432,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{63a3bf1 VFED..CL. ......ID 432,693-648,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{27523d6 VFED..CL. ......ID 648,693-864,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{a4fa657 VFED..CL. ......ID 864,693-1080,1008 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{6e28544 VFED..CL. ......ID 0,1008-216,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{9a5a62d VFED..CL. ......ID 216,1008-432,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{7f7a762 VFED..CL. ......ID 432,1008-648,1323 #7f090196 app:id/icon}
+                    com.android.launcher3.BubbleTextView{13e50f3 VFED..CL. ......ID 648,1008-864,1323 #7f090196 app:id/icon}
+                  com.android.launcher3.allapps.FloatingHeaderView{9597554 V.E...... ........ 0,214-1080,335 #7f09006b app:id/all_apps_header}
+                    com.android.launcher3.appprediction.PredictionRowView{324b1b0 G.E...... ......I. 0,0-0,0 #7f090250 app:id/prediction_row}
+                      com.android.launcher3.BubbleTextView{2e37829 GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{22cd7ae GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{563094f GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{a1b38dc GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                      com.android.launcher3.BubbleTextView{f126de5 GFED..CL. ......I. 0,0-0,0 #7f090196 app:id/icon}
+                    com.android.launcher3.appprediction.AppsDividerView{c72c0ba G.ED..... ......I. 0,0-0,0 #7f090088 app:id/apps_divider_view}
+                    com.android.launcher3.workprofile.PersonalWorkSlidingTabStrip{d70eb6b G.E...... ......I. 0,0-0,0 #7f0902f3 app:id/tabs}
+                      android.widget.Button{9106c8 VFED..C.. ......I. 0,0-0,0 #7f0902f0 app:id/tab_personal}
+                      android.widget.Button{4810361 VFED..C.. ......I. 0,0-0,0 #7f0902f1 app:id/tab_work}
+                  android.widget.TextView{7fc2e86 V.ED..... ......ID 833,240-1030,403 #7f09013c app:id/fast_scroller_popup}
+                  com.android.launcher3.views.RecyclerViewFastScroller{e30d347 V.ED..... ........ 996,240-1148,2400 #7f09013b app:id/fast_scroller}
+                  com.android.launcher3.allapps.search.AppsSearchContainerLayout{b13c774 VFED..CL. ......ID 8,151-1071,293 #7f090295 app:id/search_container_all_apps aid=1073741824}`
+};
+
 
 // ─── Android 9.0 (Pie, API 28) ───
 // Official component tree: ActivityStackSupervisor → ActivityDisplay →
@@ -6244,6 +6804,11 @@ var DATA_SOURCE_GROUPS = [
         id: 'activities', label: 'Activities', icon: '🎯', cmd: 'dumpsys activity activities', view: 'window',
         desc: 'ATMS 活动/任务逻辑生命周期（只到 ActivityRecord）。层级树 + 画布左上「诊断面板」（G1–G6，结论可点击定位）。',
         paste: '在此粘贴 dumpsys activity activities 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell dumpsys activity activities\n3. 复制含 Display / Task / ActivityRecord 的段落\n4. 或点「加载示例数据」'
+      },
+      {
+        id: 'viewtop', label: 'View Top', icon: '🌳', cmd: 'dumpsys activity top', view: 'window',
+        desc: '当前前台 Activity 的 View 层级树（DecorView → ViewGroup → View，含 class / hash / 坐标 / 资源 id）。默认看前台；在输入框上方「目标 Activity」填 包名/类名 可指定某个 Activity。',
+        paste: '在此粘贴 dumpsys activity top 输出...\n\n1. 默认看前台 Activity：adb shell dumpsys activity top\n2. 指定某个 Activity：adb shell dumpsys activity <包名/类名>\n3. 复制完整输出（含 View Hierarchy: 段）\n4. 或点「加载示例数据」\n\n提示：切换本数据源后，输入框上方会出现「目标 Activity」框，留空=前台(top)，填入如 com.example/.MainActivity 即指定该 Activity。'
       }
     ]
   },
@@ -6446,7 +7011,7 @@ function updateDataSourceUI() {
       sub.style.display = hit ? '' : 'none';
     }
   });
-  const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers' || dataSource === 'amstack');
+  const isTreeDs = (dataSource === 'containers' || dataSource === 'activities' || dataSource === 'windowcontainers' || dataSource === 'amstack' || dataSource === 'viewtop');
   const vw = document.getElementById('view-window');
   const vh = document.getElementById('view-hwc');
   const vst = document.getElementById('view-sftree');
@@ -6457,7 +7022,7 @@ function updateDataSourceUI() {
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
   // 树工具（展开/折叠/定位 Resumed）：窗口树类数据源（containers/activities/windowcontainers）
   const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && currentView === 'sf-tree');
-  const showWin = (dataSource !== 'amstack') && isTreeDs;
+  const showWin = (dataSource !== 'amstack' && dataSource !== 'viewtop') && isTreeDs;
   const exp = document.getElementById('tb-expand');
   const col = document.getElementById('tb-collapse');
   const res = document.getElementById('tb-resumed');
@@ -6470,6 +7035,9 @@ function updateDataSourceUI() {
   if (ta && _dsIt && _dsIt.paste) ta.placeholder = _dsIt.paste;
   const hint = document.getElementById('view-hint');
   if (hint) hint.style.display = (currentView === 'hwc') ? 'inline-flex' : 'none';
+  // 「目标 Activity」输入框：仅 viewtop 数据源可见
+  const vtBox = document.getElementById('view-target-box');
+  if (vtBox) vtBox.style.display = (dataSource === 'viewtop') ? '' : 'none';
 }
 
 function openPerspectiveModal() {
@@ -8336,12 +8904,14 @@ function dataSourceToAdbCommand(ds) {
   if (ds === 'activities') return 'activities';
   if (ds === 'amstack') return 'amstack';
   if (ds === 'windowcontainers') return 'windowcontainers';
+  if (ds === 'viewtop') return 'viewtop';
   return 'containers';
 }
 function adbCommandLabel(cmd) {
   if (cmd === 'activities') return 'activity activities';
   if (cmd === 'amstack') return 'am stack list';
   if (cmd === 'windowcontainers') return 'window containers';
+  if (cmd === 'viewtop') return 'activity top';
   return cmd === 'surfaceflinger' ? 'SurfaceFlinger' : (cmd === 'window' ? 'window windows' : 'activity containers');
 }
 
@@ -8380,7 +8950,12 @@ function fillAndParse(text) {
 
 // 通过桥接抓取单台设备
 async function fetchDumpViaBridge(serial, command) {
-  const url = adbBridgeBase() + '/dump?device=' + encodeURIComponent(serial) + '&command=' + encodeURIComponent(command);
+  let url = adbBridgeBase() + '/dump?device=' + encodeURIComponent(serial) + '&command=' + encodeURIComponent(command);
+  if (command === 'viewtop') {
+    const tEl = document.getElementById('view-target-input');
+    const t = tEl ? tEl.value.trim() : '';
+    if (t) url += '&target=' + encodeURIComponent(t);
+  }
   const resp = await fetch(url);
   if (!resp.ok) {
     const msg = await resp.text().catch(() => '');
