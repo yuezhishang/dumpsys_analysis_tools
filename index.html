@@ -340,7 +340,7 @@ select.btn{
 .vt-task{margin-bottom:14px;border:1px solid var(--border-light,#2a3142);border-radius:8px;background:var(--bg-secondary,#141a28);overflow:hidden}
 .vt-task.collapsed .vt-list{display:none}
 .vt-task-header{display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg-tertiary,#1b2030);cursor:pointer;user-select:none;position:sticky;top:0;z-index:2}
-.vt-task-caret{font-size:11px;color:var(--text-secondary,#9aa4b2);width:14px;text-align:center;flex:0 0 auto}
+.vt-task-caret{font-size:15px;color:var(--text-secondary,#9aa4b2);width:22px;text-align:center;flex:0 0 auto}
 .vt-task-title{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;flex-wrap:wrap}
 .vt-task-id{color:var(--accent,#4aa3ff);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
 .vt-task-pkg{color:var(--text-secondary,#9aa4b2);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12px}
@@ -351,7 +351,7 @@ select.btn{
 .vt-node{display:flex;align-items:center;gap:6px;padding:3px 8px;cursor:pointer;border-radius:4px;font-size:13px;line-height:1.5}
 .vt-node:hover{background:var(--bg-tertiary,#1b2030)}
 .vt-node.selected{background:rgba(74,163,255,.18);box-shadow:inset 0 0 0 1px var(--accent,#4aa3ff)}
-.vt-caret{width:14px;text-align:center;font-size:10px;color:var(--text-secondary,#9aa4b2);flex:0 0 auto}
+.vt-caret{width:22px;text-align:center;font-size:14px;color:var(--text-secondary,#9aa4b2);flex:0 0 auto}
 .vt-caret.leaf{visibility:hidden}
 .vt-class{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--text-primary,#e6e9ef);font-weight:600}
 .vt-class.hl{background:rgba(227,179,65,.3);border-radius:3px;padding:0 2px}
@@ -1566,6 +1566,24 @@ function installCanvasResizeRecenter() {
   const ro = new ResizeObserver(function () { recenterCanvasIfSettling(); });
   ro.observe(panel);
 }
+// 解析后默认按适配尺寸显示（HWC 预览按内容自适应铺满可视区）。
+// 单次 380ms 定时器可能在输入面板 max-height .3s 折叠过渡未完成时适配，画布尺寸读偏 → 不铺满。
+// 用「多时间点兜底」覆盖过渡全程，确保过渡结束后最终铺满可视区。
+function scheduleHwcAutoFit() {
+  if (currentView !== 'hwc') return;
+  hwcAutoFitPending = true;
+  canvasRecenterUntil = Date.now() + 1200;
+  if (canvasRecenterTimer) clearTimeout(canvasRecenterTimer);
+  canvasRecenterTimer = setTimeout(function () {
+    canvasRecenterTimer = null;
+    canvasRecenterUntil = 0;
+    if (currentView === 'hwc') fitToView();
+  }, 380);
+  const tryFit = function () { if (currentView === 'hwc') fitToView(); };
+  requestAnimationFrame(tryFit);   // 下一帧：面板已激活、SVG 已入 DOM，先适配一次
+  setTimeout(tryFit, 140);         // 折叠过渡进行中，再次适配
+  setTimeout(function () { tryFit(); hwcAutoFitPending = false; }, 480); // 过渡结束：最终适配
+}
 const MIN_ZOOM = 0.2, MAX_ZOOM = 3;
 
 // HWC 预览状态
@@ -1574,6 +1592,8 @@ let hwcHoveredId = null;  // 当前 hover 的 layer id
 let hwcShowScreen = true; // 屏幕占位浮层开关
 let hwcShowLegend = true; // 图例浮层开关
 let hwcContentW = 0, hwcContentH = 0; // 当前 HWC 内容实际尺寸（用于适配）
+let hwcTableWasSeen = false, hwcTableRowCount = 0; // HWC 合层表是否出现 / 实际数据行数（用于空态文案）
+let hwcAutoFitPending = false; // 解析后待自动适配尺寸（多次兜底，覆盖输入面板折叠过渡）
 let screenRects = [];     // 屏幕占位浮层中的矩形（hover 联动）
 let hwcMainOnly = false;  // true=只显示主要图层（排除装饰性 overlay），false=显示全部图层（含 ScreenDecorOverlay 等装饰层）
 
@@ -2741,8 +2761,9 @@ function switchView(v) {
   panX = 0; panY = 0; applyPan();
   selectedNodeId = null;
   renderTree();
-  // 切换到窗口/图层树时居中显示；HWC 预览由 renderHwcPreview→fitToView 自动适配
-  if (currentView !== 'hwc') centerLayout();
+  // 切换到窗口/图层树时居中显示；HWC 预览解析后默认适配可视区域
+  if (currentView === 'hwc') { scheduleHwcAutoFit(); installCanvasResizeRecenter(); }
+  else centerLayout();
   renderStats();
   updateDataSourceUI();
   const dp = document.getElementById('details-panel');
@@ -3182,9 +3203,16 @@ function renderHwcPreview(root) {
   const emptyState = document.getElementById('empty-state');
   if (hwcLayers.length === 0) {
     emptyState.style.display = 'flex';
-    emptyState.querySelector('.empty-text').innerHTML = dataSource === 'surfaceflinger'
-      ? '尚无合成图层数据<br>请粘贴 dumpsys SurfaceFlinger 输出（或加载示例）'
-      : '当前 Activity Containers 数据未推导出合成图层<br>请确认窗口树中存在可见的 Activity / 窗口 / 系统层';
+    const et = emptyState.querySelector('.empty-text');
+    if (dataSource === 'surfaceflinger') {
+      if (hwcTableWasSeen && hwcTableRowCount === 0) {
+        et.innerHTML = '😶 这份 SurfaceFlinger 输出里的 <b>HWC 合层表为空</b><br>当前屏幕可能已熄屏 / 无前台图层，没有可供合成的 HWC 图层。<br>请确认设备处于亮屏且有前台界面状态后重新抓取，或点击左上角「示例」加载一份真实数据。';
+      } else {
+        et.innerHTML = '😶 这份 SurfaceFlinger 输出里<b>没有解析到任何 HWC 合成图层</b><br>可能是内容不完整（缺少 <code>HWC layers:</code> 段），或当前屏幕已熄屏 / 无前台图层。<br>请确认粘贴的是完整的 <code>dumpsys SurfaceFlinger</code> 输出，或点击左上角「示例」加载一份真实数据。';
+      }
+    } else {
+      et.innerHTML = '当前 Activity Containers 数据未推导出合成图层<br>请确认窗口树中存在可见的 Activity / 窗口 / 系统层';
+    }
     root.style.display = 'none';
     return;
   }
@@ -3481,7 +3509,6 @@ function estimateNodeWidth(label) {
 
 function computeDiagramLayout(forest) {
   const visible = [];
-  let leafCursor = 0;
   let maxDepth = 0;
 
   function traverse(node, depth) {
@@ -3497,29 +3524,58 @@ function computeDiagramLayout(forest) {
     return entry;
   }
 
-  function assignX(entry) {
+  // 基于节点实际宽度的自底向上布局：先计算每个子树的水平跨度（subLeft/subRight 为相对于 entry.x 的偏移），
+  // 再自顶向下分配绝对 x 坐标，确保同级子树之间以及父节点自身都不发生重叠。
+  function measure(entry) {
+    entry.halfW = estimateNodeWidth(entry.node.label || '') / 2;
     if (entry.children.length === 0) {
-      const ew = estimateNodeWidth(entry.node.label || '');
-      entry.x = leafCursor + ew / 2;
-      leafCursor += ew + DIAGRAM.hGap;
-    } else {
-      for (const c of entry.children) assignX(c);
-      entry.x = (entry.children[0].x + entry.children[entry.children.length - 1].x) / 2;
+      entry.subLeft = -entry.halfW;
+      entry.subRight = entry.halfW;
+      entry.subWidth = entry.halfW * 2;
+      return;
     }
+    for (const c of entry.children) measure(c);
+    // 自左向右紧凑排列子树，相邻子树之间至少保留 hGap
+    let cursor = 0;
+    for (let i = 0; i < entry.children.length; i++) {
+      const c = entry.children[i];
+      c.relX = cursor - c.subLeft + c.halfW;
+      cursor += c.subWidth + DIAGRAM.hGap;
+    }
+    cursor -= DIAGRAM.hGap; // 去掉最后一个子树右侧多余的 hGap
+    // 父节点居中覆盖所有子树
+    const first = entry.children[0], last = entry.children[entry.children.length - 1];
+    const childrenCenter = (first.relX + first.subLeft + last.relX + last.subRight) / 2;
+    const offset = -childrenCenter;
+    for (const c of entry.children) c.relX += offset;
+    entry.subLeft = Math.min(-entry.halfW, first.relX + first.subLeft);
+    entry.subRight = Math.max(entry.halfW, last.relX + last.subRight);
+    entry.subWidth = entry.subRight - entry.subLeft;
+  }
+
+  function place(entry, x) {
+    entry.x = x;
     entry.y = entry.depth * DIAGRAM.vGap;
+    for (const c of entry.children) place(c, x + c.relX);
   }
 
   const roots = forest.map(r => traverse(r, 0));
-  roots.forEach(assignX);
+  let cursor = 0;
+  for (const r of roots) {
+    measure(r);
+    place(r, cursor - r.subLeft + r.halfW);
+    cursor = r.x + r.subRight + DIAGRAM.hGap;
+  }
+
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
   for (const e of visible) {
     if (e.node.manualPos) { e.x = e.node.manualPos.left - 40; e.y = e.node.manualPos.top - 40; }
-    minX = Math.min(minX, e.x);
+    minX = Math.min(minX, e.x + e.subLeft);
     minY = Math.min(minY, e.y);
-    maxX = Math.max(maxX, e.x);
+    maxX = Math.max(maxX, e.x + e.subRight);
     maxY = Math.max(maxY, e.y);
   }
-  const width = Math.max(leafCursor + 200, (maxX - minX) + DIAGRAM.hGap + 200);
+  const width = Math.max(cursor + 200, (maxX - minX) + DIAGRAM.hGap + 200);
   const height = Math.max((maxY - minY) + DIAGRAM.vGap + 120, (maxDepth + 1) * DIAGRAM.vGap + 160);
   return { roots: roots, visible: visible, width: width, height: height };
 }
@@ -3836,7 +3892,7 @@ function locateSourceInWindow(node) {
 }
 
 function compositionLabel(comp) {
-  if (!comp || comp === 'N/A') return 'N/A（需接入 dumpsys SurfaceFlinger）';
+  if (!comp || comp === 'N/A') return 'N/A（未上 HWC 合层 / 无合成信息）';
   return comp;
 }
 
@@ -3900,6 +3956,15 @@ function renderLayerDetails(node, panel, content) {
 
   row('Z 序', node.zOrder, { bold: true, ok: true });
   row('Z 依据', node.zBasis);
+  // ── HWC Layer 全部图层属性（直接取自 dumpsys SurfaceFlinger 的 HWC layers 表，真实数据，不做推导）──
+  row('图层名称', node.name || node.label || '未知');
+  row('Window Type', node.windowType || '未上 HWC 合层');
+  row('Comp Type', node.compType || '未上 HWC 合层');
+  row('Transform', node.transform || '0');
+  row('Disp Frame (LTRB)', formatLTRB(node.dispFrame));
+  row('Source Crop (LTRB)', formatLTRB(node.sourceCrop));
+  row('Frame Rate', node.frameRate || '未上 HWC 合层');
+  row('[Focused]', node.focused ? '是' : '否', { ok: node.focused });
   row('是否 SurfaceView', node.isSurfaceView ? '是（独立 Layer，Z 高于所属窗口）' : '否', { ok: node.isSurfaceView });
   row('透明度 (alpha)', node.alpha === null ? '未知' : (typeof node.alpha === 'number' ? node.alpha.toFixed(2) : node.alpha));
   row('可见区域 (Crop/Frame)', node.crop, { warn: node.crop === null });
@@ -4424,7 +4489,10 @@ function parseInput() {
       }
       currentView = 'hwc';
       zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
-      renderTree(); renderStats();
+      renderTree();
+      // 解析后默认按适配尺寸显示（HWC 预览按内容自适应铺满可视区域）
+      scheduleHwcAutoFit(); installCanvasResizeRecenter();
+      renderStats();
       const vizPanel = document.getElementById('viz-panel');
       if (vizPanel) vizPanel.classList.add('active');
       const inputPanel = document.getElementById('input-panel');
@@ -8338,6 +8406,7 @@ function parseSurfaceFlinger(text) {
   let hwcTableRows = 0;       // HWC 表格实际的数据行数（屏幕关闭时表格可能为空，此时不应丢弃 per-layer 块）
   let tableName = null;
   let tableRow = 0;
+  let hwcColMap = null;   // HWC 表格列索引：由各 Android 版本列头动态决定（见 parseHwcHeader）
   const byName = new Map();
 
   const createTemp = function (name) {
@@ -8401,13 +8470,35 @@ function parseSurfaceFlinger(text) {
       || /^\s*[+*]\s+(?:BufferLayer|ColorLayer|ContainerLayer|EffectLayer|BufferStateLayer|BufferQueueLayer)\b/i.test(line);
   };
 
-  // HWC 表格数据行解析：按 | 切分，兼容 rel/abs 前缀、负 Z、同行的图层名
-  // 列序长期稳定：Z | Window Type | Comp Type | Transform | Disp Frame | Source Crop | ...
+  // HWC 表格列头解析：按列名定位索引，兼容各 Android 版本列序差异。
+  // 标准列序（A12 及多数 ROM）：Z | Window Type | Comp Type | Transform | Disp Frame | Source Crop | Frame Rate ...
+  // 但部分 ROM（如小米 MIUI Android 13）在 Window Type 与 Comp Type 之间插入了「Layer Class」列，
+  // 导致 Comp Type 起的后续列整体右移一位 —— 写死索引会让 Disp Frame / Source Crop / Comp Type 全部错位。
+  // 因此必须用列头名称定位，而非固定下标。
+  const DEFAULT_HWC_COLS = { z: 0, windowType: 1, compType: 2, transform: 3, dispFrame: 4, sourceCrop: 5, frameRate: 6 };
+  const parseHwcHeader = function (line) {
+    const cells = line.split('|').map(function (s) { return s.trim().toLowerCase(); });
+    const map = { z: 0 };
+    cells.forEach(function (c, i) {
+      if (c === 'z' || c === 'z order') map.z = i;
+      else if (/window\s*type/.test(c)) map.windowType = i;
+      else if (/layer\s*class/.test(c)) map.layerClass = i;
+      else if (/comp\s*type/.test(c)) map.compType = i;
+      else if (/\btransform\b/.test(c)) map.transform = i;
+      else if (/disp\s*frame/.test(c)) map.dispFrame = i;
+      else if (/source\s*crop/.test(c)) map.sourceCrop = i;
+      else if (/frame\s*rate/.test(c)) map.frameRate = i;
+    });
+    return map;
+  };
+
+  // HWC 表格数据行解析：按 | 切分，列索引取自列头（hwcColMap），兼容 rel/abs 前缀、负 Z、同行的图层名
   const parseHwcTableRow = function (line) {
     if (line.indexOf('|') < 0) return null;
     const parts = line.split('|').map(function (s) { return s.trim(); });
     if (parts.length < 5) return null;
-    const f0 = parts[0];
+    const cm = hwcColMap || DEFAULT_HWC_COLS;
+    const f0 = parts[cm.z != null ? cm.z : 0];
     let z = null, name = null;
     const relm = f0.match(/(?:rel|abs)\s*(-?\d+)/i);
     if (relm) {
@@ -8422,13 +8513,18 @@ function parseSurfaceFlinger(text) {
     if (z === null) return null; // 无合法 Z → 不是数据行（如列头/分隔行）
     // HWC 表格末列 [Focused]：聚焦窗口标 [*]，其余标 [ ]
     const focused = /\[\*\]/.test(line);
+    // 末列 Frame Rate (Explicit) (Seamlessness) [Focused]：仅取帧率数值，忽略 [ ]/[*] 标记与 (Seamlessness) 等修饰
+    let frameRate = null;
+    const frCol = cm.frameRate != null ? cm.frameRate : 6;
+    if (parts.length > frCol) { const fm = parts[frCol].match(/([\d.]+)/); if (fm) frameRate = fm[1]; }
+    const at = function (k) { const i = cm[k]; return (i != null && parts.length > i) ? parts[i] : null; };
     return {
-      z: z, name: name, focused: focused,
-      windowType: parts[1] || null,
-      compType: normalizeCompType(parts[2] || ''),
-      transform: parts[3] || null,
-      dispFrame: parseSpaceRect(parts[4]),
-      sourceCrop: parseSpaceRect(parts[5])
+      z: z, name: name, focused: focused, frameRate: frameRate,
+      windowType: at('windowType') || null,
+      compType: normalizeCompType(at('compType') || ''),
+      transform: at('transform') || null,
+      dispFrame: parseSpaceRect(at('dispFrame')),
+      sourceCrop: parseSpaceRect(at('sourceCrop'))
     };
   };
 
@@ -8438,7 +8534,10 @@ function parseSurfaceFlinger(text) {
       // 出现过 HWC 表格 → 表格即真实合层清单；表格外的内部图层（手势监听/Dim/Input Sink 等）不进预览。
       // 但屏幕关闭等场景下 HWC 表格可能为空（0 行），此时无权威清单，必须回退用 per-layer 块，
       // 否则 hwcLayers 全空、HWC 预览空白并误报「未解析到任何 Layer」。
-      if (hwcTableSeen && hwcTableRows > 0 && !cur.fromTable) return;
+      // HWC 合层表已出现 → 表格即真实合层权威清单；表格外的内部图层（手势监听/Dim/Input Sink 等）不进预览。
+      // 表格为空（0 行，如屏幕熄屏）也按「无 HWC 图层」处理 → 显示空态，绝不回退到 Visible layers 假数据。
+      // 仅当整份输出根本不含 HWC 合层表段（hwcTableSeen=false，旧格式/残缺）才回退用 per-layer 块。
+      if (hwcTableSeen && !cur.fromTable) return;
       // 来自 HWC 表格 → 一律以表格权威快照为准，忽略 per-layer 块的覆盖
       const A = cur.fromTable ? cur.authoritative : null;
       const z = A ? A.z : (cur.z != null ? cur.z : (cur._order * 10));
@@ -8448,6 +8547,7 @@ function parseSurfaceFlinger(text) {
       const windowType = A ? A.windowType : cur.windowType;
       const transform = A ? A.transform : cur.transform;
       const visible = A ? A.visible : cur.visible;
+      const frameRate = A ? A.frameRate : cur.frameRate;
       const rectEmpty = function (r) { return !r || (r.right <= r.left || r.bottom <= r.top); };
       if (comp === 'N/A' && rectEmpty(dispFrame) && rectEmpty(cur.frame)) return;
       if (!dispFrame && !sourceCrop && !cur.frame && !comp) return;
@@ -8468,6 +8568,7 @@ function parseSurfaceFlinger(text) {
         sourceType: role, sourceId: null,
         dispFrame: dispFrame, sourceCrop: sourceCrop, frame: cur.frame,
         transform: transform || '0', windowType: windowType || null, format: cur.format || null,
+        frameRate: frameRate || null,
         color: cur.color || null,
         props: {}, propList: [], tags: [], layerRange: 'Z:' + z, _order: cur._order, manualPos: null, el: null
       };
@@ -8491,8 +8592,11 @@ function parseSurfaceFlinger(text) {
       } else if (/^\s*Planner\s+is\s+disabled/i.test(line) || /^\s*HWC2\s+/i.test(line) || /^h\/w\s+composer/i.test(line) || /^-+\s*HWC-+\s*$/i.test(line)) {
         inHwcTable = false; tableName = null; continue;
       } else if (/^\s*[-=]+\s*$/.test(line) || !line.trim()) { continue; }
-      // 跳过列头/标签行
-      else if (/^\s*Layer\s+name\s*$/i.test(line) || /\bWindow\s+Type\b/.test(line) || /\bComp\s+Type\b/.test(line) || /\bDisp\s+Frame\b/.test(line) || /\bSource\s+Crop\b/.test(line) || /\bFrame\s+Rate\b/.test(line)) { continue; }
+      // 跳过列头/标签行；HWC 表格列头含 | 且带 Window Type → 按列名解析列索引（兼容 Android 13 多一列 Layer Class 等差异）
+      else if (/\bWindow\s+Type\b/.test(line) && line.indexOf('|') >= 0) {
+        hwcColMap = parseHwcHeader(line);
+        continue;
+      } else if (/^\s*Layer\s+name\s*$/i.test(line) || /\bComp\s+Type\b/.test(line) || /\bDisp\s+Frame\b/.test(line) || /\bSource\s+Crop\b/.test(line) || /\bFrame\s+Rate\b/.test(line)) { continue; }
       else {
         const row = parseHwcTableRow(line);
         if (row) {
@@ -8501,13 +8605,13 @@ function parseSurfaceFlinger(text) {
           if (nm) {
             const t = mergeTemp(nm, {
               z: row.z, windowType: row.windowType, compType: row.compType, transform: row.transform,
-              dispFrame: row.dispFrame, sourceCrop: row.sourceCrop, visible: true, focused: row.focused
+              dispFrame: row.dispFrame, sourceCrop: row.sourceCrop, frameRate: row.frameRate, visible: true, focused: row.focused
             }, true);
             t.fromTable = true;
             // 快照 HWC 表格权威值，finalize 时无论后续 per-layer 块如何覆盖都以表格为准
             t.authoritative = {
               z: row.z, windowType: row.windowType, compType: row.compType, transform: row.transform,
-              dispFrame: row.dispFrame, sourceCrop: row.sourceCrop, visible: true, focused: row.focused
+              dispFrame: row.dispFrame, sourceCrop: row.sourceCrop, frameRate: row.frameRate, visible: true, focused: row.focused
             };
             setOrder(nm, tableRow++);
           }
@@ -8573,6 +8677,8 @@ function parseSurfaceFlinger(text) {
     }
   }
   finalizeAll();
+  hwcTableWasSeen = hwcTableSeen;
+  hwcTableRowCount = hwcTableRows;
 
   // ── 解析 SurfaceFlinger 层级树：A14+ 用树形 Layer Hierarchy 段；A12/13 旧格式用 TimeStats miniDump 段的 parent= 重建 ──
   sfForest = parseLayerHierarchy(text);
@@ -8725,8 +8831,10 @@ function parseSfHierarchyLegacy(text) {
     const m = raw.match(nodeRe);
     if (m) {
       const rawName = m[1].trim();
-      const clean = rawName.replace(/\s*#\d+\s*$/, '');          // 仅剥尾部 #id
-      const nodeLabel = /^root$/i.test(clean) ? 'Display 0' : clean;
+      // 旧版 dump 在名字后用两个以上空格附加「screenFlags = 0  miuiVkWidgetTransparent = 0」等属性段，
+      // 必须整体剥除，否则所有节点标签被拉长、Root 节点无法被识别为 Display。
+      const clean = rawName.replace(/\s*#\d+\s*$/, '').replace(/\s{2,}[A-Za-z_][A-Za-z0-9_]*\s*=.*/, '').trim();
+      const nodeLabel = /^root\b/i.test(clean) ? 'Display 0' : clean;
       const node = makeSfNode(nodeLabel, null);
       byRaw.set(rawName, node);
       node._rawParent = 'none';
