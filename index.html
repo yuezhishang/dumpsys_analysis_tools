@@ -320,6 +320,9 @@ select.btn{
 .diagram-node.system{border-color:#94a3b8;background:rgba(148,163,184,.12)}
 .diagram-node.window{border-color:#cbd5e1;background:rgba(203,213,225,.12)}
 .diagram-node.other{border-color:#e879f9;background:rgba(232,121,249,.12)}
+/* 离屏层级节点着色：leash=紫、ActivityRecord 残影(handleNotAlive)=橙 */
+.diagram-node.off-leash{border-color:#a78bfa;background:rgba(167,139,250,.16)}
+.diagram-node.off-ghost{border-color:#fbbf24;background:rgba(251,191,36,.16)}
 /* View 层级树节点（dumpsys activity top）：叶子 View 与 ViewGroup 容器区分配色 */
 .diagram-node.view{border-color:#f59e0b;background:rgba(245,158,11,.10)}
 .diagram-node.view.is-group{border-color:#fb923c;background:rgba(251,146,60,.14);border-style:solid}
@@ -525,6 +528,7 @@ select.btn{
   flex:1;min-width:0;
 }
 .prop-val.highlight{color:var(--accent-green)}
+.hl-val{color:var(--accent-orange);font-weight:600}
 .prop-info-icon{margin-left:auto;color:var(--accent-blue);opacity:.4;font-size:12px;flex-shrink:0;transition:opacity .15s}
 .prop-row.has-desc{cursor:pointer}
 .prop-row.has-desc:hover .prop-info-icon{opacity:1}
@@ -568,6 +572,16 @@ select.btn{
 .stat-dot.window{background:var(--accent-teal)}
 .stat-dot.taskdisplayarea{background:var(--accent-orange)}
 .stat-dot.leaf{background:var(--accent-gray)}
+/* 离屏层级统计条 */
+.sf-offscreen-stats{
+  display:flex;align-items:center;gap:16px;
+  padding:6px 20px;
+  background:var(--bg-secondary);
+  border-top:1px solid var(--border);
+  flex-shrink:0;flex-wrap:wrap;
+}
+.stat-dot.off-ghost{background:#fbbf24}
+.stat-dot.off-leash{background:#a78bfa}
 .stat-val{font-weight:600;color:var(--text-primary)}
 .stats-bar .spacer{flex:1}
 .legend-hint{font-size:11px;color:var(--text-muted)}
@@ -697,6 +711,9 @@ select.btn{
 .win-focus-star { font-size: 11px; color: #e3b341; font-weight: 700; background: rgba(227,179,65,.14); padding: 1px 6px; border-radius: 10px; }
 .win-badges { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
 .type-badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border); color: var(--text-secondary); background: var(--bg-secondary); }
+.type-badge.off-ghost{color:#fbbf24;border-color:#fbbf24;background:rgba(251,191,36,.16)}
+.type-badge.off-leash{color:#a78bfa;border-color:#a78bfa;background:rgba(167,139,250,.16)}
+.type-badge.off-other{color:var(--text-secondary)}
 .type-badge.t-statusbar, .type-badge.t-navbar, .type-badge.t-system { color: #ffa657; border-color: rgba(255,166,87,.4); }
 .type-badge.t-ime { color: #d2a8ff; border-color: rgba(210,168,255,.4); }
 .type-badge.t-wallpaper { color: #db61a2; border-color: rgba(219,97,162,.4); }
@@ -796,7 +813,7 @@ select.btn{
 .ov-stat { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 10px 16px; min-width: 92px; text-align: center; }
 .ov-num { display: block; font-size: 20px; font-weight: 700; color: var(--accent); line-height: 1.2; }
 .ov-label { display: block; font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-.stack-card { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; }
+.stack-card { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 14px; overflow: hidden; cursor: pointer; }
 .stack-card-head { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-light); flex-wrap: wrap; }
 .stack-id { font-weight: 700; color: var(--text-primary); font-size: 14px; }
 .stack-mode { font-size: 11px; padding: 2px 9px; border-radius: 10px; font-weight: 600; }
@@ -808,6 +825,8 @@ select.btn{
 .stack-type { font-size: 11px; padding: 2px 9px; border-radius: 10px; font-weight: 600; background: rgba(88,166,255,.16); color: #58a6ff; }
 .stack-note { font-size: 11.5px; color: var(--text-muted); margin: -6px 0 14px; line-height: 1.5; }
 .stack-card.fg { border-color: rgba(218,145,54,.5); }
+.stack-card.sl-selected { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.stack-task.sl-selected { background: var(--bg-tertiary); border-color: var(--accent); }
 .ov-num-sm { font-size: 13px !important; padding-top: 5px; }
 .stack-meta { font-size: 11px; color: var(--text-muted); font-family: var(--mono); margin-left: auto; }
 .stack-tasks { padding: 6px 10px; }
@@ -989,6 +1008,7 @@ select.btn{
       <button class="seg-btn active" id="view-window" onclick="switchView('window')" title="窗口层级树（WindowContainer / Activity 层级）">🪟 窗口层级树</button>
       <button class="seg-btn" id="view-hwc" onclick="switchView('hwc')" title="HWC 合成预览：把合成图层按硬件合成（Hardware Composer）顺序堆叠成屏幕画面，直观看显示层级与合成方式">🖥 HWC 合成预览</button>
       <button class="seg-btn" id="view-sftree" onclick="switchView('sf-tree')" title="SurfaceFlinger 层级树（Layer Hierarchy）：包括 Display / Task / Activity / 壁纸 / 状态栏等完整窗口与图层层级。AOSP 自 Android 14 起整合为树形 Layer Hierarchy 段；Android 12/13 为分散旧格式（层级信息在 TimeStats miniDump 段、靠 parent= 字段重建父子），本工具均已适配">🌳 层级树</button>
+      <button class="seg-btn" id="view-sfoff" onclick="switchView('sf-offscreen')" title="SurfaceFlinger 离屏层级树（Offscreen Hierarchy，Android 14+）：仅含当前未上屏的 Activity / 过渡 leash 等离屏图层。与 Layer Hierarchy 同为树形语法，本工具已适配；Android 12/13 旧格式无此段">🌑 离屏层级</button>
       <button class="seg-btn" id="view-windowlist" onclick="switchView('windowlist')" title="dumpsys window 窗口图层：按 Z 序堆叠每个 Window，标注 5 种 mDrawState 绘制状态与关键参数（点击窗口看参数解释）" style="display:none">🪟 窗口图层</button>
       <span class="view-hint" id="view-hint" style="display:none">链序 = Z 序（上=顶层）</span>
     </div>
@@ -1124,6 +1144,9 @@ select.btn{
     <span class="legend-hint" id="legend-hint">共 <span id="stat-total">0</span> 个节点</span>
   </div>
 
+  <!-- 离屏层级统计条（仅 SurfaceFlinger → 离屏层级视图显示） -->
+  <div class="sf-offscreen-stats" id="sf-offscreen-stats" style="display:none"></div>
+
 </div>
 
 <div class="toast" id="toast"></div>
@@ -1161,6 +1184,9 @@ if (typeof refreshVersionOptions === 'function') refreshVersionOptions();
 let hwcLayers = [];        // SurfaceFlinger 解析出的图层数组（HWC 预览数据源，真实坐标/合成方式）
 let layerIndex = new Map(); // 当前数据源下可被搜索/选中的节点索引：containers=窗口树节点；surfaceflinger=HWC 图层
 let sfNodeIndex = new Map(); // SurfaceFlinger 层级树节点索引（SF 数据源「层级树」视图用）
+let sfOffscreenForest = [];  // SurfaceFlinger 离屏层级树（SF 数据源「离屏层级」视图用）：A14+ 的 Offscreen Hierarchy 段（与 Layer Hierarchy 同树形语法），A12/13 旧格式无此段则为空
+let sfOffscreenIndex = new Map(); // SurfaceFlinger 离屏层级树节点索引（sf-offscreen 视图搜索/选中用）
+let sfOffscreenStats = null; // 离屏层级统计：{total, ghost, leash, tasks}，供统计条展示
 
 let sfAlignContainers = false; // SF 层级树「以 container 形式展示」开关：true=保留与 containers 树一一对应的容器层级，仅折叠窗口子 surface（InputSink/Dim/wrapper/leash）并去掉 SF 辅助层，使 SF 树 == containers 树
 
@@ -1174,6 +1200,10 @@ let windowDrawFilter = 'all';  // 绘制状态筛选（mDrawState）：all / 5 �
 function getActiveForest() {
   if (dataSource === 'surfaceflinger' && currentView === 'sf-tree') {
     return sfAlignContainers ? buildContainerFormForest(sfForest) : sfForest;
+  }
+  if (dataSource === 'surfaceflinger' && currentView === 'sf-offscreen') {
+    // 离屏层级是独立的 Offscreen Hierarchy 段，没有 Display 根、也不套 container 形式，直接返回原树
+    return sfOffscreenForest;
   }
   return parsedForest;
 }
@@ -2691,10 +2721,12 @@ function updateViewToggleUI() {
   const w = document.getElementById('view-window');
   const h = document.getElementById('view-hwc');
   const sst = document.getElementById('view-sftree');
+  const sfo = document.getElementById('view-sfoff');
   const vl = document.getElementById('view-windowlist');
   if (w) w.classList.toggle('active', currentView === 'window');
   if (h) h.classList.toggle('active', currentView === 'hwc');
   if (sst) sst.classList.toggle('active', currentView === 'sf-tree');
+  if (sfo) sfo.classList.toggle('active', currentView === 'sf-offscreen');
   if (vl) vl.classList.toggle('active', currentView === 'windowlist');
   const isWin = currentView === 'windowlist';
   const hint = document.getElementById('view-hint');
@@ -2756,6 +2788,8 @@ function toggleSfAlign(on) {
 function switchView(v) {
   if (v === currentView) return;
   currentView = v;
+  // SF 数据源下：离屏视图用离屏索引，其余 SF 视图用 Layer Hierarchy 索引（搜索/选中/详情依赖 nodeIndex）
+  if (dataSource === 'surfaceflinger') nodeIndex = (v === 'sf-offscreen') ? sfOffscreenIndex : sfNodeIndex;
   updateViewToggleUI();
   // 切换视图属于内容变更，重置画布平移避免旧偏移叠加
   panX = 0; panY = 0; applyPan();
@@ -2773,7 +2807,8 @@ function switchView(v) {
   const tips = {
     window: '已切换到窗口层级树',
     hwc: '已切换到 HWC 合成预览（SurfaceFlinger 真实合成数据）',
-    'sf-tree': '已切换到 SurfaceFlinger 层级树（Layer Hierarchy，含 Display / Task / Activity / 壁纸 / 状态栏等完整层级）'
+    'sf-tree': '已切换到 SurfaceFlinger 层级树（Layer Hierarchy，含 Display / Task / Activity / 壁纸 / 状态栏等完整层级）',
+    'sf-offscreen': '已切换到 SurfaceFlinger 离屏层级树（Offscreen Hierarchy：仅含当前未上屏的 Activity / 过渡 leash 等离屏图层）'
   };
   showToast(tips[v] || '已切换视图', 'success');
 }
@@ -2787,6 +2822,7 @@ function renderTree() {
   const vtf = document.getElementById('vt-focus');
   if (vto) vto.style.display = 'none';
   if (vtf) vtf.style.display = 'none';
+  updateOffscreenStatsBar(); // 任何非离屏视图都先隐藏离屏统计条（覆盖 windowlist/amstack/viewtop 等早返回分支）
   if (dataSource === 'viewtop') { renderViewTop(); return; }
   const root = document.getElementById('tree-root');
   const emptyState = document.getElementById('empty-state');
@@ -2813,13 +2849,43 @@ function renderTree() {
     const et = emptyState.querySelector('.empty-text');
     if (et) et.innerHTML = currentView === 'sf-tree'
       ? '此 SurfaceFlinger 输出<b>不包含树形 Layer Hierarchy 段</b>。AOSP 自 Android 14 起才整合为树形 Layer Hierarchy（Display 0 + 连接器的层级树）；Android 12/13 及更早是分散的旧格式，层级信息在 <code>TimeStats miniDump:</code> 到 <code>Offscreen Layers:</code> 之间、靠 <code>parent=</code> 字段重建父子，本工具已自动用旧格式兼容解析。<br>可切换到「HWC 合成预览」查看真实合成图层。'
-      : '没有可显示的层级数据，请先解析。';
+      : (currentView === 'sf-offscreen'
+        ? '此 SurfaceFlinger 输出<b>没有解析到任何离屏（Offscreen）图层</b>。离屏层级来自 AOSP Android 14+ 的 <code>Offscreen Hierarchy</code> 段（未上屏的 Activity / 过渡 leash 等）；Android 12/13 旧格式无此段，或当前本就没有离屏图层。<br>可切换到「HWC 合成预览」「🌳 层级树」查看其他视图。'
+        : '没有可显示的层级数据，请先解析。');
     root.style.display = 'none';
+    updateOffscreenStatsBar();
     return;
   }
   emptyState.style.display = 'none';
   root.style.display = 'block';
   renderDiagram(root);
+  updateOffscreenStatsBar();
+}
+
+// 离屏层级统计条：仅在 SurfaceFlinger → 离屏层级视图且确实有离屏节点时显示
+function updateOffscreenStatsBar() {
+  const bar = document.getElementById('sf-offscreen-stats');
+  if (!bar) return;
+  const legacy = document.getElementById('stats-bar');
+  if (dataSource === 'surfaceflinger' && currentView === 'sf-offscreen' && sfOffscreenForest.length > 0) {
+    renderOffscreenStats();
+    bar.style.display = 'flex';
+    if (legacy) legacy.style.display = 'none';
+  } else {
+    bar.style.display = 'none';
+  }
+}
+function renderOffscreenStats() {
+  const bar = document.getElementById('sf-offscreen-stats');
+  if (!bar) return;
+  const s = sfOffscreenStats || { total: 0, ghost: 0, leash: 0, tasks: 0 };
+  bar.innerHTML =
+    '<div class="stat-item"><span class="stat-dot off-ghost"></span><span class="stat-label">离屏节点总数</span> <span class="stat-val">' + s.total + '</span></div>' +
+    '<div class="stat-item"><span class="stat-dot off-ghost"></span><span class="stat-label">ActivityRecord 残影 (handleNotAlive)</span> <span class="stat-val">' + s.ghost + '</span></div>' +
+    '<div class="stat-item"><span class="stat-dot off-leash"></span><span class="stat-label">transition-leash</span> <span class="stat-val">' + s.leash + '</span></div>' +
+    '<div class="stat-item"><span class="stat-dot display"></span><span class="stat-label">涉及 Task</span> <span class="stat-val">' + s.tasks + '</span></div>' +
+    '<div class="spacer"></div>' +
+    '<span class="legend-hint">handleNotAlive = 客户端句柄已死但仍占 SF 资源，堆积即疑似泄漏 / 过渡未释放</span>';
 }
 
 /* ===== View Top 竖向可折叠大纲（替代横向画布树，更直观） ===== */
@@ -3603,6 +3669,9 @@ function createDiagramNode(entry) {
   if (node.type === 'view' && node.isViewGroup) {
     cls += ' is-group';
   }
+  // 离屏层级视图：按 offType 着色（仅离屏节点带此字段，不影响 on-screen 树）
+  if (node.offType === 'leash') cls += ' off-leash';
+  else if (node.offType === 'activityrecord' && node.handleNotAlive) cls += ' off-ghost';
   el.className = cls;
   if (node.manualPos) {
     el.style.left = node.manualPos.left + 'px';
@@ -4013,6 +4082,8 @@ function renderDetails(node) {
 
   if (node.isLayer) { renderLayerDetails(node, panel, content); return; }
 
+  if (node.offType) { renderOffscreenDetails(node); return; }
+
   const headerDiv = document.createElement('div');
   headerDiv.className = 'details-header';
 
@@ -4190,6 +4261,106 @@ function renderDetails(node) {
     }
     sec.appendChild(list);
     content.appendChild(sec);
+  }
+
+  const rawSec = document.createElement('div');
+  rawSec.className = 'details-section';
+  const rawTitle = document.createElement('div');
+  rawTitle.className = 'details-section-title';
+  rawTitle.textContent = '原始内容';
+  rawSec.appendChild(rawTitle);
+  const rawDiv = document.createElement('div');
+  rawDiv.style.cssText = 'font-family:var(--mono);font-size:11px;color:var(--text-secondary);word-break:break-all;background:var(--bg-primary);padding:8px;border-radius:4px;border:1px solid var(--border)';
+  rawDiv.textContent = '* ' + node.rawContent;
+  rawSec.appendChild(rawDiv);
+  content.appendChild(rawSec);
+}
+
+// 离屏层级节点详情：替换对离屏节点无意义的通用 9 行，改为排障所需的离屏专属信息
+function renderOffscreenDetails(node) {
+  const panel = document.getElementById('details-panel');
+  const content = document.getElementById('details-content');
+  if (!panel || !content) return;
+  panel.classList.remove('empty');
+  content.innerHTML = '';
+
+  const OFF_TYPE_LABEL = { activityrecord: 'ActivityRecord 残影', leash: '过渡 leash', other: '离屏图层' };
+  const offBadgeClass = (node.offType === 'activityrecord') ? 'off-ghost'
+    : (node.offType === 'leash') ? 'off-leash' : 'off-other';
+  const offLabel = OFF_TYPE_LABEL[node.offType] || '离屏图层';
+
+  const headerDiv = document.createElement('div');
+  headerDiv.className = 'details-header';
+  const titleDiv = document.createElement('div');
+  titleDiv.className = 'details-title';
+  const badge = document.createElement('span');
+  badge.className = 'type-badge ' + offBadgeClass;
+  badge.textContent = offLabel;
+  titleDiv.appendChild(badge);
+  const nameSpan = document.createElement('span');
+  nameSpan.className = 'node-name';
+  nameSpan.textContent = node.label;
+  titleDiv.appendChild(nameSpan);
+  headerDiv.appendChild(titleDiv);
+  const pathDiv = document.createElement('div');
+  pathDiv.className = 'details-path';
+  pathDiv.textContent = getNodePath(node);
+  headerDiv.appendChild(pathDiv);
+  content.appendChild(headerDiv);
+
+  const sec = document.createElement('div');
+  sec.className = 'details-section';
+  const title = document.createElement('div');
+  title.className = 'details-section-title';
+  title.textContent = '离屏图层信息';
+  sec.appendChild(title);
+  const list = document.createElement('div');
+  list.className = 'prop-list';
+  function addRow(k, v, hl) {
+    const row = document.createElement('div');
+    row.className = 'prop-row' + (hl ? ' highlight' : '');
+    const kk = document.createElement('span'); kk.className = 'prop-key'; kk.textContent = k;
+    const vv = document.createElement('span'); vv.className = 'prop-val'; vv.textContent = v;
+    if (hl) vv.classList.add('hl-val');
+    row.appendChild(kk);
+    const sep = document.createElement('span'); sep.className = 'prop-key'; sep.textContent = ': ';
+    row.appendChild(sep); row.appendChild(vv);
+    list.appendChild(row);
+  }
+  addRow('节点类型', offLabel);
+  addRow('所属 Task', node.taskId != null ? ('Task ' + node.taskId) : '无');
+  addRow('handleNotAlive', node.handleNotAlive ? '是（客户端句柄已死，但仍占 SF 资源）' : '否', node.handleNotAlive);
+  addRow('图层 ID', node.id_value != null ? ('#' + node.id_value) : '无');
+  addRow('父链', getNodePath(node));
+  sec.appendChild(list);
+  content.appendChild(sec);
+
+  if (node.children.length > 0) {
+    const csec = document.createElement('div');
+    csec.className = 'details-section';
+    const ctitle = document.createElement('div');
+    ctitle.className = 'details-section-title';
+    ctitle.textContent = '子节点 (' + node.children.length + ')';
+    csec.appendChild(ctitle);
+    const clist = document.createElement('div');
+    clist.className = 'child-list';
+    for (const child of node.children) {
+      const item = document.createElement('div');
+      item.className = 'child-item';
+      item.onclick = function () { selectNode(child); scrollToNode(child); };
+      const cb = document.createElement('span');
+      const cbc = (child.offType === 'activityrecord') ? 'off-ghost' : (child.offType === 'leash') ? 'off-leash' : 'off-other';
+      cb.className = 'type-badge ' + cbc;
+      cb.textContent = child.offType ? (OFF_TYPE_LABEL[child.offType] || '离屏') : '离屏';
+      item.appendChild(cb);
+      const nm = document.createElement('span');
+      nm.className = 'node-name';
+      nm.textContent = child.label;
+      item.appendChild(nm);
+      clist.appendChild(item);
+    }
+    csec.appendChild(clist);
+    content.appendChild(csec);
   }
 
   const rawSec = document.createElement('div');
@@ -8690,7 +8861,18 @@ function parseSurfaceFlinger(text) {
       if (nd.children.length) indexForest(nd.children);
     }
   })(sfForest);
-  // SF 数据源下：让搜索/选中/详情复用 nodeIndex（HWC 图层仍在 layerIndex）
+  // 离屏层级树：A14+ 的 Offscreen Hierarchy 段（与 Layer Hierarchy 同为「ROOT + 连接器」树形语法，复用同一解析器）；
+  // 旧格式（TimeStats 段 + parent=）在 Offscreen Layers: 处就停手，没有离屏树，故 sfOffscreenForest 为空。
+  sfOffscreenForest = parseLayerHierarchy(text, { headerRe: /^\s*Offscreen Hierarchy\s*$/i, stopRe: /^\s*(Mergeable Hierarchies|Display\s+\S[^\n]*HWC layers)/i });
+  sfOffscreenIndex = new Map();
+  (function indexOffscreen(arr) {
+    for (const nd of arr) {
+      sfOffscreenIndex.set(nd.id, nd);
+      if (nd.children.length) indexOffscreen(nd.children);
+    }
+  })(sfOffscreenForest);
+  annotateOffscreenForest(sfOffscreenForest); // 计算 offType / taskId / handleNotAlive 与统计
+  // SF 数据源下：让搜索/选中/详情复用 nodeIndex（HWC 图层仍在 layerIndex；离屏视图在 switchView 时切到 sfOffscreenIndex）
   nodeIndex = sfNodeIndex;
 }
 
@@ -8754,10 +8936,46 @@ function makeSfNode(rawLabel, idNum) {
   return node;
 }
 
+// 离屏层级树专用标注：遍历 sfOffscreenForest，给每个节点算出排障所需的派生字段，
+// 并汇总 sfOffscreenStats。仅离屏节点带这些字段，不影响 on-screen 的 Layer Hierarchy。
+// - offType: 'activityrecord'（WMS ActivityRecord 残影）/ 'leash'（transition/animation leash）/ 'other'
+// - taskId: 归一化整数（ActivityRecord 取 t56 的 56；leash 取 Task=1 的 1；两者编号体系相同，可去重）
+// - handleNotAlive: 自身或任意后代原始行含 handleNotAlive（客户端句柄已死但仍占 SF 资源 → 疑似泄漏）
+function subtreeRawText(n) {
+  let s = n.rawContent || '';
+  (function walk(c) { for (const k of c.children) { s += ' ' + (k.rawContent || ''); walk(k); } })(n);
+  return s;
+}
+function annotateOffscreenForest(forest) {
+  const all = [];
+  (function collect(arr) { for (const n of arr) { all.push(n); if (n.children.length) collect(n.children); } })(forest);
+  const tasks = new Set();
+  let ghost = 0, leash = 0;
+  for (const n of all) {
+    const rc = n.rawContent || '';
+    let offType = 'other';
+    if (/transition-leash|animation-leash/i.test(rc)) offType = 'leash';
+    else if (/ActivityRecord\{/i.test(rc)) offType = 'activityrecord';
+    let m = rc.match(/t(\d+)\}/i);            // ActivityRecord{... t56}
+    if (!m) m = rc.match(/Task=(\d+)/i);      // Surface(name=Task=1)/..._transition-leash
+    if (m) { n.taskId = parseInt(m[1], 10); tasks.add(n.taskId); }
+    n.offType = offType;
+    n.handleNotAlive = /handleNotAlive/i.test(subtreeRawText(n));
+    if (offType === 'activityrecord' && n.handleNotAlive) ghost++;
+    if (offType === 'leash') leash++;
+  }
+  sfOffscreenStats = { total: all.length, ghost: ghost, leash: leash, tasks: tasks.size };
+}
+
 // 从 dumpsys SurfaceFlinger 文本中解析「Layer Hierarchy」段（A14+ 树形格式），返回顶层节点数组。
 // 父子关系由连接器列的相对大小决定（详见 parseLayerHierarchyLine），对任意缩进错位鲁棒。
 // 注意：Android 12/13 等旧版本没有树形 Layer Hierarchy 段，改用 parseSfHierarchyLegacy 解析（见下方）。
-function parseLayerHierarchy(text) {
+function parseLayerHierarchy(text, opts) {
+  opts = opts || {};
+  // 段头：默认 Layer Hierarchy；离屏段传 headerRe = /^\s*Offscreen Hierarchy\s*$/i
+  const headerRe = opts.headerRe || /^\s*Layer Hierarchy\s*$/i;
+  // 段终止符：Layer Hierarchy 止于 Offscreen Hierarchy；Offscreen Hierarchy 止于 Mergeable Hierarchies / HWC layers 表
+  const stopRe = opts.stopRe || /^\s*(Offscreen Hierarchy|Mergeable Hierarchies|Display\s+\S[^\n]*HWC layers)/i;
   const forest = [];
   const lines = (text || '').split('\n');
   let inSection = false;
@@ -8765,10 +8983,11 @@ function parseLayerHierarchy(text) {
   let lastDisplayRoot = null; // 最近的「Display N」顶层根（ScreenDecorOverlay 等错位节点应挂到它下面）
   for (let li = 0; li < lines.length; li++) {
     const raw = lines[li];
-    if (/^\s*Layer Hierarchy\s*$/i.test(raw)) { inSection = true; stack.length = 0; lastDisplayRoot = null; continue; }
-    if (!inSection) continue;
-    // 段结束标志：Offscreen Hierarchy / Mergeable Hierarchies / 任意 Display ... HWC layers 表
-    if (/^\s*(Offscreen Hierarchy|Mergeable Hierarchies|Display\s+\S[^\n]*HWC layers)/i.test(raw)) break;
+    if (!inSection) {
+      if (headerRe.test(raw.trim())) { inSection = true; stack.length = 0; lastDisplayRoot = null; }
+      continue;
+    }
+    if (stopRe.test(raw)) break;
     if (!raw.trim()) continue;
     const tl = parseLayerHierarchyLine(raw);
     if (tl.connCol < 0) {
@@ -8779,7 +8998,9 @@ function parseLayerHierarchy(text) {
     let idNum = null, label = tl.content;
     const idm = tl.content.match(/#(\d+)/);
     if (idm) { idNum = parseInt(idm[1], 10); label = tl.content.slice(0, idm.index).trim(); }
-    const node = makeSfNode(label, idNum);
+    // 传完整原始行作为 rawContent（保留 #id 之后的属性如 handleNotAlive，供离屏标注/详情使用），
+    // 显示用 label 仍按 #id 处截断并交给 makeSfNode 内部统一剥离
+    const node = makeSfNode(tl.content, idNum);
     const isDisplay = /^\s*Display\s+\d/i.test(node.label);
     // 父节点 = 连接器列严格小于当前节点的最近祖先
     while (stack.length > 0 && stack[stack.length - 1].connCol >= tl.connCol) stack.pop();
@@ -9605,13 +9826,15 @@ function updateDataSourceUI() {
   const vw = document.getElementById('view-window');
   const vh = document.getElementById('view-hwc');
   const vst = document.getElementById('view-sftree');
+  const vso = document.getElementById('view-sfoff');
   const vl = document.getElementById('view-windowlist');
   if (vw) vw.style.display = (dataSource === 'amstack') ? 'none' : (isTreeDs ? '' : 'none');
   if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window/amstack 无完整几何故隐藏
   if (vst) vst.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
+  if (vso) vso.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
   // 树工具（展开/折叠/定位 Resumed）：窗口树类数据源（containers/activities/windowcontainers）
-  const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && currentView === 'sf-tree');
+  const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && (currentView === 'sf-tree' || currentView === 'sf-offscreen'));
   const showWin = (dataSource !== 'amstack' && dataSource !== 'viewtop') && isTreeDs;
   const exp = document.getElementById('tb-expand');
   const col = document.getElementById('tb-collapse');
@@ -10036,12 +10259,19 @@ function renderStackList() {
   note.innerHTML = noteHtml;
   root.appendChild(note);
 
+  function clearSlSelected() {
+    root.querySelectorAll('.sl-selected').forEach(function (e) { e.classList.remove('sl-selected'); });
+  }
+
   for (const r of parsedForest) {
     const p = r.props || {};
     const wm = p.windowMode, at = p.activityType;
     const hasVisible = (r.children || []).some(function (c) { return c.props && c.props.visible === 'true'; });
     const card = document.createElement('div');
     card.className = 'stack-card' + (hasVisible ? ' fg' : '');
+    card.onclick = (function (node, el) {
+      return function () { clearSlSelected(); el.classList.add('sl-selected'); selectNode(node); };
+    })(r, card);
     const head = document.createElement('div');
     head.className = 'stack-card-head';
     const sid = document.createElement('span'); sid.className = 'stack-id'; sid.textContent = r.label || ('RootTask id=' + (p.rootTaskId != null ? p.rootTaskId : '?'));
@@ -10068,7 +10298,7 @@ function renderStackList() {
       else if (meta.hasVisible) { const v = document.createElement('span'); v.className = 'st-badge inv'; v.textContent = '未知'; row.appendChild(v); }
       // 该版本输出不含 visible 字段 → 不显示徽章（既不编造「可见」，也不显示「未知」误导）
       if (!cp.topActivity) { const v = document.createElement('span'); v.className = 'st-badge empty'; v.textContent = '空任务'; row.appendChild(v); }
-      row.onclick = (function (node) { return function (e) { e.stopPropagation(); selectNode(node); }; })(c);
+      row.onclick = (function (node, el) { return function (e) { e.stopPropagation(); clearSlSelected(); el.classList.add('sl-selected'); selectNode(node); }; })(c, row);
       tlist.appendChild(row);
     }
     if ((r.children || []).length === 0) { const empty = document.createElement('div'); empty.className = 'stack-task empty'; empty.textContent = '（无 Task）'; tlist.appendChild(empty); }
