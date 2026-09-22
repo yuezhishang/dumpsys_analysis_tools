@@ -586,6 +586,98 @@ select.btn{
 .stats-bar .spacer{flex:1}
 .legend-hint{font-size:11px;color:var(--text-muted)}
 
+/* ===== dumpsys input 排障面板（独立卡片视图） ===== */
+.input-toolbar{
+  display:flex;align-items:center;gap:12px;
+  padding:8px 16px;background:var(--bg-secondary);border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.it-title{font-size:13px;font-weight:600;color:var(--text-primary)}
+.input-view{
+  position:relative;flex:1;min-width:0;overflow:auto;padding:16px;
+  display:flex;flex-direction:column;gap:14px;
+}
+.input-empty{padding:40px;text-align:center;color:var(--text-muted)}
+.input-switch-bar{display:flex;flex-wrap:wrap;gap:10px}
+.pill{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:20px;font-size:13px;
+  border:1px solid var(--border);background:var(--bg-secondary);color:var(--text-secondary);
+}
+.pill b{color:var(--text-primary);font-weight:600}
+.pill.on{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.45);color:#16a34a}
+.pill.off{background:rgba(239,68,68,.10);border-color:rgba(239,68,68,.4);color:var(--accent-red)}
+.pill.warn{background:rgba(249,115,22,.12);border-color:rgba(249,115,22,.45);color:var(--accent-orange)}
+.input-card{
+  background:var(--bg-secondary);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 16px;max-width:880px;
+}
+.input-card h3{margin:0 0 10px;font-size:14px;color:var(--text-primary)}
+.kv{display:flex;align-items:baseline;gap:10px;padding:4px 0;font-size:13px;border-bottom:1px dashed var(--border)}
+.kv:last-child{border-bottom:none}
+.kv-k{color:var(--text-muted);min-width:120px;flex-shrink:0}
+.kv-v{color:var(--text-primary);flex:1;word-break:break-all}
+.kv-v.muted{color:var(--text-muted)}
+.kv-v.warn{color:var(--accent-orange);font-weight:600}
+.kv-tag{display:inline-block;margin-left:4px;padding:1px 7px;border-radius:10px;background:rgba(74,163,255,.15);color:#4aa3ff;font-size:11px}
+.kv-hash{font-family:ui-monospace,monospace;color:var(--text-muted);font-size:12px}
+.kv-group{margin-top:8px;padding-top:8px;border-top:1px solid var(--border)}
+.kv-label{display:block;font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:4px}
+.input-warn{margin-top:10px;padding:8px 12px;border-radius:8px;background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.4);color:var(--accent-red);font-size:13px}
+.input-ok{margin-top:10px;padding:8px 12px;border-radius:8px;background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.4);color:#16a34a;font-size:13px}
+.conn-row{display:flex;flex-direction:column;gap:2px;padding:6px 8px;border-radius:6px;background:var(--bg-tertiary);margin-bottom:5px;font-size:12px}
+.conn-row.stuck{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.4)}
+.conn-ch{font-family:ui-monospace,monospace;color:var(--text-primary);word-break:break-all}
+.conn-meta{color:var(--text-muted)}
+.conn-meta b{color:var(--accent-red)}
+/* dumpsys input：可点击队列条目 + 解释按钮 + 事件详情表 */
+.q-item{display:flex;align-items:center;gap:10px;padding:6px 10px;margin:4px 0;border:1px solid var(--border);border-radius:7px;background:var(--bg-tertiary);cursor:pointer;font-size:12.5px}
+.q-item:hover{border-color:var(--accent-blue);background:rgba(59,130,246,.08)}
+.q-item .q-type{font-size:11px;padding:1px 7px;border-radius:10px;border:1px solid var(--border);color:var(--text-secondary);flex-shrink:0}
+.q-item .q-motion{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.4);color:#60a5fa}
+.q-item .q-focus{background:rgba(168,85,247,.12);border-color:rgba(168,85,247,.4);color:#c084fc}
+.q-item .q-key{background:rgba(234,179,8,.12);border-color:rgba(234,179,8,.4);color:#facc15}
+.q-item .q-sum{flex:1;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.q-item .q-age{color:var(--text-muted);font-size:11px;flex-shrink:0}
+.queue-head{display:flex;align-items:center;justify-content:space-between}
+.q-doc-btn{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;margin-left:6px;font-size:11px;font-style:normal;border-radius:9px;border:1px solid var(--border-light);background:var(--bg-tertiary);color:var(--text-secondary);cursor:pointer;flex-shrink:0}
+.q-doc-btn:hover{color:var(--accent-blue);border-color:var(--accent-blue)}
+.kv-label .q-doc-btn{margin-left:4px}
+.ev-detail-head{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.ev-ctx{font-size:12px;color:var(--text-secondary)}
+.ev-age{font-size:12px;color:var(--text-muted);margin-bottom:8px}
+.ev-raw{margin-bottom:12px}
+.ev-raw pre{margin:4px 0 0;white-space:pre-wrap;word-break:break-all;font-size:11.5px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text-secondary)}
+.ev-fields-title{margin:6px 0 4px}
+.ev-table{width:100%;border-collapse:collapse;font-size:12px}
+.ev-table th,.ev-table td{border:1px solid var(--border);padding:6px 8px;vertical-align:top;text-align:left}
+.ev-table th{background:var(--bg-tertiary);color:var(--text-secondary);font-weight:600;position:sticky;top:0}
+.ev-table .ev-k{color:var(--text-primary);font-weight:600;white-space:nowrap}
+.ev-k-zh{font-size:11px;color:var(--text-muted);font-weight:400;margin-top:2px}
+.ev-v{color:var(--text-primary)}
+.ev-v-dec{font-size:11px;color:var(--accent-green);margin-top:2px}
+.ev-d{color:var(--text-secondary);line-height:1.5}
+.doc-summary .doc-intro{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px}
+.doc-item{padding:8px 0;border-top:1px solid var(--border)}
+.doc-item-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.doc-name{font-weight:600;color:var(--text-primary);font-size:12.5px}
+.doc-item-desc{font-size:12px;color:var(--text-secondary);line-height:1.5;margin-top:4px}
+.doc-sec{margin:10px 0}
+.doc-label{font-size:11px;color:var(--text-muted);margin-bottom:3px;font-weight:600}
+.doc-warn{color:#fca5a5}
+.doc-ok{color:#86efac}
+.doc-flow{font-family:monospace;font-size:11.5px;background:var(--bg-tertiary);border:1px solid var(--border);border-radius:6px;padding:8px;color:var(--text-secondary)}
+.type-badge.queue{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.4);color:#60a5fa}
+.type-badge.motion{background:rgba(59,130,246,.12);border-color:rgba(59,130,246,.4);color:#60a5fa}
+.type-badge.focus{background:rgba(168,85,247,.12);border-color:rgba(168,85,247,.4);color:#c084fc}
+.type-badge.key{background:rgba(234,179,8,.12);border-color:rgba(234,179,8,.4);color:#facc15}
+.q-block{margin:4px 0 0;padding:8px 10px;max-height:200px;overflow:auto;background:var(--bg-primary);border:1px solid var(--border);border-radius:6px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11px;line-height:1.5;color:var(--text-secondary);white-space:pre-wrap;word-break:break-all}
+.q-block:empty{display:none}
+.anr-box{margin-top:6px;padding:10px 12px;border-radius:8px;font-size:13px}
+.anr-box.ok{background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.4);color:#16a34a}
+.anr-box.bad{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.45)}
+.anr-box.bad .kv-k{color:var(--text-secondary)}
+
 /* ============================== Misc ============================== */
 .empty-state{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -954,7 +1046,8 @@ select.btn{
         windowcontainers: { min: 10, note: "WMS WindowContainer 树自 Android 10（Q）起" },
         window: { min: 9, note: "Android 9 起 WindowState/mDrawState 格式稳定" },
         viewtop: { min: 9, note: "dumpsys activity top 各版本 View 树格式稳定（class{hash 9+8 位标志位 bounds}）；指定包名/类名时用 dumpsys activity <component>，后者可能含多个 View Hierarchy 段（一个 Activity 一段）" },
-        surfaceflinger: { min: 9, note: "HWC 预览 A9+；层级树 A14+" }
+        surfaceflinger: { min: 9, note: "HWC 预览 A9+；层级树 A14+" },
+        input: { min: 12, note: "Android 12+ 起 Input Dispatcher State 格式稳定（FocusedWindows/FocusedApplications/Connections/InboundQueue 等）；A9–A11 字段命名不同、暂未适配" }
       };
       window.VERSION_LIST = [
         { v: 9, label: "Android 9.0 (Pie)" },
@@ -1076,6 +1169,13 @@ select.btn{
     </span>
   </div>
 
+  <!-- Input 视图专属工具条（仅 input 数据源显示） -->
+  <div class="input-toolbar" id="input-toolbar" style="display:none">
+    <span class="it-title">🎮 输入分发状态</span>
+    <span class="spacer"></span>
+    <button class="btn small" onclick="toggleInputPanel()">✎ 重新输入</button>
+  </div>
+
   <!-- Windows 视图筛选条（仅窗口图层视图显示） -->
   <div class="win-filter-bar" id="win-filter-bar" style="display:none">
     <span class="wf-label">🔎 筛选</span>
@@ -1116,9 +1216,11 @@ select.btn{
       <div class="hwc-overlays" id="hwc-overlays"></div>
       <div class="acts-diag" id="acts-diag" style="display:none"></div>
     </div>
+    <!-- dumpsys input 排障面板（独立视图，非画布树） -->
+    <div class="input-view" id="input-view" style="display:none"></div>
     <div class="details-panel empty" id="details-panel">
       <div class="details-header">
-        <span class="details-title">详情 / 解释</span>
+        <span class="details-title" id="details-title">详情 / 解释</span>
         <button class="details-collapse" id="details-collapse" title="隐藏面板" aria-label="隐藏面板">⟩</button>
       </div>
       <div class="details-placeholder">← 点击左侧节点查看详情</div>
@@ -1187,6 +1289,7 @@ let sfNodeIndex = new Map(); // SurfaceFlinger 层级树节点索引（SF 数据
 let sfOffscreenForest = [];  // SurfaceFlinger 离屏层级树（SF 数据源「离屏层级」视图用）：A14+ 的 Offscreen Hierarchy 段（与 Layer Hierarchy 同树形语法），A12/13 旧格式无此段则为空
 let sfOffscreenIndex = new Map(); // SurfaceFlinger 离屏层级树节点索引（sf-offscreen 视图搜索/选中用）
 let sfOffscreenStats = null; // 离屏层级统计：{total, ghost, leash, tasks}，供统计条展示
+let parsedInput = null;      // dumpsys input 解析结果（排障面板用）：{interactive, dispatchEnabled, dispatchFrozen, inputFilterEnabled, focusedDisplayId, focusedApps, focusedWindows, focusRequests, touchStates, inboundQueue, pendingEvent, recentQueue, connections, devices, anr}
 
 let sfAlignContainers = false; // SF 层级树「以 container 形式展示」开关：true=保留与 containers 树一一对应的容器层级，仅折叠窗口子 surface（InputSink/Dim/wrapper/leash）并去掉 SF 辅助层，使 SF 树 == containers 树
 
@@ -2823,6 +2926,23 @@ function renderTree() {
   if (vto) vto.style.display = 'none';
   if (vtf) vtf.style.display = 'none';
   updateOffscreenStatsBar(); // 任何非离屏视图都先隐藏离屏统计条（覆盖 windowlist/amstack/viewtop 等早返回分支）
+  // input 数据源：隐藏画布树、显示独立排障面板（非树形结构）
+  const inputViewEl = document.getElementById('input-view');
+  if (inputViewEl) inputViewEl.style.display = (dataSource === 'input') ? '' : 'none';
+  const treePanelEl = document.getElementById('tree-panel');
+  if (treePanelEl) treePanelEl.style.display = (dataSource === 'input') ? 'none' : '';
+  const dpEl = document.getElementById('details-panel');
+  const proEl = document.getElementById('panel-reopen');
+  if (dataSource === 'input') {
+    // input 视图自包含，但其队列条目点击后需要在右侧「详情/解释」面板展示子属性含义，故保留右侧栏
+    if (dpEl) dpEl.style.display = '';
+    if (proEl) proEl.style.display = (dpEl && dpEl.classList.contains('collapsed')) ? 'flex' : 'none';
+    renderInputPanel();
+    return;
+  }
+  // 非 input 视图：恢复右侧详情栏（保留用户折叠态）
+  if (dpEl) dpEl.style.display = '';
+  if (proEl) proEl.style.display = (dpEl && dpEl.classList.contains('collapsed')) ? 'flex' : 'none';
   if (dataSource === 'viewtop') { renderViewTop(); return; }
   const root = document.getElementById('tree-root');
   const emptyState = document.getElementById('empty-state');
@@ -2886,6 +3006,224 @@ function renderOffscreenStats() {
     '<div class="stat-item"><span class="stat-dot display"></span><span class="stat-label">涉及 Task</span> <span class="stat-val">' + s.tasks + '</span></div>' +
     '<div class="spacer"></div>' +
     '<span class="legend-hint">handleNotAlive = 客户端句柄已死但仍占 SF 资源，堆积即疑似泄漏 / 过渡未释放</span>';
+}
+
+// ===== dumpsys input 排障面板渲染（独立卡片视图，非画布树） =====
+function renderInputPanel() {
+  const el = document.getElementById('input-view');
+  if (!el) return;
+  if (!parsedInput) { el.innerHTML = '<div class="input-empty">没有可显示的输入数据，请先解析 dumpsys input。</div>'; return; }
+  const m = parsedInput;
+  const esc = escHtml;
+  // 归一化组件名（用于焦点窗口 vs 应用焦点一致性比对）：pkg + 末段 Activity 类
+  function compKey(pkg, act) {
+    if (!pkg && !act) return '';
+    const a = (act || '').replace(/^\./, '');
+    const segs = a.split('.');
+    const short = segs[segs.length - 1] || a;
+    return pkg ? (pkg + '.' + short) : short;
+  }
+  // 顶部开关条
+  let sw = '<div class="input-switch-bar">';
+  sw += '<span class="pill ' + (m.interactive ? 'on' : 'off') + '"><b>Interactive</b> ' + esc(String(!!m.interactive)) + '</span>';
+  sw += '<span class="pill ' + (m.dispatchEnabled ? 'on' : 'off') + '"><b>DispatchEnabled</b> ' + esc(String(!!m.dispatchEnabled)) + '</span>';
+  sw += '<span class="pill ' + (m.dispatchFrozen ? 'warn' : 'on') + '"><b>DispatchFrozen</b> ' + esc(String(!!m.dispatchFrozen)) + '</span>';
+  sw += '<span class="pill ' + (m.inputFilterEnabled ? 'warn' : 'on') + '"><b>InputFilterEnabled</b> ' + esc(String(!!m.inputFilterEnabled)) + '</span>';
+  sw += '</div>';
+
+  // 焦点窗口 vs 应用焦点 一致性检测（输入落错窗口的典型信号）
+  let mismatchNote = '';
+  const fa = m.focusedApps[0], fw = m.focusedWindows[0];
+  if (fa && fw) {
+    const k1 = compKey(fa.pkg, fa.act), k2 = compKey(fw.pkg, fw.act);
+    if (k1 && k2 && k1 !== k2) mismatchNote = '<div class="input-warn">⚠ 输入焦点窗口与应用焦点不一致（' + esc(k2) + ' vs ' + esc(k1) + '）—— 触摸可能落入非预期窗口</div>';
+    else if (k1 && k2) mismatchNote = '<div class="input-ok">✓ 焦点窗口与应用焦点一致（' + esc(k1) + '）</div>';
+  }
+
+  // 焦点卡片
+  function appRow(a) {
+    return '<div class="kv"><span class="kv-k">显示 ' + a.displayId + '</span><span class="kv-v">' + esc(a.pkg || (a.act || '（系统窗口）')) + (a.act ? ' / ' + esc(a.act) : '') + (a.taskId != null ? ' <span class="kv-tag">task ' + a.taskId + '</span>' : '') + (a.timeout != null ? ' · timeout ' + a.timeout + 'ms' : '') + '</span></div>';
+  }
+  function winRow(w) {
+    return '<div class="kv"><span class="kv-k">显示 ' + w.displayId + '</span><span class="kv-v">' + (w.hash ? '<span class="kv-hash">' + esc(w.hash) + '</span> ' : '') + esc(w.pkg || (w.act || '（系统窗口）')) + (w.act ? ' / ' + esc(w.act) : '') + '</span></div>';
+  }
+  let focusHtml = '<div class="input-card">';
+  focusHtml += '<h3>🎯 输入焦点</h3>';
+  if (m.focusedDisplayId != null) focusHtml += '<div class="kv"><span class="kv-k">FocusedDisplayId</span><span class="kv-v">' + m.focusedDisplayId + '</span></div>';
+  focusHtml += '<div class="kv-group"><span class="kv-label">FocusedApplication</span>';
+  if (m.focusedApps.length) m.focusedApps.forEach(function (a) { focusHtml += appRow(a); }); else focusHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  focusHtml += '</div>';
+  focusHtml += '<div class="kv-group"><span class="kv-label">FocusedWindow</span>';
+  if (m.focusedWindows.length) m.focusedWindows.forEach(function (w) { focusHtml += winRow(w); }); else focusHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  focusHtml += '</div>';
+  if (m.focusRequests.length) {
+    focusHtml += '<div class="kv-group"><span class="kv-label">FocusRequests</span>';
+    m.focusRequests.forEach(function (r) { focusHtml += '<div class="kv"><span class="kv-k">显示 ' + r.displayId + '</span><span class="kv-v">' + esc(r.name) + ' <span class="kv-tag">' + esc(r.result) + '</span></span></div>'; });
+    focusHtml += '</div>';
+  }
+  if (mismatchNote) focusHtml += mismatchNote;
+  focusHtml += '</div>';
+
+  // 队列 / ANR 卡片（每条事件可点击 → 右侧「详情/解释」显示子属性含义；卡片头 ? 显示队列概念）
+  let qHtml = '<div class="input-card">';
+  qHtml += '<h3 class="queue-head">📨 队列 / ANR</h3>';
+  // InboundQueue (IQ)
+  qHtml += '<div class="kv-group"><span class="kv-label">InboundQueue (IQ) <span class="q-doc-btn" data-doc="IQ" title="查看 InboundQueue 解释">?</span></span>';
+  if (m.inboundQueue.empty) qHtml += '<div class="kv"><span class="kv-v">空（无堆积）</span></div>';
+  else {
+    qHtml += '<div class="kv"><span class="kv-v warn">堆积 ' + m.inboundQueue.count + ' 条</span></div>';
+    if (m.inboundQueue.items.length) m.inboundQueue.items.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'iq', -1, idx); });
+    else qHtml += '<pre class="q-block">' + esc(m.inboundQueue.raw) + '</pre>';
+  }
+  qHtml += '</div>';
+  // PendingEvent
+  qHtml += '<div class="kv-group"><span class="kv-label">PendingEvent <span class="q-doc-btn" data-doc="IQ" title="查看 InboundQueue 解释">?</span></span>';
+  if (m.pendingEventItems.length) qHtml += inputEventRowHtml(m.pendingEventItems[0], 'iq', -1, 0);
+  else qHtml += '<div class="kv"><span class="kv-v muted">' + (/<none>/.test(m.pendingEvent) ? '无（&lt;none&gt;）' : '（无）') + '</span></div>';
+  qHtml += '</div>';
+  // RecentQueue
+  qHtml += '<div class="kv-group"><span class="kv-label">RecentQueue <span class="q-doc-btn" data-doc="RecentQueue" title="查看 RecentQueue 解释">?</span></span>';
+  if (m.recentQueue.length === 0) qHtml += '<div class="kv"><span class="kv-v muted">空（无记录）</span></div>';
+  else {
+    qHtml += '<div class="kv"><span class="kv-v">最近 ' + m.recentQueue.length + ' 条事件（带 age，越久越偏历史）</span></div>';
+    m.recentQueue.items.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'recent', -1, idx); });
+  }
+  qHtml += '</div>';
+  // Connections（WQ / OQ 归属到各窗口）
+  const stuck = m.connections.filter(function (c) { return !c.waitEmpty || !c.outboundEmpty; });
+  qHtml += '<div class="kv-group"><span class="kv-label">Connections（' + m.connections.length + (stuck.length ? '，' + stuck.length + ' 个队列非空' : '') + '）<span class="q-doc-btn" data-doc="WQ" title="查看 WaitQueue / OutboundQueue 解释">?</span></span>';
+  if (m.connections.length) {
+    m.connections.forEach(function (c, ci) {
+      const blocked = (!c.waitEmpty || !c.outboundEmpty);
+      qHtml += '<div class="conn-row' + (blocked ? ' stuck' : '') + '">';
+      qHtml += '<div class="conn-ch">' + esc(c.channel) + '</div>';
+      qHtml += '<div class="conn-meta">status=' + esc(c.status) + (c.monitor ? ' · monitor' : '') + (c.waitEmpty ? '' : ' · <b>WaitQueue 非空</b>') + (c.outboundEmpty ? '' : ' · <b>OutboundQueue 非空</b>') + '</div>';
+      if (!c.waitEmpty && c.wqItems.length) c.wqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'wq', ci, idx); });
+      if (!c.outboundEmpty && c.oqItems.length) c.oqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'oq', ci, idx); });
+      if (blocked && !c.wqItems.length && !c.oqItems.length) { if (c.wqRaw) qHtml += '<pre class="q-block">' + esc(c.wqRaw) + '</pre>'; if (c.oqRaw) qHtml += '<pre class="q-block">' + esc(c.oqRaw) + '</pre>'; }
+      qHtml += '</div>';
+    });
+  } else qHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  qHtml += '</div>';
+  // ANR 现场
+  qHtml += '<div class="kv-group"><span class="kv-label">ANR 现场</span>';
+  if (m.anr.present) {
+    qHtml += '<div class="anr-box bad">';
+    qHtml += '<div class="kv"><span class="kv-k">Time</span><span class="kv-v">' + esc(m.anr.time) + '</span></div>';
+    qHtml += '<div class="kv"><span class="kv-k">Window</span><span class="kv-v">' + esc(m.anr.window) + '</span></div>';
+    qHtml += '<div class="kv"><span class="kv-k">Reason</span><span class="kv-v warn">' + esc(m.anr.reason) + '</span></div>';
+    qHtml += '<div class="kv"><span class="kv-k">DispatchLatency</span><span class="kv-v">' + esc(m.anr.dispatchLatency) + '</span></div>';
+    qHtml += '<div class="kv"><span class="kv-k">WaitDuration</span><span class="kv-v">' + esc(m.anr.waitDuration) + '</span></div>';
+    qHtml += '</div>';
+  } else {
+    qHtml += '<div class="anr-box ok">无 ANR 记录（当前输入分发正常）</div>';
+  }
+  qHtml += '</div>';
+  qHtml += '</div>';
+
+  // 监听器（Monitors）卡片
+  let monHtml = '<div class="input-card">';
+  monHtml += '<h3>🎧 监听器（Monitors）</h3>';
+  monHtml += '<div class="kv-group"><span class="kv-label">Global monitors' + (m.monitors.displayId != null ? '（display ' + m.monitors.displayId + '）' : '') + '</span>';
+  if (m.monitors.global.length) m.monitors.global.forEach(function (g) { monHtml += '<div class="kv"><span class="kv-v">' + esc(g) + '</span></div>'; });
+  else monHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  monHtml += '</div>';
+  monHtml += '<div class="kv-group"><span class="kv-label">Gesture Monitors（手势监听，spy window）</span>';
+  if (m.monitors.gesture.length) m.monitors.gesture.forEach(function (g) { monHtml += '<div class="kv"><span class="kv-v">' + esc(g) + '</span></div>'; });
+  else monHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  monHtml += '</div>';
+  monHtml += '</div>';
+
+  // 设备 mini 段
+  let devHtml = '<div class="input-card">';
+  devHtml += '<h3>🖱 输入设备（' + m.devices.count + '）</h3>';
+  if (m.devices.list.length) {
+    m.devices.list.forEach(function (d) {
+      devHtml += '<div class="kv"><span class="kv-k">' + esc(d.id) + ': ' + esc(d.name) + '</span><span class="kv-v muted">' + esc(d.classes || '') + '</span></div>';
+    });
+  } else devHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  devHtml += '</div>';
+
+  // 排障名词解释卡（四队列概念速览，点击「查看详解」回填右侧面板）
+  let docHtml = '<div class="input-card doc-summary">';
+  docHtml += '<h3>📖 排障名词解释</h3>';
+  docHtml += '<div class="doc-intro">本视图把 InputDispatcher 的“输入分发状态”结构化呈现。事件在 InputReader → Dispatcher → App 之间流动，各环节用不同队列暂存；点击上方任意队列条目，可在右侧「详情/解释」中查看每条事件的子属性含义（action / source / 坐标 / age 等）。</div>';
+  INPUT_QUEUE_ORDER.forEach(function (key) {
+    const d = INPUT_QUEUE_DOCS[key];
+    docHtml += '<div class="doc-item"><div class="doc-item-head"><span class="doc-name">' + esc(d.title) + '</span><span class="q-doc-btn" data-doc="' + key + '">查看详解</span></div><div class="doc-item-desc">' + esc(d.desc) + '</div></div>';
+  });
+  docHtml += '</div>';
+
+  el.innerHTML = sw + focusHtml + qHtml + monHtml + devHtml + docHtml;
+  bindInputEvents(el);
+}
+
+// 绑定队列条目 / 解释按钮的点击：条目 → 事件详情，? → 队列解释（均回填右侧「详情/解释」面板）
+function bindInputEvents(el) {
+  if (!el || typeof el.querySelectorAll !== 'function') return;
+  el.querySelectorAll('.q-item').forEach(function (node) {
+    node.addEventListener('click', function () {
+      const q = node.getAttribute('data-q');
+      const ci = parseInt(node.getAttribute('data-c') || '-1', 10);
+      const i = parseInt(node.getAttribute('data-i'), 10);
+      let ev = null, ctx = '';
+      if (q === 'recent') { ev = parsedInput.recentQueue.items[i]; ctx = 'RecentQueue'; }
+      else if (q === 'iq') { ev = parsedInput.inboundQueue.items[i]; ctx = 'InboundQueue (IQ)'; }
+      else if (q === 'wq') { ev = parsedInput.connections[ci].wqItems[i]; ctx = 'Connection「' + parsedInput.connections[ci].channel + '」的 WaitQueue'; }
+      else if (q === 'oq') { ev = parsedInput.connections[ci].oqItems[i]; ctx = 'Connection「' + parsedInput.connections[ci].channel + '」的 OutboundQueue'; }
+      if (ev) renderInputEventDetails(ev, ctx);
+    });
+  });
+  el.querySelectorAll('[data-doc]').forEach(function (node) {
+    node.addEventListener('click', function (e) { e.stopPropagation(); showInputQueueDoc(node.getAttribute('data-doc')); });
+  });
+}
+
+// 右侧「详情/解释」面板：渲染单条事件的子属性表（字段 / 值 / 解码 / 含义）
+function renderInputEventDetails(ev, ctx) {
+  const panel = document.getElementById('details-panel');
+  const content = document.getElementById('details-content');
+  if (!panel || !content) return;
+  panel.classList.remove('empty');
+  const typeCls = (ev.type === 'MotionEvent') ? 'motion' : (ev.type === 'FocusEvent') ? 'focus' : (ev.type === 'KeyEvent') ? 'key' : 'other';
+  let h = '';
+  h += '<div class="ev-detail-head"><span class="type-badge ' + typeCls + '">' + esc(ev.type) + '</span><span class="ev-ctx">所在队列：' + esc(ctx) + '</span></div>';
+  if (ev.age != null) h += '<div class="ev-age">age = ' + ev.age + 'ms（该事件进入 RecentQueue 后已发生 ' + ev.age + ' 毫秒，越久越偏历史）</div>';
+  const rawFull = ev.raw + (ev.policyFlags ? (', policyFlags=' + ev.policyFlags) : '') + (ev.age != null ? (', age=' + ev.age + 'ms') : '');
+  h += '<div class="ev-raw"><span class="kv-label">原始 dump 行</span><pre>' + esc(rawFull) + '</pre></div>';
+  h += '<div class="kv-label ev-fields-title">子属性（属性 / 值 / 含义）</div>';
+  h += '<table class="ev-table"><thead><tr><th>属性</th><th>值</th><th>含义</th></tr></thead><tbody>';
+  ev.fields.forEach(function (f) {
+    const doc = INPUT_EVENT_FIELD_DOCS[f.k];
+    const dec = decodeInputValue(f.k, f.v, parsedInput ? parsedInput.devices.list : []);
+    h += '<tr><td class="ev-k">' + esc(f.k) + (doc ? '<div class="ev-k-zh">' + esc(doc.zh) + '</div>' : '') + '</td>';
+    h += '<td class="ev-v">' + esc(f.v) + (dec ? '<div class="ev-v-dec">' + esc(dec) + '</div>' : '') + '</td>';
+    h += '<td class="ev-d">' + (doc ? esc(doc.desc) : '<span class="muted">—</span>') + '</td></tr>';
+  });
+  if (ev.policyFlags) {
+    const doc = INPUT_EVENT_FIELD_DOCS['policyFlags'];
+    h += '<tr><td class="ev-k">policyFlags<div class="ev-k-zh">策略标志</div></td><td class="ev-v">' + esc(ev.policyFlags) + '<div class="ev-v-dec">' + esc(decodeInputValue('policyFlags', ev.policyFlags)) + '</div></td><td class="ev-d">' + (doc ? esc(doc.desc) : '') + '</td></tr>';
+  }
+  h += '</tbody></table>';
+  content.innerHTML = h;
+  const t = document.getElementById('details-title'); if (t) t.textContent = '事件详情 / 解释';
+}
+
+// 右侧「详情/解释」面板：渲染某队列的概念 + 排障意义 + 事件流向
+function showInputQueueDoc(key) {
+  const panel = document.getElementById('details-panel');
+  const content = document.getElementById('details-content');
+  if (!panel || !content) return;
+  const d = INPUT_QUEUE_DOCS[key];
+  if (!d) return;
+  panel.classList.remove('empty');
+  let h = '';
+  h += '<div class="ev-detail-head"><span class="type-badge queue">队列</span><span class="ev-ctx">' + esc(d.title) + '</span></div>';
+  h += '<div class="doc-sec"><div class="doc-label">是什么</div><div>' + esc(d.desc) + '</div></div>';
+  h += '<div class="doc-sec"><div class="doc-label">排障意义</div><div class="' + (key === 'RecentQueue' ? 'doc-ok' : 'doc-warn') + '">' + esc(d.diag) + '</div></div>';
+  h += '<div class="doc-sec"><div class="doc-label">事件流向</div><div class="doc-flow">' + esc(d.flow) + '</div></div>';
+  content.innerHTML = h;
+  const t = document.getElementById('details-title'); if (t) t.textContent = '队列解释 / ' + d.title;
 }
 
 /* ===== View Top 竖向可折叠大纲（替代横向画布树，更直观） ===== */
@@ -4694,12 +5032,439 @@ function parseInput() {
       const headerInfo = document.getElementById('header-info');
       if (headerInfo) headerInfo.textContent = '已解析 ' + windowDump.windows.length + ' 个窗口';
       showToast('解析成功！共 ' + windowDump.windows.length + ' 个窗口（' + windowDump.windows.filter(function (w) { return w.drawState === 'HAS_DRAWN'; }).length + ' 个已绘制）', 'success');
+    } else if (dataSource === 'input') {
+      parseInputDump(text);
+      if (!parsedInput || (parsedInput.focusedApps.length === 0 && parsedInput.focusedWindows.length === 0 && parsedInput.connections.length === 0)) {
+        showToast('未检测到有效的输入分发数据，请确认是 dumpsys input 输出（含 Input Dispatcher State 段）', 'error');
+        return;
+      }
+      currentView = 'input';
+      const vizPanel = document.getElementById('viz-panel');
+      if (vizPanel) vizPanel.classList.add('active');
+      const inputPanel = document.getElementById('input-panel');
+      if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
+      const sb = document.getElementById('stats-bar'); if (sb) sb.style.display = 'none';
+      const headerInfo = document.getElementById('header-info');
+      if (headerInfo) headerInfo.textContent = '输入分发状态 · ' + parsedInput.devices.count + ' 设备 / ' + parsedInput.connections.length + ' 连接';
+      renderTree();
+      showToast('解析成功！输入分发状态已加载', 'success');
     }
     updateViewToggleUI();
   } catch (e) {
     showToast('解析出错: ' + e.message, 'error');
     console.error(e);
   }
+}
+
+// ===== dumpsys input 排障面板解析（Android 12+；Input Dispatcher State） =====
+// 把焦点窗口名解析成可读结构：兼容旧格式 Window{hash u0 pkg/.Act} 与 A12+ 新格式 hash pkg/act
+function parseInputTargetName(raw) {
+  let s = (raw || '').trim();
+  let mm;
+  if ((mm = s.match(/ActivityRecord\{[^}]*?([\w.\-]+)\/([\w.\-]+)\s+t(\d+)/))) {
+    return { kind: 'app', pkg: mm[1], act: mm[2], taskId: parseInt(mm[3], 10), raw: s };
+  }
+  if ((mm = s.match(/Window\{([0-9a-fA-F]+)\s+u0\s+([\w.\-]+)\/([\w.\-]+)/))) {
+    return { kind: 'win', hash: mm[1], pkg: mm[2], act: mm[3], raw: s };
+  }
+  if ((mm = s.match(/^([0-9a-zA-Z]+)\s+([\w.\-]+)\/([\w.\-]+)/))) {
+    return { kind: 'win', hash: mm[1], pkg: mm[2], act: mm[3], raw: s };
+  }
+  if ((mm = s.match(/Window\{([0-9a-fA-F]+)\s+u0\s+([\w.\-]+)/))) {
+    return { kind: 'win', hash: mm[1], pkg: '', act: mm[2], raw: s };
+  }
+  if ((mm = s.match(/^([0-9a-zA-Z]+)\s+([\w.\-]+)$/))) {
+    return { kind: 'win', hash: mm[1], pkg: '', act: mm[2], raw: s };
+  }
+  return { kind: 'other', raw: s };
+}
+
+// 抽取队列/段原始块：从匹配 headerRe 的行起，向下收集缩进更深的续行，直到缩进≤头部缩进的下一行
+function collectQueueBlock(text, headerRe) {
+  const re = new RegExp(headerRe.source, 'm');
+  const mm = re.exec(text);
+  if (!mm) return '';
+  const lines = text.split('\n');
+  const start = text.slice(0, mm.index).split('\n').length - 1;
+  const headerLine = lines[start];
+  const baseIndent = headerLine.length - headerLine.trimStart().length;
+  let end = start + 1;
+  while (end < lines.length) {
+    const ln = lines[end];
+    if (ln.trim() === '') break;
+    const ind = ln.length - ln.trimStart().length;
+    if (ind <= baseIndent) break;
+    end++;
+  }
+  return lines.slice(start, end).join('\n');
+}
+// 在已切分的行数组内，从 startIdx 起收集缩进更深的续行（用于 Connections 内部的 OQ/WQ 原始条目）
+function collectConnBlock(lines, startIdx) {
+  const base = lines[startIdx];
+  const baseIndent = base.length - base.trimStart().length;
+  let end = startIdx + 1;
+  while (end < lines.length) {
+    const ln = lines[end];
+    if (ln.trim() === '') break;
+    const ind = ln.length - ln.trimStart().length;
+    if (ind <= baseIndent) break;
+    end++;
+  }
+  return lines.slice(startIdx, end).join('\n');
+}
+
+// ===== dumpsys input 事件解析 + 名词解释字典 =====
+// 顶层按逗号切分，但尊重 ( ) [ ] 嵌套（pointers=[0: (x, y)] 内含逗号，不能当分隔）
+function splitTopLevel(s, sep) {
+  const out = []; let depth = 0; let cur = '';
+  for (let i = 0; i < s.length; i++) {
+    const ch = s[i];
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') depth--;
+    if (ch === sep && depth === 0) { out.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  if (cur.trim() !== '') out.push(cur);
+  return out;
+}
+// 解析一条事件行：MotionEvent(...) / FocusEvent(...) / KeyEvent(...)，尾部允许任意后缀（policyFlags= / age=ms 等）
+// 自适应策略：用括号深度计数定位包裹层的配对闭括号，(...) 内为事件体；尾缀零格式假设——
+//   policyFlags/age 从整行尽力提取。旧版硬性要求 `)$`（剥完尾缀后必须以闭括号结尾），
+//   真机 WaitQueue 行在 age=4ms 之后还有额外后缀时整条事件被打成 unknown、子属性全丢（2026-09-22 真机踩坑）。
+function parseInputEvent(line) {
+  line = (line || '').trim();
+  const raw = line;                 // 保留完整原始行（含尾缀），供详情面板展示
+  const tm = line.match(/^(\w+)\(/);
+  if (!tm) return { type: 'unknown', raw: raw, fields: [], policyFlags: null, age: null };
+  const type = tm[1];
+  // ① 深度计数定位包裹层配对闭括号：pointers=[0: (x, y)] 的嵌套括号不影响平衡
+  let depth = 1, end = -1;
+  for (let i = tm[0].length; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '(' || ch === '[') depth++;
+    else if (ch === ')' || ch === ']') { depth--; if (depth === 0) { end = i; break; } }
+  }
+  const body = (end >= 0 ? line.slice(tm[0].length, end) : line.slice(tm[0].length)).trim();
+  // ② policyFlags / age 从整行尽力提取（不依赖位置、顺序、前置逗号）
+  let policyFlags = null, age = null, m;
+  if ((m = raw.match(/policyFlags=([^\n,]+)/))) policyFlags = m[1].trim();
+  if ((m = raw.match(/age=(\d+)ms/))) age = parseInt(m[1], 10);
+  // ③ 事件体字段：顶层按逗号切分（尊重 () [] 嵌套）
+  const fields = [];
+  if (body) {
+    splitTopLevel(body, ',').forEach(function (part) {
+      // splitTopLevel 在逗号后保留前导空格，正则须容忍前导空白，否则只有首个字段能解析
+      const kv = part.match(/^\s*([A-Za-z_][\w]*)=(.*)$/);
+      if (kv) fields.push({ k: kv[1], v: kv[2].trim() });
+    });
+  }
+  return { type: type, fields: fields, policyFlags: policyFlags, age: age, raw: raw };
+}
+// 从一段原始块（含 header 行）中提取并解析所有事件条目
+function parseEventList(block) {
+  const items = [];
+  if (!block) return items;
+  block.split('\n').forEach(function (l) {
+    const t = l.trim();
+    if (!t) return;
+    if (/^(RecentQueue|InboundQueue|OutboundQueue|WaitQueue|PendingEvent):/.test(t)) return; // 跳过 header 行
+    if (/^\w+\(/.test(t)) items.push(parseInputEvent(t)); // MotionEvent( / FocusEvent( / KeyEvent(
+  });
+  return items;
+}
+// 解析 pointers 列表：[0: (605.0, 2072.0), 1: (x, y)] -> [{id,x,y}]
+function parsePointers(v) {
+  const out = [];
+  const mm = (v || '').match(/^\[(.*)\]$/s);
+  const inner = mm ? mm[1] : v;
+  if (!inner) return out;
+  splitTopLevel(inner, ',').forEach(function (p) {
+    const pm = p.match(/^(\d+):\s*\(([^)]*)\)/);
+    if (pm) { const xy = pm[2].split(',').map(Number); out.push({ id: parseInt(pm[1], 10), x: xy[0], y: xy[1] }); }
+  });
+  return out;
+}
+// —— 字段中文释义字典（事件子属性）——
+const INPUT_EVENT_FIELD_DOCS = {
+  deviceId: { zh: '设备 ID', desc: '产生该事件的输入设备编号，对应 Event Hub 的 Devices 列表（如本样本 4 = sec_touchscreen 触摸屏）' },
+  eventTime: { zh: '事件时间', desc: '事件硬件时间戳（纳秒，CLOCK_MONOTONIC），用于计算事件延迟与手势速度' },
+  source: { zh: '输入源', desc: '事件来源类别：TOUCHSCREEN=触摸屏、KEYBOARD=键盘、MOUSE=鼠标、STYLUS=手写笔等' },
+  displayId: { zh: '显示 ID', desc: '事件归属的显示屏编号（0=内屏，外接屏可能 ≥1）' },
+  action: { zh: '动作', desc: '事件动作：DOWN=按下、UP=抬起、MOVE=移动、CANCEL=取消、POINTER_DOWN/UP=多指按下/抬起' },
+  actionButton: { zh: '动作按钮', desc: '触发本次 action 改变的那个鼠标/手写笔按钮位（mask）' },
+  flags: { zh: '事件标志', desc: '事件自身标志位：如 FLAG_WINDOW_IS_OBSCURED（窗口被遮挡）、FLAG_CANCELED、FLAG_EDGE、FLAG_TAINTED 等' },
+  metaState: { zh: '组合键状态', desc: 'Meta 键状态：Alt / Ctrl / Shift / Meta / CapsLock / NumLock 是否按下（位掩码）' },
+  buttonState: { zh: '按钮状态', desc: '当前按下的鼠标/手写笔按钮（位掩码）：BUTTON_PRIMARY / SECONDARY 等' },
+  classification: { zh: '分类', desc: '运动分类：NONE=普通、AMBIGUOUS_GESTURE=可能误触（需抑制）、DEEP_PRESS=深按（长按前兆）' },
+  edgeFlags: { zh: '边缘标志', desc: '触摸是否落在屏幕边缘（EDGE_LEFT/RIGHT/TOP/BOTTOM），用于边缘手势判定' },
+  xPrecision: { zh: 'X 精度', desc: 'X 坐标的分辨率/精度（多指或缩放时抖动范围）' },
+  yPrecision: { zh: 'Y 精度', desc: 'Y 坐标的分辨率/精度' },
+  xCursorPosition: { zh: '光标 X', desc: '鼠标类设备的光标 X 位置（触摸设备通常为 nan）' },
+  yCursorPosition: { zh: '光标 Y', desc: '鼠标类设备的光标 Y 位置（触摸设备通常为 nan）' },
+  pointers: { zh: '指针列表', desc: '本事件包含的所有触摸点：每个指针 = [指针 id: (x, y)]，id 在多指跟踪中保持稳定' },
+  hasFocus: { zh: '是否获得焦点', desc: '窗口焦点状态：true=获得焦点（可接收按键），false=失去焦点' },
+  keyCode: { zh: '键值', desc: '按键的逻辑键码（如 KEYCODE_BACK=4、KEYCODE_VOLUME_DOWN=25）' },
+  scanCode: { zh: '扫描码', desc: '硬件扫描码（设备层原始码，经 KeyLayout 映射为 keyCode）' },
+  repeatCount: { zh: '重复次数', desc: '按键长按自动重复的次数（0=首次，>0=系统重复触发）' },
+  policyFlags: { zh: '策略标志', desc: 'InputDispatcher 层策略标志：如 FILTERED（被输入过滤器拦截）、INTERACTIVE（亮屏）、TRUSTED、INJECTED 等，决定事件如何被策略处理' },
+  age: { zh: '已发生时长', desc: '该事件进入 RecentQueue 后经过的毫秒数（RecentQueue 专有）；越大说明越早、越偏历史' }
+};
+const INPUT_ACTION_MAP = {
+  DOWN: '按下（手指/笔接触屏幕；多点时配合 POINTER_DOWN）',
+  UP: '抬起（离开屏幕）',
+  MOVE: '移动（在屏幕上滑动）',
+  CANCEL: '取消（事件序列被系统取消，如被新窗口抢占；App 应视为 UP 但丢弃手势）',
+  POINTER_DOWN: '多指中的某一指按下',
+  POINTER_UP: '多指中的某一指抬起',
+  HOVER_MOVE: '悬停移动（鼠标/笔未接触）',
+  HOVER_ENTER: '悬停进入',
+  HOVER_EXIT: '悬停离开',
+  BUTTON_PRESS: '鼠标按键按下',
+  BUTTON_RELEASE: '鼠标按键释放',
+  SCROLL: '滚轮滚动'
+};
+const INPUT_SOURCE_MAP = {
+  TOUCHSCREEN: '触摸屏', KEYBOARD: '键盘', MOUSE: '鼠标', STYLUS: '手写笔',
+  TRACKBALL: '轨迹球', TOUCH_NAVIGATION: '触摸导航', DPAD: '方向键',
+  GAMEPAD: '手柄', BLUETOOTH_STYLUS: '蓝牙手写笔', ROTARY_ENCODER: '旋转编码器'
+};
+const INPUT_CLASSIFICATION_MAP = {
+  NONE: '普通事件', AMBIGUOUS_GESTURE: '可能误触（系统可能抑制）', DEEP_PRESS: '深按（长按前兆）'
+};
+// 已知位标志（仅作尽力解码，未列出的位以十六进制原样显示，不臆测）
+const INPUT_FLAG_BITS = [
+  [0x1, 'WINDOW_IS_OBSCURED', '窗口被遮挡'],
+  [0x2, 'WINDOW_IS_PARTIALLY_OBSCURED', '窗口被部分遮挡'],
+  [0x4, 'WINDOW_IS_FULLY_OBSCURED', '窗口被完全遮挡（API29+）'],
+  [0x20, 'CANCELED', '事件被取消'],
+  [0x40, 'EDGE', '落在屏幕边缘'],
+  [0x40000000, 'TARGET_ACCESSIBILITY_FOCUSED', '目标为无障碍焦点'],
+  [0x80000000, 'TAINTED', '事件被污染（来源不可信）']
+];
+const INPUT_POLICY_FLAG_BITS = [
+  [0x1, 'FILTERED', '被输入过滤器拦截'],
+  [0x2, 'DISABLED', '输入被禁用'],
+  [0x4, 'INTERACTIVE', '设备处于交互（亮屏）状态'],
+  [0x8, 'PASSTHROUGH', '穿透'],
+  [0x10, 'VIRTUAL', '虚拟设备'],
+  [0x20, 'HOVER', '悬停'],
+  [0x40, 'TRUSTED', '可信来源'],
+  [0x80, 'GESTURE', '手势'],
+  [0x100, 'MONITOR', '监听器'],
+  [0x400, 'PASS_TO_USER', '传递给用户'],
+  [0x800, 'DELIVERED_TO_POLICY', '已投递给策略'],
+  [0x1000, 'INJECTED', '注入事件'],
+  [0x2000, 'INJECTED_FROM_ACCESSIBILITY', '来自无障碍的注入']
+];
+function decodeBitFlags(hexStr, bits) {
+  let n = parseInt(String(hexStr).replace(/0x/i, ''), 16);
+  if (isNaN(n)) return String(hexStr);
+  const rec = [];
+  bits.forEach(function (b) { if ((n & b[0]) === b[0]) rec.push(b[1] + '（' + b[2] + '）'); });
+  const knownMask = bits.reduce(function (a, b) { return a | b[0]; }, 0);
+  const unknown = n & ~knownMask;
+  let s = '0x' + n.toString(16).toUpperCase();
+  if (rec.length) s += ' = ' + rec.join(' + ');
+  if (unknown) s += (rec.length ? '；' : '') + '未识别位 0x' + unknown.toString(16).toUpperCase();
+  return s;
+}
+// 对单个字段做“值 → 可读含义”解码；返回 null 表示无特殊解码（直接显示原值）
+function decodeInputValue(field, value, devices) {
+  if (field === 'action' && INPUT_ACTION_MAP[value]) return INPUT_ACTION_MAP[value];
+  if (field === 'source' && INPUT_SOURCE_MAP[value]) return '来源类别：' + INPUT_SOURCE_MAP[value];
+  if (field === 'classification') return INPUT_CLASSIFICATION_MAP[value] || value;
+  if (field === 'flags') return decodeBitFlags(value, INPUT_FLAG_BITS);
+  if (field === 'policyFlags') return decodeBitFlags(value, INPUT_POLICY_FLAG_BITS);
+  if (field === 'deviceId') {
+    const d = (devices || []).find(function (x) { return String(x.id) === String(value); });
+    return d ? ('设备 #' + value + ' = ' + d.name + (d.classes ? '（' + d.classes + '）' : '')) : ('设备 #' + value);
+  }
+  if (field === 'pointers') {
+    const ps = parsePointers(value);
+    if (!ps.length) return value;
+    return ps.map(function (p) { return '指针' + p.id + ' @ (' + p.x + ', ' + p.y + ')'; }).join('；');
+  }
+  return null;
+}
+// —— 四个队列的概念 + 排障意义 ——
+const INPUT_QUEUE_DOCS = {
+  IQ: {
+    title: 'InboundQueue（入站队列，IQ）',
+    desc: 'InputReader 从驱动读到的原始输入事件，先进入 InputDispatcher 的入站队列，等待被分发线程处理并投递到目标窗口。',
+    diag: '非空（堆积）意味着分发线程处理不过来或被 DispatchFrozen 冻结——此时触摸/按键会明显卡顿。正常应恒为 <empty>。',
+    flow: '驱动 → InputReader → InboundQueue → 分发线程 → 目标窗口'
+  },
+  WQ: {
+    title: 'WaitQueue（等待队列，WQ）',
+    desc: '已通过 InputChannel 把事件发给目标 App、但 App 还没调用 finishInputEvent() 回执的事件。相关：OutboundQueue(OQ) 是“已组装好、待写出”的瞬态队列（见下方 OQ 详解）。',
+    diag: '非空是最强的 ANR 前兆：事件发出去但 App 主线程卡住不回执，堆积即快 ANR 了。定位看是哪个 Connection（窗口）的 WaitQueue 非空。',
+    flow: '事件 → 目标窗口 WaitQueue → App 处理 → finishInputEvent 回执 → 出队'
+  },
+  OQ: {
+    title: 'OutboundQueue（出站队列，OQ）',
+    desc: '已组装好、准备 flush 到某条连接（窗口）但尚未真正写出的事件。',
+    diag: '通常瞬态（准备发但还没发），持续非空说明该连接的 InputChannel 写不出去（对端未读/阻塞），比 WQ 优先级低。',
+    flow: '事件 → OutboundQueue（待写） → InputChannel → 对端 App'
+  },
+  RecentQueue: {
+    title: 'RecentQueue（最近事件队列）',
+    desc: '最近事件的小型环形缓冲（默认约 10~20 条），仅用于事后调试回顾，不参与实时分发。',
+    diag: '每条带 age=xxxms 表示距当前已发生多久。可还原最近一次手势轨迹（如本次触摸的 MOVE/UP 序列、焦点切换）。与 IQ/WQ/OQ 不同，它非空是正常的。',
+    flow: '（仅调试快照，不影响实时分发）'
+  }
+};
+const INPUT_QUEUE_ORDER = ['IQ', 'WQ', 'OQ', 'RecentQueue'];
+
+// 全局 esc 别名（renderInputPanel 内有同名的局部 const esc，这里供顶层函数使用）
+function esc(s) { return escHtml(s); }
+// 单条事件 → 可点击行 HTML
+function inputEventRowHtml(ev, q, connIdx, itemIdx) {
+  let summary = '';
+  if (ev.type === 'MotionEvent') {
+    const act = ev.fields.find(function (f) { return f.k === 'action'; });
+    const ptr = ev.fields.find(function (f) { return f.k === 'pointers'; });
+    summary = (act ? act.v : '') + (ptr ? (' · ' + (decodeInputValue('pointers', ptr.v, parsedInput ? parsedInput.devices.list : []) || ptr.v)) : '');
+  } else if (ev.type === 'FocusEvent') {
+    const hf = ev.fields.find(function (f) { return f.k === 'hasFocus'; });
+    summary = 'hasFocus=' + (hf ? hf.v : '');
+  } else if (ev.type === 'KeyEvent') {
+    const ac = ev.fields.find(function (f) { return f.k === 'action'; });
+    const kc = ev.fields.find(function (f) { return f.k === 'keyCode'; });
+    summary = (ac ? ac.v : '') + (kc ? (' · keyCode=' + kc.v) : '');
+  } else summary = ev.raw;
+  const cls = 'q-type q-' + ev.type.toLowerCase();
+  const attr = 'data-q="' + q + '"' + (connIdx >= 0 ? ' data-c="' + connIdx + '"' : '') + ' data-i="' + itemIdx + '"';
+  return '<div class="q-item" ' + attr + '><span class="' + cls + '">' + esc(ev.type) + '</span><span class="q-sum">' + esc(summary) + '</span>' + (ev.age != null ? '<span class="q-age">age ' + ev.age + 'ms</span>' : '') + '</div>';
+}
+
+function parseInputDump(text) {
+  parsedInput = null;
+  const model = {
+    interactive: null, dispatchEnabled: null, dispatchFrozen: null, inputFilterEnabled: null,
+    focusedDisplayId: null,
+    focusedApps: [], focusedWindows: [], focusRequests: [],
+    touchStates: '', inboundQueue: { empty: true, count: 0, raw: '', items: [] },
+    pendingEvent: '', pendingEventItems: [], recentQueue: { length: 0, raw: '', items: [] },
+    connections: [], devices: { count: 0, list: [] },
+    monitors: { displayId: null, global: [], gesture: [] },
+    anr: { present: false }
+  };
+  let m;
+  if ((m = text.match(/^\s*Interactive:\s*(true|false)/m))) model.interactive = (m[1] === 'true');
+  if ((m = text.match(/^\s*DispatchEnabled:\s*(true|false)/m))) model.dispatchEnabled = (m[1] === 'true');
+  if ((m = text.match(/^\s*DispatchFrozen:\s*(true|false)/m))) model.dispatchFrozen = (m[1] === 'true');
+  if ((m = text.match(/^\s*InputFilterEnabled:\s*(true|false)/m))) model.inputFilterEnabled = (m[1] === 'true');
+  if ((m = text.match(/^\s*FocusedDisplayId:\s*(\d+)/m))) model.focusedDisplayId = parseInt(m[1], 10);
+
+  // 焦点应用（可能多行，每行 displayId=...）
+  if ((m = text.match(/FocusedApplications:\s*\n((?:\s*displayId=[^\n]*\n?)+)/))) {
+    m[1].split('\n').forEach(function (line) {
+      const lm = line.match(/displayId=(\d+),\s*name='([^']*)'(?:,\s*dispatchingTimeout=([\d]+)ms)?/);
+      if (lm) {
+        const nm = parseInputTargetName(lm[2]);
+        model.focusedApps.push({ displayId: parseInt(lm[1], 10), name: lm[2], pkg: nm.pkg, act: nm.act, taskId: nm.taskId, timeout: lm[3] ? parseInt(lm[3], 10) : null });
+      }
+    });
+  }
+  // 焦点窗口
+  if ((m = text.match(/FocusedWindows:\s*\n\s*([^\n]+)/))) {
+    const lm = m[1].match(/displayId=(\d+),\s*name='([^']*)'/);
+    if (lm) {
+      const nm = parseInputTargetName(lm[2]);
+      model.focusedWindows.push({ displayId: parseInt(lm[1], 10), name: lm[2], hash: nm.hash, pkg: nm.pkg, act: nm.act });
+    }
+  }
+  // 焦点请求
+  if ((m = text.match(/FocusRequests:\s*\n\s*([^\n]+)/))) {
+    const lm = m[1].match(/displayId=(\d+),\s*name='([^']*)'\s*result='(\w+)'/);
+    if (lm) model.focusRequests.push({ displayId: parseInt(lm[1], 10), name: lm[2], result: lm[3] });
+  }
+  // 触摸状态
+  if ((m = text.match(/TouchStates:\s*([^\n]*)/))) model.touchStates = m[1].trim();
+  // 入站队列（IQ）：捕获原始块（含实际事件条目），空时仅 <empty>
+  const iqBlock = collectQueueBlock(text, /^\s*InboundQueue:/);
+  model.inboundQueue.raw = iqBlock;
+  const iqFirst = iqBlock.split('\n')[0] || '';
+  if (/<empty>/.test(iqFirst)) { model.inboundQueue.empty = true; model.inboundQueue.count = 0; }
+  else { const cm = iqFirst.match(/length=(\d+)/); model.inboundQueue.empty = false; model.inboundQueue.count = cm ? parseInt(cm[1], 10) : 0; }
+  model.inboundQueue.items = parseEventList(iqBlock);
+  // 等待事件（单条，正常为 <none>）
+  model.pendingEvent = collectQueueBlock(text, /^\s*PendingEvent:/);
+  model.pendingEventItems = parseEventList(model.pendingEvent);
+  // 最近事件队列（RecentQueue）：捕获原始块（最近 N 条事件明细）
+  const rqBlock = collectQueueBlock(text, /^\s*RecentQueue:/);
+  model.recentQueue.raw = rqBlock;
+  const rqFirst = rqBlock.split('\n')[0] || '';
+  const rqc = rqFirst.match(/length=(\d+)/);
+  model.recentQueue.length = rqc ? parseInt(rqc[1], 10) : 0;
+  model.recentQueue.items = parseEventList(rqBlock);
+  // 连接（每个 window 的 InputChannel）：提取 WaitQueue / OutboundQueue 原始块与是否空
+  const cb = text.match(/Connections:\s*\n([\s\S]*?)(?=\n\s*(?:TouchModePerDisplay|Configuration|InputTracer|Global monitors|RecentQueue):)/);
+  if (cb) {
+    const clines = cb[1].split('\n');
+    let cur = null;
+    for (let ci = 0; ci < clines.length; ci++) {
+      const line = clines[ci];
+      const hm = line.match(/^\s*(\d+):\s*channelName='([^']*)',\s*status=(\w+),\s*monitor=(true|false),\s*responsive=(true|false)/);
+      if (hm) {
+        cur = { id: hm[1], channel: hm[2], status: hm[3], monitor: (hm[4] === 'true'), responsive: (hm[5] === 'true'), waitEmpty: true, outboundEmpty: true, oqRaw: '', wqRaw: '', oqItems: [], wqItems: [] };
+        model.connections.push(cur);
+        continue;
+      }
+      if (!cur) continue;
+      const wm = line.match(/^\s*WaitQueue:\s*(.*)$/);
+      if (wm) { cur.wqRaw = collectConnBlock(clines, ci); cur.waitEmpty = (/<empty>/.test(wm[1].trim())); cur.wqItems = parseEventList(cur.wqRaw); continue; }
+      const om = line.match(/^\s*OutboundQueue:\s*(.*)$/);
+      if (om) { cur.oqRaw = collectConnBlock(clines, ci); cur.outboundEmpty = (/<empty>/.test(om[1].trim())); cur.oqItems = parseEventList(cur.oqRaw); continue; }
+    }
+  }
+  // 监听器（Monitors）：全局监听器（Global monitors on display N）+ 手势监听器（Gesture Monitors，实现为 spy window）
+  const gmb = text.match(/Global monitors on display (\d+):\s*\n([\s\S]*?)(?=\n\s*(?:RecentQueue|PendingEvent|InboundQueue|Connections|TouchModePerDisplay|Configuration|InputTracer|Gesture Monitors|Device Monitors):|\n\s*\n)/);
+  if (gmb) {
+    model.monitors.displayId = parseInt(gmb[1], 10);
+    gmb[2].split('\n').forEach(function (l) {
+      const mm = l.match(/^\s*\d+:\s*'([^']*)'/);
+      if (mm) model.monitors.global.push(mm[1]);
+    });
+  }
+  const gemon = text.match(/Gesture Monitors \(implemented as spy windows\):\s*\n([\s\S]*?)(?=\n\s*(?:mAcknowledgedPointerDisplayId|BatteryController|Device Monitors|Configuration|InputTracer|Global monitors|RecentQueue|PendingEvent|InboundQueue|Connections|TouchModePerDisplay):|\n\s*\n)/);
+  if (gemon) {
+    gemon[1].split('\n').forEach(function (l) {
+      const mm = l.match(/^\s*\d+:\s*name='([^']*)'/);
+      if (mm) model.monitors.gesture.push(mm[1]);
+    });
+  }
+  // 输入设备（Event Hub State 段）
+  const eh = text.match(/Event Hub State:\s*\n([\s\S]*?)(?=\nInput Reader State)/);
+  if (eh) {
+    const ehText = eh[1];
+    const devRe = /^\s*(-?\d+):\s*([\w.\-]+)\s*$/gm; let dm;
+    const devs = [];
+    while ((dm = devRe.exec(ehText))) devs.push({ id: dm[1], name: dm[2] });
+    for (const d of devs) {
+      const key = d.id + ': ' + d.name;
+      const pos = ehText.indexOf(key);
+      const after = (pos >= 0) ? ehText.slice(pos + key.length) : '';
+      const cm = after.match(/Classes:\s*([^\n]+)/);
+      model.devices.list.push({ id: d.id, name: d.name, classes: cm ? cm[1].trim() : '' });
+    }
+    model.devices.count = model.devices.list.length;
+  }
+  // 上次 ANR 现场（仅发生 ANR 后才出现；正常 dump 无此段）
+  const anr = text.match(/Input Dispatcher State at time of last ANR:?\s*\n([\s\S]*?)(?=\n\s*(?:RecentQueue|PendingEvent|InboundQueue|Connections|TouchModePerDisplay|Configuration|InputTracer|Global monitors):|\n\s*\n)/);
+  if (anr) {
+    const a = anr[1];
+    model.anr = {
+      present: true,
+      time: ((a.match(/Time:\s*([^\n]+)/) || [])[1] || '').trim(),
+      window: ((a.match(/Window:\s*([^\n]+)/) || [])[1] || '').trim(),
+      reason: ((a.match(/Reason:\s*([^\n]+)/) || [])[1] || '').trim(),
+      dispatchLatency: ((a.match(/DispatchLatency:\s*([^\n]+)/) || [])[1] || '').trim(),
+      waitDuration: ((a.match(/WaitDuration:\s*([^\n]+)/) || [])[1] || '').trim()
+    };
+  }
+  parsedInput = model;
+  return model;
 }
 
 function onTargetVersionChange(version) {
@@ -4805,6 +5570,7 @@ function clearAll() {
   parsedForest = [];
   nodeIndex = new Map();
   hasUserData = false;
+  parsedInput = null;
 }
 
 function toggleInputPanel() {
@@ -9661,6 +10427,18 @@ var DATA_SOURCE_GROUPS = [
         paste: '在此粘贴 am stack list 输出...\n\n1. 先选择「目标 Android 版本」\n2. adb shell am stack list\n3. 复制完整输出粘贴后点击「解析」\n4. 或点「加载示例数据」'
       }
     ]
+  },
+  {
+    id: 'input', icon: '🎮', label: 'Input', cmd: 'dumpsys input',
+    title: 'dumpsys input｜输入分发状态排障面板（Android 12+）：聚焦谁在收输入（FocusedWindow/Application）、输入是否被冻结（DispatchFrozen）、事件是否堆积/ANR（InboundQueue / Connection WaitQueue / 上次 ANR Reason）。不做与窗口树的交叉高亮，独立成面板',
+    foot: '输入类问题（触摸落错窗口、无响应、卡顿/ANR）首选：先看焦点窗口与冻结状态，再看队列是否堆积。',
+    items: [
+      {
+        id: 'input', label: 'Input', icon: '🎮', cmd: 'dumpsys input', view: 'input',
+        desc: '输入分发状态排障面板：开关条（Interactive/DispatchEnabled/DispatchFrozen/InputFilterEnabled）+ 焦点卡片（FocusedApplication/Window）+ 队列/ANR 卡片（InboundQueue / Connection WaitQueue / 上次 ANR Reason）。',
+        paste: '在此粘贴 dumpsys input 输出...\n\n1. 先选择「目标 Android 版本」（建议 Android 12+）\n2. adb shell dumpsys input\n3. 复制完整输出（含 Input Dispatcher State 段）\n4. 或点「加载示例数据」'
+      }
+    ]
   }
 ];
 
@@ -9829,7 +10607,7 @@ function updateDataSourceUI() {
   const vso = document.getElementById('view-sfoff');
   const vl = document.getElementById('view-windowlist');
   if (vw) vw.style.display = (dataSource === 'amstack') ? 'none' : (isTreeDs ? '' : 'none');
-  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window/amstack 无完整几何故隐藏
+  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack' || dataSource === 'input') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window/amstack/input 无完整几何故隐藏
   if (vst) vst.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vso) vso.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
@@ -9855,7 +10633,12 @@ function updateDataSourceUI() {
   const vtToolbar = document.getElementById('vt-toolbar');
   const mainToolbar = document.querySelector('.viz-toolbar');
   if (vtToolbar) vtToolbar.style.display = (dataSource === 'viewtop') ? '' : 'none';
-  if (mainToolbar) mainToolbar.style.display = (dataSource === 'viewtop') ? 'none' : '';
+  if (mainToolbar) mainToolbar.style.display = (dataSource === 'viewtop' || dataSource === 'input') ? 'none' : '';
+  // Input 数据源用专属工具条（仅「重新输入」），隐藏通用画布工具条与统计条
+  const itb = document.getElementById('input-toolbar');
+  if (itb) itb.style.display = (dataSource === 'input') ? '' : 'none';
+  const sbInput = document.getElementById('stats-bar');
+  if (sbInput && dataSource === 'input') sbInput.style.display = 'none';
   // View Top 模式下 tree-panel 不平移画布，游标恢复默认（Scroll bug 修复配套）
   const tp = document.getElementById('tree-panel');
   if (tp) tp.classList.toggle('vt-mode', dataSource === 'viewtop');
@@ -11746,6 +12529,7 @@ function dataSourceToAdbCommand(ds) {
   if (ds === 'amstack') return 'amstack';
   if (ds === 'windowcontainers') return 'windowcontainers';
   if (ds === 'viewtop') return 'viewtop';
+  if (ds === 'input') return 'input';
   return 'containers';
 }
 function adbCommandLabel(cmd) {
@@ -11753,6 +12537,7 @@ function adbCommandLabel(cmd) {
   if (cmd === 'amstack') return 'am stack list';
   if (cmd === 'windowcontainers') return 'window containers';
   if (cmd === 'viewtop') return 'activity top';
+  if (cmd === 'input') return 'input';
   return cmd === 'surfaceflinger' ? 'SurfaceFlinger' : (cmd === 'window' ? 'window windows' : 'activity containers');
 }
 

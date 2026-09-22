@@ -71,7 +71,8 @@ const COMMAND_MAP = {
   amstack: ['shell', 'am', 'stack', 'list'],
   windowcontainers: ['shell', 'dumpsys', 'window', 'containers'],
   surfaceflinger: ['shell', 'dumpsys', 'SurfaceFlinger'],
-  window: ['shell', 'dumpsys', 'window', 'windows']
+  window: ['shell', 'dumpsys', 'window', 'windows'],
+  input: ['shell', 'dumpsys', 'input']
 };
 
 function sendJson(res, code, obj) {
@@ -239,7 +240,7 @@ const server = http.createServer(async (req, res) => {
       const command = (url.searchParams.get('command') || '').trim();
       const target = (url.searchParams.get('target') || '').trim();
       if (!COMMAND_MAP[command]) {
-        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|viewtop|amstack|windowcontainers|surfaceflinger|window）');
+        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|viewtop|amstack|windowcontainers|surfaceflinger|window|input）');
         return;
       }
       let args = COMMAND_MAP[command].slice();
