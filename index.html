@@ -815,7 +815,14 @@ select.btn{
 .vis-badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; border: 1px solid var(--border); color: var(--text-secondary); }
 .vis-badge.v-visible { color: #3fb950; border-color: rgba(63,185,80,.4); }
 .vis-badge.v-invisible, .vis-badge.v-gone { color: #8b949e; }
+.ty-badge { font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 10px; color: #58a6ff; border: 1px solid rgba(88,166,255,.45); background: rgba(88,166,255,.14); }
+.fmt-badge { font-size: 11px; padding: 1px 7px; border-radius: 10px; color: #3fb950; border: 1px solid rgba(63,185,80,.45); background: rgba(63,185,80,.14); }
+.win-typefmt { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px; }
 .win-meta { font-size: 11px; color: var(--text-secondary); font-family: var(--mono); word-break: break-all; }
+.win-alerts { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.win-alert { font-size: 10.5px; font-weight: 700; padding: 1px 7px; border-radius: 10px; line-height: 1.6; }
+.win-alert.bad { background: rgba(248, 81, 73, .16); color: #ff7b72; border: 1px solid rgba(248, 81, 73, .4); }
+.win-alert.warn { background: rgba(210, 153, 34, .16); color: #e3b341; border: 1px solid rgba(210, 153, 34, .4); }
 
 /* 右侧参数解释：5 态图例 + 参数速查 */
 .state-legend { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
@@ -824,9 +831,29 @@ select.btn{
 .state-name { flex: 0 0 168px; font-weight: 700; color: var(--text-primary); font-family: var(--mono); }
 .state-val { color: var(--text-secondary); font-weight: 400; }
 .state-desc { flex: 1 1 auto; color: var(--text-secondary); line-height: 1.5; }
+.state-row.clickable { cursor: pointer; border-radius: 6px; padding: 4px 6px; margin: -4px -6px; }
+.state-row.clickable:hover { background: var(--bg-hover); }
+.state-row.active { background: rgba(88,166,255,.12); box-shadow: inset 0 0 0 1px rgba(88,166,255,.4); }
+.state-hint { flex: 0 0 auto; align-self: center; margin-left: 8px; font-size: 10.5px; color: var(--text-muted); border: 1px solid var(--border); border-radius: 10px; padding: 0 7px; line-height: 1.7; }
+.state-row.active .state-hint { color: #58a6ff; border-color: rgba(88,166,255,.5); background: rgba(88,166,255,.14); }
+.win-card.ds-hl { box-shadow: 0 0 0 3px rgba(88,166,255,.85), 0 2px 10px rgba(0,0,0,.2); border-color: var(--accent-blue); background: rgba(88,166,255,.05); }
 .param-dict { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
 .dict-row { display: flex; gap: 8px; font-size: 12px; align-items: baseline; }
 .dict-key { flex: 0 0 150px; font-family: var(--mono); color: #79c0ff; }
+
+/* 属性行：英文键名 + 取值，点击行展开中文解释 */
+.attr-row { border-bottom: 1px solid var(--border-light); cursor: pointer; }
+.attr-row:hover { background: var(--bg-tertiary); }
+.attr-line { display: flex; align-items: baseline; gap: 8px; padding: 4px 8px; }
+.attr-key { flex: 0 0 168px; font-family: var(--mono); font-size: 12px; color: var(--text-primary); word-break: break-all; }
+.attr-val { flex: 1 1 auto; font-family: var(--mono); font-size: 12px; color: #79c0ff; word-break: break-all; }
+.attr-caret { flex: 0 0 auto; color: var(--text-secondary); transition: transform .15s; font-size: 10px; }
+.attr-row.open .attr-caret { transform: rotate(90deg); }
+.attr-explain { display: none; padding: 6px 8px 10px 176px; font-size: 12px; color: var(--text-secondary); line-height: 1.6; }
+.attr-row.open .attr-explain { display: block; }
+.attr-explain b { color: var(--text-primary); }
+.attr-row-raw .attr-key { color: var(--text-secondary); }
+.attr-unknown { color: var(--text-secondary); font-style: italic; }
 .dict-label { flex: 0 0 92px; color: var(--text-primary); font-weight: 600; }
 .dict-desc { flex: 1 1 auto; color: var(--text-secondary); line-height: 1.5; }
 .param-table { width: 100%; border-collapse: collapse; margin-top: 4px; font-size: 12px; }
@@ -836,6 +863,38 @@ select.btn{
 .param-table .pv code { font-family: var(--mono); color: #79c0ff; }
 .param-table tr.pdesc td { border-bottom: 1px dashed var(--border); color: var(--text-secondary); font-size: 11px; padding-top: 0; }
 .ds-sub { color: var(--text-secondary); font-size: 11px; }
+.tier-details { margin-top: 6px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.tier-details > summary { cursor: pointer; padding: 7px 10px; font-weight: 600; font-size: 12.5px; background: var(--bg-tertiary); color: var(--text-primary); user-select: none; }
+.tier-details > summary:hover { background: var(--bg-hover); }
+.tier-details[open] > summary { border-bottom: 1px solid var(--border); }
+.tier-details .param-table { margin-top: 0; }
+.tier-details .param-table td:first-child { padding-left: 10px; }
+.btn.small.active { background: var(--accent-red, #f85149); color: #fff; border-color: var(--accent-red, #f85149); }
+.wf-symptom-group { flex-wrap: wrap; }
+.wf-symptom.active { background: var(--accent-blue); color: #fff; border-color: var(--accent-blue); }
+.btn.tiny { font-size: 11px; padding: 1px 8px; border-radius: 10px; }
+.btn.ghost { background: transparent; border: 1px solid var(--border); color: var(--text-secondary); }
+.btn.ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+/* 症状速查指引卡 */
+.symptom-guide { background: rgba(88,166,255,.06); border: 1px solid rgba(88,166,255,.32); border-radius: 10px; padding: 10px 12px; }
+.symptom-guide .details-section-title { display: flex; align-items: center; gap: 8px; }
+.symptom-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; margin: 4px 0 8px; }
+.symptom-block { margin-top: 7px; }
+.symptom-h { font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+.symptom-h.symptom-ok { color: #3fb950; }
+.symptom-h.symptom-bad { color: #ff7b72; }
+.symptom-text { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+.symptom-fields { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: baseline; }
+.symptom-field { font-family: var(--mono); font-size: 11px; color: #79c0ff; background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: 6px; padding: 0 6px; }
+.symptom-field-label { font-size: 11.5px; color: var(--text-secondary); }
+
+/* 跨源关联线索卡 */
+.corr-guide { background: rgba(210,153,34,.05); border: 1px solid rgba(210,153,34,.28); border-radius: 10px; padding: 10px 12px; }
+.corr-item { margin-top: 8px; padding: 8px 10px; background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: 8px; }
+.corr-item:first-of-type { margin-top: 4px; }
+.corr-head { font-size: 12.5px; font-weight: 700; color: var(--text-primary); }
+.corr-clue { font-size: 11.5px; color: var(--text-secondary); line-height: 1.55; margin: 4px 0 7px; }
 
 /* ===== adb 设备抓取（桥接） ===== */
 .adb-status {
@@ -1199,8 +1258,17 @@ select.btn{
         <option value="HAS_DRAWN">HAS_DRAWN</option>
       </select>
     </span>
+    <span class="wf-group wf-symptom-group">
+      <span class="wf-group-label">症状速查</span>
+      <button class="btn small wf-symptom" data-key="white_screen" onclick="onWinSymptom('white_screen')" title="白屏/未上屏排查指引">🖼️ 白屏</button>
+      <button class="btn small wf-symptom" data-key="ime_cover" onclick="onWinSymptom('ime_cover')" title="输入法遮挡输入框排查指引">⌨️ IME遮挡</button>
+      <button class="btn small wf-symptom" data-key="overlap" onclick="onWinSymptom('overlap')" title="窗口重叠/错乱排查指引">🧱 重叠</button>
+      <button class="btn small wf-symptom" data-key="touch" onclick="onWinSymptom('touch')" title="点不准/点了没反应排查指引">👆 点不准</button>
+      <button class="btn small wf-symptom" data-key="multi_display" onclick="onWinSymptom('multi_display')" title="多屏/投屏异常排查指引">🖥️ 多屏</button>
+    </span>
     <span class="wf-count" id="wf-count"></span>
     <button class="btn small" id="wf-clear" onclick="resetWinFilter()">清除筛选</button>
+    <button class="btn small" id="wf-focus" onclick="toggleWinFocus()" title="排查聚焦：打开只显示🔴核心属性，辅助/噪声字段折叠，快速定位问题窗口">排查聚焦</button>
   </div>
 
   <!-- Main Content -->
@@ -1299,6 +1367,8 @@ let windowIndex = new Map();   // window 视图搜索/选中索引：id -> windo
 let selectedWindowId = null;
 let windowVisFilter = 'all';   // 窗口可见性筛选（mViewVisibility）：all / VISIBLE / INVISIBLE / GONE
 let windowDrawFilter = 'all';  // 绘制状态筛选（mDrawState）：all / 5 态
+let windowFocusMode = 'off';   // 排查聚焦：off=全显(三级分诊) / on=只显示🔴核心属性
+let windowSymptom = null;      // 当前激活的症状速查（SYMPTOM_GUIDE 的 key）；null=未选
 
 function getActiveForest() {
   if (dataSource === 'surfaceflinger' && currentView === 'sf-tree') {
@@ -4715,6 +4785,7 @@ function renderOffscreenDetails(node) {
 }
 
 function nodeMatches(node, q) {
+  q = (q || '').toLowerCase();
   if (!q) return false;
   if (node.type && node.type.toLowerCase().indexOf(q) >= 0) return true;
   if (node.label && node.label.toLowerCase().indexOf(q) >= 0) return true;
@@ -4727,6 +4798,23 @@ function nodeMatches(node, q) {
   for (const p of pl) {
     if (p.key && p.key.toLowerCase().indexOf(q) >= 0) return true;
     if (p.value && p.value.toLowerCase().indexOf(q) >= 0) return true;
+  }
+  // 窗口对象（windowIndex 中 node 即 win）：额外按属性名/属性值搜索
+  // 这样搜 "mFrame" / "gravity" / "mContentInsets" / "STATUS_BAR" 等字段名能命中，不再提示“不存在”。
+  if (node.attrsGravity !== undefined || node.frame !== undefined || node.rawAttrs) {
+    const w = node;
+    for (const k in WINDOW_PARAM_DICT) {
+      let p;
+      if (k.indexOf('mAttrs.') === 0) p = 'attrs' + k.charAt(7).toUpperCase() + k.slice(8);
+      else if (k.indexOf('Frames.') === 0) { const sub = k.slice(7); p = ({ frame: 'frame', parent: 'containingFrame', display: 'displayFrame', last: 'lastFrame' })[sub] || sub; }
+      else if (/^m[A-Z]/.test(k)) p = k.charAt(1).toLowerCase() + k.slice(2);
+      else p = k;
+      const val = w[p];
+      if (val != null && (k.toLowerCase().indexOf(q) >= 0 || String(val).toLowerCase().indexOf(q) >= 0)) return true;
+    }
+    if (w.rawAttrs) for (const rk in w.rawAttrs) {
+      if (rk.toLowerCase().indexOf(q) >= 0 || String(w.rawAttrs[rk]).toLowerCase().indexOf(q) >= 0) return true;
+    }
   }
   return false;
 }
@@ -10708,6 +10796,47 @@ const WINDOW_DRAW_STATES = [
 const WINDOW_DRAW_STATE_MAP = {};
 WINDOW_DRAW_STATES.forEach(function (s) { WINDOW_DRAW_STATE_MAP[s.name] = s; });
 
+// 常见排查症状速查（轻量向导）：点击症状 → 打开「排查聚焦」仅显🔴核心字段 + 右侧显示本症状排查指引
+// focus: 该症状最该重点看的字段（WINDOW_PARAM_DICT 的 key，用于指引「看哪些」）
+// normal / abnormal: 正常态 vs 异常态的中文描述，帮助快速判断
+const SYMPTOM_GUIDE = {
+  white_screen: {
+    icon: '🖼️', title: '白屏 / 未上屏', badge: '白屏未上屏',
+    desc: '窗口存在但内容看不到（黑屏、白屏、灰蒙、闪一下消失）。',
+    focus: ['mDrawState', 'mSurfaceShown', 'mHasSurface', 'mShown', 'mPolicyVisibility', 'mViewVisibility', 'mSurfaceAlpha', 'mObscured'],
+    normal: 'mDrawState=HAS_DRAWN 且 mSurfaceShown=true、mPolicyVisibility=true、mViewVisibility=VISIBLE、mSurfaceAlpha=1.0、mObscured=false。',
+    abnormal: '停在 DRAW_PENDING / COMMIT_DRAW_PENDING / READY_TO_SHOW（绘制未走完，未真正上屏）；mSurfaceShown=false（Surface 未显示，黑/白屏前兆）；mPolicyVisibility=false（被策略隐藏）；mSurfaceAlpha<1（半透灰蒙）；mObscured=true（被别的窗口完全盖住）。'
+  },
+  ime_cover: {
+    icon: '⌨️', title: '输入法遮挡输入框', badge: 'IME遮挡',
+    desc: '弹出软键盘后输入框被挡、或输入区与键盘重叠。',
+    focus: ['mAttrs.type', 'Frames.frame', 'mObscured', 'softInputMode', 'mAnimLayer'],
+    normal: 'IME 窗口(TYPE_INPUT_METHOD) mFrame 落在屏幕底部；目标输入框 mObscured=false 且软键盘未盖住其输入区。',
+    abnormal: '目标窗口 mObscured=true 且被 IME 盖住输入区；softInputMode（sim=）与当前布局/全屏模式不匹配导致 WMS 未给输入框预留空间。'
+  },
+  overlap: {
+    icon: '🧱', title: '窗口重叠 / 错乱', badge: '重叠错乱',
+    desc: '本该在上面的窗口被压在下面，或相邻窗口内容互相覆盖。',
+    focus: ['mAnimLayer', 'Frames.frame', 'mObscured', 'mAttrs.type', 'mSubLayer', 'mBaseLayer'],
+    normal: '期望在上的窗口 mAnimLayer 更大、mFrame 不被下层窗口覆盖、mObscured=false。',
+    abnormal: '本该在上的窗口 mAnimLayer 反而更小（Z 序错）；或出现 mObscured=true（该可见却被完全遮挡）；相邻窗口 mFrame 几何重叠且无合理层级关系。'
+  },
+  touch: {
+    icon: '👆', title: '点不准 / 点了没反应', badge: '点不准',
+    desc: '点击位置与响应窗口不一致，或点击无反应。',
+    focus: ['Frames.frame', 'mObscured', 'mTouchableRegion', 'mPolicyVisibility', 'mViewVisibility', 'mAttrs.type'],
+    normal: '目标窗口 mFrame 命中区正确、mObscured=false、mTouchableRegion 覆盖点击点、mPolicyVisibility/mViewVisibility 均可见。',
+    abnormal: '上层有透明/不可见窗口盖住点击区（表现为目标 mObscured=true 或透明覆盖层）；mFrame 错位导致命中区偏移；mPolicyVisibility=false 使点击被 WMS 吞掉。'
+  },
+  multi_display: {
+    icon: '🖥️', title: '多屏 / 投屏异常', badge: '多屏异常',
+    desc: '副屏、投屏、折叠屏展开后窗口落到错误屏幕或尺寸错乱。',
+    focus: ['mDisplayId', 'Frames.frame', 'mAnimLayer', 'mAttrs.type'],
+    normal: '目标窗口落在期望的 displayId，mFrame 相对该屏分辨率合理。',
+    abnormal: '窗口 mDisplayId 错误（跑到别的屏）；mFrame 相对目标屏尺寸错乱（过大/偏移/未适配）。'
+  }
+};
+
 // 窗口类型（mAttrs.type=...）速查
 const WINDOW_TYPE_DICT = {
   TYPE_APPLICATION: '普通应用窗口（Activity）',
@@ -10739,26 +10868,153 @@ const WINDOW_TYPE_DICT = {
 };
 
 // 参数变量含义速查（用于右侧「参数解释」面板）
+// 参数变量含义速查（用于右侧「参数解释」面板）。tier: core=🔴核心(任何排查先看)/aux=🟡辅助(特定场景)/noise=⚪噪声(默认折叠)
 const WINDOW_PARAM_DICT = {
-  mDisplayId:        { label: '显示设备 ID', desc: '窗口所在的物理/虚拟显示屏编号（0 = 主屏）。多屏设备会有 1、2…' },
-  mStackId:          { label: 'Stack ID', desc: '窗口所属的任务栈/窗口栈编号（旧版 WMS；Android 12+ 改为 TaskDisplayArea/Task 体系）。' },
-  mOwnerUid:         { label: '拥有者 UID', desc: '创建该窗口的进程 UID（系统栏 1000、应用为各自 uid）。决定权限与可见性归属。' },
-  mOwnerPid:         { label: '拥有者 PID', desc: '创建该窗口的进程 PID。' },
-  mSession:          { label: 'Session', desc: '应用与 WMS 之间的会话（Binder Session），一个应用进程对应一个 Session。' },
-  mViewVisibility:   { label: 'View 可见性', desc: 'View 层可见性：0x0=VISIBLE（可见）、0x4=INVISIBLE（占位不可见）、0x8=GONE（不占位）。注意它与 Surface 是否显示是两回事。' },
-  mPolicyVisibility: { label: '策略可见性', desc: 'WMS 策略层可见性（受锁屏、App 隐藏、动画等影响）。false = 被策略隐藏。' },
-  mAppOpVisibility:  { label: 'AppOp 可见性', desc: '受 AppOps 管理（如悬浮窗权限被收回）的可见性。false = 被系统收回显示权限。' },
-  mAttachedHidden:   { label: '依附隐藏', desc: '其依附的父窗口被隐藏时本窗口是否随之隐藏。' },
-  mShown:            { label: '已显示', desc: '窗口当前是否处于“已显示”状态（经过 show 流程）。' },
-  mHasSurface:       { label: '拥有 Surface', desc: '窗口是否已有可用的 Surface（与 mDrawState 配合判断）。' },
-  mAnimatingExit:    { label: '退出动画中', desc: '窗口正在播放退出动画（removeWindow 过渡），尚未真正销毁。' },
-  mAnimatingEnter:   { label: '进入动画中', desc: '窗口正在播放进入动画。' },
-  mDrawState:        { label: '绘制状态 (5 态)', desc: 'WindowStateAnimator 的状态机，见上方「5 种 window 状态」图例。窗口从创建到显示必经这 5 态流转。' },
-  mAnimLayer:        { label: '动画层 Z', desc: 'WindowStateAnimator 计算出的实际合成 Z 值（含动画偏移），决定窗口在屏幕上的前后顺序。越大越靠上（越接近人眼）。' },
-  mBaseLayer:        { label: '基础层 Z', desc: '由窗口类型决定的基础 Z 值（系统窗口 > 应用窗口）。' },
-  mSubLayer:         { label: '子层 Z', desc: '相对父窗口的偏移层（如子窗口、IME 相对应用）。可为负。' },
-  mFrame:            { label: '窗口帧', desc: '窗口在屏幕坐标系中的实际矩形 [l,t][r,b]（单位像素），由 WMS 布局计算给出。' },
-  mAttrs:            { label: '布局参数', desc: 'WindowManager.LayoutParams：type(窗口类型)、flags(行为标志)、privateFlags、gravity、softInputMode、package 等。' }
+  // ── 🔴 核心（任何排查先看）──
+  mDrawState:        { tier: 'core', label: '绘制状态 (5 态)', desc: 'WindowStateAnimator 的状态机，见上方「5 种 window 状态」图例。窗口从创建到显示必经这 5 态流转；停在非 HAS_DRAWN 即未正常上屏。' },
+  mSurfaceShown:     { tier: 'core', label: 'Surface 已显示', desc: 'WindowStateAnimator 内 mSurfaceShown：该窗口的 Surface 当前是否真的在合成中显示（区别于 mHasSurface 仅表示 Surface 对象存在）。应为可见却 false=黑屏/白屏前兆。' },
+  mHasSurface:       { tier: 'core', label: '拥有 Surface', desc: '窗口是否已有可用的 Surface 对象（与 mDrawState 配合：NO_SURFACE 态必为 false）。' },
+  mShown:            { tier: 'core', label: '已显示', desc: '窗口当前是否处于“已显示”状态（经过 show 流程）。与 mPolicyVisibility/mViewVisibility 共同决定能否见。' },
+  mPolicyVisibility: { tier: 'core', label: '策略可见性', desc: 'WMS 策略层可见性（受锁屏、App 隐藏、动画等影响）。false = 被策略隐藏，即使 View 层 VISIBLE 也不可见。' },
+  mViewVisibility:   { tier: 'core', label: 'View 可见性', desc: 'View 层可见性：0x0=VISIBLE（可见）、0x4=INVISIBLE（占位不可见）、0x8=GONE（不占位）。注意它与 Surface 是否显示是两回事。' },
+  'Frames.frame':    { tier: 'core', label: '窗口帧(frame)', desc: '窗口在屏幕坐标系中的实际矩形 [l,t][r,b]（单位像素），由 WMS 布局计算给出。原始 dump 写作 `Frames:` 行内的 `frame=`（例如 Frames: parent=[0,0][1080,2400] frame=[0,0][1080,88] last=[0,0][1080,88]）。错位/黑边/尺寸异常都看这里。' },
+  mFrame:            { tier: 'core', label: '窗口帧(旧格式)', desc: '窗口实际矩形 [l,t][r,b]。旧版 dumpsys 直接写作 `mFrame=[...]`（与 `Frames: frame=` 含义相同，仅打印格式不同）。' },
+  'mAttrs.type':     { tier: 'core', label: '窗口类型', desc: 'WindowManager.LayoutParams.type：决定窗口性质与基础 Z（状态栏/导航栏/IME/应用/壁纸…）。见上方类型速查。原始 dump 写作 `ty=`，位于 `mAttrs={...}` 块内，由解析拼接得到（数据里没有字面 `mAttrs.type=`）。' },
+  mAnimLayer:        { tier: 'core', label: '动画层 Z', desc: 'WindowStateAnimator 计算出的实际合成 Z 值（含动画偏移），决定窗口前后顺序。越大越靠上（越接近人眼）；重叠/遮挡排查核心。' },
+  mObscured:         { tier: 'core', label: '被完全遮挡', desc: '窗口是否完全被其他窗口盖住（true=用户看不到它，即使自身可见）。排查“点了没反应/看不到内容”时看它。' },
+  mSurfaceAlpha:     { tier: 'core', label: 'Surface 透明度', desc: 'Surface 整体透明度（1.0=不透明）。<1 即半透明（可能看起来灰蒙/异常）；0=全透明不可见。' },
+
+  // ── 🟡 辅助（特定场景展开）──
+  mStackId:          { tier: 'aux', label: 'Stack ID', desc: '窗口所属的任务栈/窗口栈编号（旧版 WMS；Android 12+ 改为 TaskDisplayArea/Task 体系）。' },
+  mOwnerUid:         { tier: 'aux', label: '拥有者 UID', desc: '创建该窗口的进程 UID（系统栏 1000、应用为各自 uid）。决定权限与可见性归属。' },
+  mOwnerPid:         { tier: 'aux', label: '拥有者 PID', desc: '创建该窗口的进程 PID。' },
+  mSession:          { tier: 'aux', label: 'Session', desc: '应用与 WMS 之间的会话（Binder Session），一个应用进程对应一个 Session。' },
+  mAppOpVisibility:  { tier: 'aux', label: 'AppOp 可见性', desc: '受 AppOps 管理（如悬浮窗权限被收回）的可见性。false = 被系统收回显示权限。' },
+  mAttachedHidden:   { tier: 'aux', label: '依附隐藏', desc: '其依附的父窗口被隐藏时本窗口是否随之隐藏。' },
+  mAnimatingEnter:   { tier: 'aux', label: '进入动画中', desc: '窗口正在播放进入动画。' },
+  mAnimatingExit:    { tier: 'aux', label: '退出动画中', desc: '窗口正在播放退出动画（removeWindow 过渡），尚未真正销毁。' },
+  mBaseLayer:        { tier: 'aux', label: '基础层 Z', desc: '由窗口类型决定的基础 Z 值（系统窗口 > 应用窗口）。' },
+  mSubLayer:         { tier: 'aux', label: '子层 Z', desc: '相对父窗口的偏移层（如子窗口、IME 相对应用）。可为负。' },
+  mDisplayId:        { tier: 'aux', label: '显示设备 ID', desc: '窗口所在的物理/虚拟显示屏编号（0 = 主屏）。多屏设备会有 1、2…排查多屏显示异常看它。' },
+  mTouchableRegion:  { tier: 'aux', label: '可触摸区域', desc: '窗口接收触摸事件的屏幕区域（SkRegion）。点不准/点不到时看它是否与 mFrame 一致。' },
+  'Frames.parent':   { tier: 'aux', label: '容器帧(parent)', desc: 'WMS 给该窗口布局的“容器”矩形（父约束区），即原始 dump `Frames:` 行内的 `parent=`。与 Frames.frame 不同，是布局计算的输入。' },
+  mContainingFrame:  { tier: 'aux', label: '容器帧(旧格式)', desc: 'WMS 布局的“容器”矩形（父约束区）。旧版 dumpsys 写作 `mContainingFrame=[...]`（与 `Frames: parent=` 含义相同）。' },
+  'Frames.display':  { tier: 'aux', label: '显示帧(display)', desc: '窗口可用的显示区域矩形（含系统栏 inset 后的可用区），即原始 dump `Frames:` 行内的 `display=`。错位/被系统栏遮挡时对比 Frames.frame。' },
+  mDisplayFrame:     { tier: 'aux', label: '显示帧(旧格式)', desc: '窗口可用显示区域矩形（含系统栏 inset 后的可用区）。旧版 dumpsys 写作 `mDisplayFrame=[...]`（与 `Frames: display=` 含义相同）。' },
+  'mAttrs.flags':    { tier: 'aux', label: '行为标志', desc: 'WindowManager.LayoutParams.flags：FLAG_NOT_FOCUSABLE（不抢焦点）、FLAG_DIM_BEHIND（背后变暗）、FLAG_LAYOUT_NO_LIMITS 等。原始 dump 写作 `fl=`，位于 `mAttrs={...}` 块内，由解析拼接得到。' },
+  'mAttrs.privateFlags': { tier: 'aux', label: '私有标志', desc: '系统内部 privateFlags（如 PRIVATE_FLAG_KEYGUARD、FAKE_HARDWARE_ACCELERATED）。原始 dump 写作 `pfl=`，位于 `mAttrs={...}` 块内，由解析拼接得到。' },
+  'mAttrs.gravity':  { tier: 'aux', label: '对齐', desc: '窗口内容在屏幕上的对齐方式（TOP/BOTTOM/FILL/CENTER…）。原始 dump 写作 `gr=`（如 gr=TOP CENTER_VERTICAL），位于 `mAttrs={...}` 块内；数据里没有字面 `mAttrs.gravity=`，是解析拼接得到的。' },
+  'mAttrs.package':  { tier: 'aux', label: '所属包', desc: '窗口归属的 APK 包名，定位是哪个 App 的窗口。原始 dump 写作 `package=`（在 `mAttrs={...}` 块外、窗口头一行）。' },
+  softInputMode:     { tier: 'aux', label: '软键盘模式', desc: 'mAttrs.softInputMode（dump 简写 sim=）：控制输入法弹出时窗口如何平移/缩放（adjustResize/adjustPan/stateVisible 等）。IME 遮挡排查核心。' },
+  'mAttrs.systemUiVisibility': { tier: 'aux', label: '系统栏可见性标志', desc: 'WindowManager.LayoutParams.systemUiVisibility（SYSTEM_UI_FLAG_*）：控制状态栏/导航栏隐藏等。原始 dump 写作 `vsysui=`，位于 `mAttrs={...}` 块内。' },
+  'mAttrs.behavior': { tier: 'aux', label: '系统行为', desc: 'WindowManager.LayoutParams.systemUiBehavior（如 SHOW_TRANSIENT_BARS_BY_SWIPE）。原始 dump 写作 `bhv=`，位于 `mAttrs={...}` 块内。' },
+  'mAttrs.windowAnimations': { tier: 'aux', label: '窗口动画', desc: 'WindowManager.LayoutParams.windowAnimations：窗口进出场动画资源 ID（如 0x1030056）。原始 dump 写作 `wanim=`，位于 `mAttrs={...}` 块内。' },
+  'mAttrs.format':   { tier: 'aux', label: '像素格式', desc: 'WindowManager.LayoutParams.format：Surface 像素格式（TRANSLUCENT / RGBX_8888 / OPAQUE 等）。原始 dump 写作 `fmt=`，位于 `mAttrs={...}` 块内。' },
+  'mAttrs.layoutInDisplayCutoutMode': { tier: 'aux', label: '挖孔布局模式', desc: 'WindowManager.LayoutParams.layoutInDisplayCutoutMode：窗口如何避开/延伸至屏幕挖孔区（always / default / never）。原始 dump 写作 `layoutInDisplayCutoutMode=`。' },
+  'mAttrs.fitTypes': { tier: 'noise', label: 'Insets 适配类型', desc: '该窗口要求系统为其预留的 insets 类型（STATUS_BARS / NAVIGATION_BARS / CAPTION_BAR 等）。原始 dump 写作 `fitTypes=`。' },
+  'mAttrs.fitSides': { tier: 'noise', label: 'Insets 适配边', desc: '需要适配 insets 的屏幕边（LEFT/TOP/RIGHT/BOTTOM 组合）。原始 dump 写作 `fitSides=`。' },
+  mPolicyVisibilityAfterAnim: { tier: 'aux', label: '动画后策略可见性', desc: '动画结束后的策略可见性终值（动画过程中临时值与终值可能不同）。' },
+  mClientVisibility: { tier: 'aux', label: '客户端可见性', desc: '客户端（ViewRootImpl）上报的可见性，与 WMS 策略可见性可能短暂不一致。' },
+  'Frames.last':     { tier: 'aux', label: '上一帧(last)', desc: '上一次布局的窗口帧，即原始 dump `Frames:` 行内的 `last=`。对比 Frames.frame 可看动画/位移过程。' },
+  mLastFrame:        { tier: 'aux', label: '上一帧(旧格式)', desc: '上一次布局的窗口帧。旧版 dumpsys 写作 `mLastFrame=[...]`（与 `Frames: last=` 含义相同）。' },
+  mSurfaceLayer:     { tier: 'aux', label: 'Surface 层', desc: 'Surface 的实际 Z 层（与 mAnimLayer 通常一致，animator 内字段）。' },
+  mAttrs:            { tier: 'aux', label: '布局参数', desc: 'WindowManager.LayoutParams 整体：type(ty=)、flags(fl=)、privateFlags(pfl=)、gravity(gr=)、softInputMode(sim=)、systemUiVisibility(vsysui=)、behavior(bhv=)、windowAnimations(wanim=)、format(fmt=)、package 等。这些 `mAttrs.*` 字段并非 dump 里的字面键，而是由解析器从 `mAttrs={...}` 块内的缩写拼接得到。' },
+
+  // ── ⚪ 噪声（默认折叠）──
+  mSeq:              { tier: 'noise', label: '序列号', desc: 'WMS 内部递增序列号，用于请求排序，排查一般无需关注。' },
+  mSystemUiVisibility: { tier: 'noise', label: '系统 UI 可见性', desc: 'SYSTEM_UI_FLAG_* 集合（状态栏/导航栏隐藏等），通常排查用不到。' },
+  mLastSystemUiVisibility: { tier: 'noise', label: '上次系统 UI 可见性', desc: '上一次的系统 UI 可见性值，调试用。' },
+  mShowToOwnerOnly:  { tier: 'noise', label: '仅属主可见', desc: '该窗口是否仅对拥有者可见（私有窗口标志摘要），一般无需关注。' },
+  mTransparentRegion: { tier: 'noise', label: '透明区域', desc: '窗口内完全透明的区域（SkRegion），合成优化用，一般排查无需关注。' },
+
+  // ── 补全：原始 dump 常见但此前未收录的字段（覆盖更全，不省略数据）──
+  mContentFrame:     { tier: 'aux', label: '内容帧', desc: '窗口内容实际绘制的矩形（mFrame 去掉系统栏/装饰后的区域）。与 mFrame 不同，是 View 真正可见区，错位/黑边看这里对照。' },
+  mVisibleFrame:     { tier: 'aux', label: '可见帧', desc: '窗口可见区域矩形（受系统栏、IME 等遮挡后的可见部分）。与 mContentFrame 通常一致。' },
+  mStableInsets:     { tier: 'aux', label: '稳定 inset', desc: '系统稳定区域的 inset（状态栏/导航栏常驻占用）。布局时留出，避免内容被系统栏盖住。' },
+  mVisibleInsets:    { tier: 'aux', label: '可见 inset', desc: '当前可见的系统栏 inset（如状态栏高度）。与 mStableInsets 不同，可能随时变化（状态栏隐藏时变 0）。' },
+  mContentInsets:    { tier: 'aux', label: '内容 inset', desc: '内容区域相对窗口的 inset（被系统栏/IME 挤占的部分）。' },
+  mGivenContentInsets: { tier: 'noise', label: '给定内容 inset', desc: 'WMS 计算下发给 View 的内容 inset（动画过渡中的目标值）。' },
+  mGivenVisibleInsets: { tier: 'noise', label: '给定可见 inset', desc: 'WMS 计算下发给 View 的可见 inset 目标值。' },
+  mGivenTouchableInsets: { tier: 'noise', label: '给定可触摸 inset', desc: '下发给 View 的可触摸区域 inset 目标值。' },
+  mOverscanInsets:   { tier: 'noise', label: '过扫描 inset', desc: '过扫描（TV 边缘安全区）inset，一般设备为 0。' },
+  mWinAnimator:      { tier: 'aux', label: 'WSA 引用', desc: '指向该窗口的 WindowStateAnimator 实例引用（用于驱动动画/绘制状态机）。' },
+  mAppToken:         { tier: 'aux', label: 'App 令牌', desc: '所属 AppWindowToken（Activity/App 窗口的令牌），系统窗口可能为占位 token。' },
+  mToken:            { tier: 'aux', label: 'WindowToken', desc: '该窗口所属的 WindowToken（同类型窗口的容器，决定层级与焦点分组）。' },
+  mClient:           { tier: 'noise', label: '客户端 Binder', desc: '客户端（ViewRootImpl）的 Binder 代理引用，用于跨进程通信。' },
+  mHidden:           { tier: 'noise', label: '隐藏标记', desc: '窗口是否被标记为隐藏（与 mPolicyVisibility/mViewVisibility 相关但不等同）。' },
+  mDestroying:       { tier: 'noise', label: '销毁中', desc: '窗口正在销毁流程中（已请求 remove 但资源未释放完）。' },
+  mRemoved:          { tier: 'noise', label: '已移除', desc: '窗口是否已从 WMS 移除。' },
+  mHasDrawn:         { tier: 'noise', label: '已绘制', desc: '窗口是否已经完成至少一次绘制（首次上屏标志）。' },
+  mSurface:          { tier: 'noise', label: 'Surface 引用', desc: '该窗口对应的 Surface 对象引用（含名称）。' },
+  mLastFrameTime:    { tier: 'noise', label: '上次帧时间', desc: '上次绘制/布局帧的时间戳（用于卡顿/延迟排查）。' },
+  mDisplayCutout:    { tier: 'aux', label: '刘海/挖孔', desc: '该窗口处的屏幕挖孔/刘海区域（SafeInset），全面屏适配看这里。' },
+  surfaceShown:      { tier: 'noise', label: 'Surface 已显示(简)', desc: 'dump 头部糖衣字段，等价于 mSurfaceShown，冗余显示以便对照原始输出。' },
+
+  // ── 真实 dumpsys window 常见字段补录（消“未收录”，覆盖更全）──
+  mLayoutSeq:        { tier: 'aux', label: '布局序列号', desc: '每次重新布局 +1 的递增序号，与 mSeq 不同：它标识“本次布局版本”。relayout 后仍异常可对照它是否更新。' },
+  mTouchableInsets:  { tier: 'aux', label: '可触摸 inset 类型', desc: '触摸区域 inset 的计算方式（0=ITF_FRAME 按窗口帧、1=ITF_CONTENT 按内容帧、3=ITF_VISIBLE 按可见帧）。' },
+  mGivenInsetsPending: { tier: 'noise', label: 'Insets 下发挂起', desc: 'WMS 下发给 View 的 inset 目标值是否还在动画过渡中（true=动画进行中，值未最终落定）。' },
+  mWindowRemovalAllowed: { tier: 'noise', label: '允许移除', desc: '窗口当前是否被允许移除（false=尚在动画/依赖中，remove 被推迟）。' },
+  mActivityRecord:   { tier: 'aux', label: 'ActivityRecord', desc: '该窗口（应用窗口）所属的 ActivityRecord 引用，是窗口与 Activity 的关联锚点。' },
+  mIsImWindow:       { tier: 'noise', label: '是输入法窗口', desc: '标记该窗口是否为输入法（IME）窗口，决定了 IME 相关逻辑（如 insets 计算）。' },
+  mIsWallpaper:      { tier: 'noise', label: '是壁纸窗口', desc: '标记该窗口是否为壁纸窗口。' },
+  mIsFloatingLayer:  { tier: 'noise', label: '浮动层', desc: '标记该窗口是否处于浮动层（如 IME、壁纸这类特殊层级）。' },
+  mHaveFrame:        { tier: 'noise', label: '已算帧', desc: 'WMS 是否已经为该窗口计算过 frame（true=已完成布局定位）。' },
+  mForceSeamlesslyRotate: { tier: 'noise', label: '强制无缝旋转', desc: '该窗口是否强制走无缝旋转（旋转动画期间不重绘整窗，仅转 Surface）。' },
+  mPrepareSyncSeqId: { tier: 'noise', label: '同步准备序列', desc: '窗口同步（sync）/ 过渡相关的准备序列号，调试用。' },
+  mWallpaperX:       { tier: 'noise', label: '壁纸 X 偏移', desc: '壁纸窗口在 X 方向的对齐偏移比例（0~1），配合 Y 决定壁纸居中方式。' },
+  mWallpaperY:       { tier: 'noise', label: '壁纸 Y 偏移', desc: '壁纸窗口在 Y 方向的对齐偏移比例。' },
+  mWallpaperZoomOut: { tier: 'noise', label: '壁纸缩放', desc: '壁纸窗口的缩放比例（0~1，1=不缩放），用于壁纸缩放动效。' },
+  mHScale:           { tier: 'noise', label: '水平缩放', desc: '壁纸等窗口的水平缩放系数（1.25=放大 25%），与 mVScale 配合实现 overscan。' },
+  mVScale:           { tier: 'noise', label: '垂直缩放', desc: '壁纸等窗口的垂直缩放系数。' },
+  isOnScreen:        { tier: 'aux', label: '在屏上', desc: '窗口当前是否处于屏幕可见区域（true=在屏上）。与 mHasSurface/mViewVisibility 一起判断“窗口到底显不显示”。' },
+  isVisible:         { tier: 'aux', label: '可见', desc: '窗口对用户输入/合成是否可见（true=可见）。注意区分：isVisible(合成可见) 与 isOnScreen(在屏上) 与 mViewVisibility(策略值) 三者含义不同。' },
+  showForAllUsers:   { tier: 'aux', label: '对所有用户显示', desc: '该窗口是否对所有用户（多用户/后台用户）都可见（系统栏/壁纸等多为 true）。' },
+  appop:             { tier: 'noise', label: 'AppOps 权限', desc: '该窗口涉及的 AppOps 权限状态（如 SYSTEM_ALERT_WINDOW 悬浮窗权限；NONE=无限制）。' },
+  rootTaskId:        { tier: 'aux', label: '根任务 ID', desc: '窗口所属任务的根 Task ID（定位窗口在哪个任务/栈里）。' },
+  'Requested.w':     { tier: 'aux', label: '请求宽', desc: '应用通过 setContentView/layout params 请求的窗口宽度（原始 dump 写作 `Requested w=`）。与 Frames.frame 实际宽对比可知是否被系统改小/放大。' },
+  'Requested.h':     { tier: 'aux', label: '请求高', desc: '应用请求的窗口高度（原始 dump 写作 `Requested h=`）。' },
+  mFullConfiguration: { tier: 'noise', label: '完整配置', desc: '窗口完整资源配置（语言/方向/屏幕模式/旋转等，mFullConfiguration）。值较长已截断显示，完整内容见原始 dump 对应行。' },
+  mLastReportedConfiguration: { tier: 'noise', label: '上次上报配置', desc: '上一次上报给应用的配置（mLastReportedConfiguration），用于判断配置变更是否真正下发到应用。' },
+
+  // ── 嵌套块内部字段补录（mFullConfiguration / WindowStateAnimator / ContainerAnimator 内部，避免显示“未收录”）──
+  mBounds:           { tier: 'noise', label: '屏幕边界', desc: 'mFullConfiguration 内的 mBounds：窗口所在物理屏的边界矩形（位于 mFullConfiguration 块内，详见该条目）。' },
+  mAppBounds:        { tier: 'noise', label: '应用边界', desc: 'mFullConfiguration 内的 mAppBounds：应用可用区边界（避让系统栏后的区域），位于 mFullConfiguration 块内。' },
+  mMaxBounds:        { tier: 'noise', label: '最大边界', desc: 'mFullConfiguration 内的 mMaxBounds：窗口允许的最大边界（如自由窗口的上限），位于 mFullConfiguration 块内。' },
+  mDisplayRotation:  { tier: 'noise', label: '显示旋转', desc: 'mFullConfiguration 内的 mDisplayRotation：当前显示旋转方向（ROTATION_0/90/180/270），位于 mFullConfiguration 块内。' },
+  mWindowingMode:    { tier: 'noise', label: '窗口模式', desc: 'mFullConfiguration 内的 mWindowingMode：窗口模式（fullscreen/freeform/split-screen 等），位于 mFullConfiguration 块内。' },
+  mDisplayWindowingMode: { tier: 'noise', label: '显示窗口模式', desc: 'mFullConfiguration 内的 mDisplayWindowingMode：所在显示的整体窗口模式，位于 mFullConfiguration 块内。' },
+  mActivityType:     { tier: 'noise', label: 'Activity 类型', desc: 'mFullConfiguration 内的 mActivityType：Activity 类型（standard/home/undefined 等），位于 mFullConfiguration 块内。' },
+  mAlwaysOnTop:      { tier: 'noise', label: '始终置顶', desc: 'mFullConfiguration 内的 mAlwaysOnTop：窗口是否始终置顶，位于 mFullConfiguration 块内。' },
+  mRotation:         { tier: 'noise', label: '旋转', desc: 'mFullConfiguration 内的 mRotation：窗口自身旋转，位于 mFullConfiguration 块内。' },
+  mLastHidden:       { tier: 'noise', label: 'WSA 末次隐藏', desc: 'WindowStateAnimator 内的 mLastHidden：动画/合成上一次是否处于隐藏态（mSurfaceShown 的末态参考）。' },
+  mEnterAnimationPending: { tier: 'noise', label: 'WSA 进入动画待播', desc: 'WindowStateAnimator 内的 mEnterAnimationPending：是否还有进入动画待播放。' },
+  mSystemDecorRect:  { tier: 'noise', label: '系统装饰矩形', desc: 'WindowStateAnimator 内的 mSystemDecorRect：系统装饰（状态栏/导航栏等）在窗口坐标系内的矩形。' },
+  mShownAlpha:       { tier: 'noise', label: 'WSA 实际透明度', desc: 'WindowStateAnimator 内的 mShownAlpha：经动画插值后的当前实际显示透明度（mAlpha 是目标值）。' },
+  mAlpha:            { tier: 'noise', label: 'WSA 目标透明度', desc: 'WindowStateAnimator 内的 mAlpha：目标透明度（动画终点值）。' },
+  mLastAlpha:        { tier: 'noise', label: 'WSA 上次透明度', desc: 'WindowStateAnimator 内的 mLastAlpha：上一次绘制的透明度。' },
+  mLeash:            { tier: 'noise', label: '动画 leash', desc: 'ContainerAnimator 内的 mLeash：用于驱动该窗口动画的 Surface leash（如 insets_animation 的 leash），含动画类型。' },
+  mAnimationType:    { tier: 'noise', label: '动画类型', desc: 'ContainerAnimator 内的 mAnimationType：当前动画类型（如 insets_animation）。' },
+  mCapturedLeash:    { tier: 'noise', label: '捕获 leash', desc: 'ContainerAnimator 内的 mCapturedLeash：动画控制器捕获的 leash Surface 引用。' },
+
+  // ── WMS 全局状态字段（dump 末尾全局段，非单个窗口属性）──
+  // 这些字段出现在「所有 Window #N 块之后」的 WindowManagerService 全局摘要里，
+  // 由于最后一个窗口块会一直解析到文件末尾，它们被一并收进了该窗口的 rawAttrs。
+  // 这里补录为 noise，避免显示“未收录”；它们是 WMS 全局状态，不是某个窗口的属性。
+  mMinimalInsetsSizeInDisplayCutoutSafe: { tier: 'noise', label: '(全局) 刘海安全区最小 inset', desc: 'WMS 全局状态：在 DisplayCutout 安全区内允许的最小 insets 尺寸，属于 WMS 而非单个窗口。' },
+  mGlobalConfiguration: { tier: 'noise', label: '(全局) 全局配置', desc: 'WMS 全局状态：整个 WMS 的全局资源配置（语言/方向/屏幕模式等），属于 WMS 而非单个窗口。' },
+  mHasPermanentDpad: { tier: 'noise', label: '(全局) 有固定方向键', desc: 'WMS 全局状态：设备是否带物理方向键（DPad），属于 WMS 而非单个窗口。' },
+  mBlurEnabled: { tier: 'noise', label: '(全局) 模糊已启用', desc: 'WMS 全局状态：是否启用了窗口模糊（跨窗口模糊）特效，属于 WMS 而非单个窗口。' },
+  mLastDisplayFreezeDuration: { tier: 'noise', label: '(全局) 末次冻屏时长', desc: 'WMS 全局状态：上一次屏幕冻结（display freeze）持续时长，属于 WMS 而非单个窗口。' },
+  mHighResSnapshotScale: { tier: 'noise', label: '(全局) 高分辨率快照缩放', desc: 'WMS 全局状态：高分辨率任务快照的缩放系数，属于 WMS 而非单个窗口。' },
+  mInputMethodWindow: { tier: 'noise', label: '(全局) 当前输入法窗口', desc: 'WMS 全局状态：当前激活的输入法窗口引用，属于 WMS 而非单个窗口。' },
+  mTraversalScheduled: { tier: 'noise', label: '(全局) 遍历已调度', desc: 'WMS 全局状态：是否已有一次 relayout/traversal 被调度（防止重复），属于 WMS 而非单个窗口。' },
+  mSystemBooted: { tier: 'noise', label: '(全局) 系统已启动', desc: 'WMS 全局状态：系统是否已完成启动（boot 完成前很多窗口操作受限），属于 WMS 而非单个窗口。' },
+  mDisplayEnabled: { tier: 'noise', label: '(全局) 显示已启用', desc: 'WMS 全局状态：主显示是否已启用，属于 WMS 而非单个窗口。' },
+  mTransactionSequence: { tier: 'noise', label: '(全局) 事务序列号', desc: 'WMS 全局状态：SurfaceFlinger 事务序列计数，属于 WMS 而非单个窗口。' },
+  mDisplayFrozen: { tier: 'noise', label: '(全局) 显示冻结中', desc: 'WMS 全局状态：显示是否处于冻结态（配置变更/旋转动画期间 true），属于 WMS 而非单个窗口。' },
+  mLastOrientation: { tier: 'noise', label: '(全局) 末次方向', desc: 'WMS 全局状态：上一次生效的屏幕方向，属于 WMS 而非单个窗口。' },
+  mWaitingForConfig: { tier: 'noise', label: '(全局) 等待配置', desc: 'WMS 全局状态：是否正在等待下一次配置下发（配置变更过渡中），属于 WMS 而非单个窗口。' }
 };
 
 function weEsc(s) {
@@ -10844,6 +11100,7 @@ function parseWindowDump(text) {
 function parseOneWindow(index, header, block) {
   function g0(re) { const mm = block.match(re); return mm ? mm[1].trim() : null; }
   function num(re) { const mm = block.match(re); return mm ? parseInt(mm[1], 10) : null; }
+  function fnum(re) { const mm = block.match(re); return mm ? parseFloat(mm[1]) : null; }
   function bool(re) { const mm = block.match(re); return mm ? mm[1] === 'true' : null; }
 
   const idM = header.match(/Window\{([0-9a-fA-F]+)(?:\s+u\d+)?\s*([^}]*)\}/);
@@ -10861,6 +11118,9 @@ function parseOneWindow(index, header, block) {
     animatingEnter: bool(/mAnimatingEnter=(true|false)/),
     shown: bool(/mShown=(true|false)/),
     hasSurface: bool(/mHasSurface=(true|false)/),
+    obscured: bool(/mObscured=(true|false)/),
+    surfaceShown: bool(/mSurfaceShown=(true|false)/),
+    surfaceAlpha: fnum(/mSurfaceAlpha=([\d.]+)/),
     drawState: g0(/mDrawState=([A-Z_]+)/),
     animLayer: num(/mAnimLayer=(-\d+|\d+)/),
     baseLayer: num(/mBaseLayer=(\d+)/),
@@ -10869,14 +11129,94 @@ function parseOneWindow(index, header, block) {
     ownerPid: num(/mOwnerPid=(\d+)/),
     session: g0(/mSession=(Session\{[^}]*\})/),
     frame: parseBoundsString(g0(/mFrame=(\[[^\]]*\]\[[^\]]*\])/)),
-    attrsType: g0(/\btype=([A-Z_a-z][A-Z_a-z0-9]*)/),
+    containingFrame: parseBoundsString(g0(/mContainingFrame=(\[[^\]]*\]\[[^\]]*\])/)),
+    displayFrame: parseBoundsString(g0(/mDisplayFrame=(\[[^\]]*\]\[[^\]]*\])/)),
+    lastFrame: parseBoundsString(g0(/mLastFrame=(\[[^\]]*\]\[[^\]]*\])/)),
+    touchableRegion: g0(/mTouchableRegion=([^\n]*)/),
+    transparentRegion: g0(/mTransparentRegion=([^\n]*)/),
+    attrsType: g0(/\bty=([A-Z_a-z][A-Z_a-z0-9]*)/),
     attrsFlags: g0(/\bfl=([A-Za-z0-9_| ]+)/),
     attrsPrivateFlags: g0(/\bpfl=([A-Za-z0-9_| ]+)/),
-    attrsGravity: g0(/\bgr=([A-Za-z_]+)/),
+    attrsGravity: g0(/\bgr=([A-Za-z_ ]+?)(?=\s+[a-z]+=|\s*\})/),
     attrsPackage: g0(/package=([^\s}]+)/),
+    softInputMode: g0(/\bsim=([^\s}]*)/),
+    surfaceLayer: num(/mSurfaceLayer=(-\d+|\d+)/),
+    policyVisibilityAfterAnim: bool(/mPolicyVisibilityAfterAnim=(true|false)/),
+    clientVisibility: winVisText(g0(/mClientVisibility=(0x[0-9a-fA-F]+|VISIBLE|INVISIBLE|GONE)/)),
+    seq: num(/mSeq=(-\d+|\d+)/),
+    systemUiVisibility: g0(/mSystemUiVisibility=(0x[0-9a-fA-F]+)/),
+    lastSystemUiVisibility: g0(/mLastSystemUiVisibility=(0x[0-9a-fA-F]+)/),
+    showToOwnerOnly: bool(/mShowToOwnerOnly=(true|false)/),
     focused: false,
     rawContent: block.replace(/\s+/g, ' ').slice(0, 600)
   };
+
+  // ── 兼容真实 dump 的 Frames: 行（AOSP 近年格式：Frames: parent=... display=... frame=... last=...）
+  // 我此前样例是 mFrame= 单字段，但 LineageOS/多数厂商真实输出用 Frames: 多字段，旧解析会漏掉 → 无尺寸。
+  const _framesM = block.match(/Frames:\s*([^\n]*)/);
+  if (_framesM) {
+    const _fl = _framesM[1];
+    const _fb = function (re) { const mm = _fl.match(re); return mm ? parseBoundsString(mm[1]) : null; };
+    if (!win.frame) win.frame = _fb(/frame=(\[[^\]]*\]\[[^\]]*\])/);
+    if (!win.containingFrame) win.containingFrame = _fb(/parent=(\[[^\]]*\]\[[^\]]*\])/);
+    if (!win.displayFrame) win.displayFrame = _fb(/display=(\[[^\]]*\]\[[^\]]*\])/);
+    if (!win.lastFrame) win.lastFrame = _fb(/last=(\[[^\]]*\]\[[^\]]*\])/);
+  }
+  // 记录帧字段的真实来源格式，供详情面板用「真实字段名」显示：
+  // 新格式用 Frames.frame（原始 dump 写作 Frames: frame=...），旧格式用 mFrame（原始 dump 写作 mFrame=...）。不发明不存在的字段名。
+  win.frameFmt = _framesM ? 'Frames' : (/mFrame=(\[[^\]]*\]\[[^\]]*\])/.test(block) ? 'mFrame' : null);
+
+  // ── 补全真实 dump 常见字段（含无 m 前缀的关键字段，避免被 rawAttrs 静默丢弃）──
+  win.layoutSeq = num(/mLayoutSeq=(\d+)/);
+  win.touchableInsets = num(/mTouchableInsets=(\d+)/);
+  win.givenInsetsPending = bool(/mGivenInsetsPending=(true|false)/);
+  win.windowRemovalAllowed = bool(/mWindowRemovalAllowed=(true|false)/);
+  win.activityRecord = g0(/mActivityRecord=(ActivityRecord\{[^}]*\})/);
+  win.isImWindow = bool(/mIsImWindow=(true|false)/);
+  win.isWallpaper = bool(/mIsWallpaper=(true|false)/);
+  win.isFloatingLayer = bool(/mIsFloatingLayer=(true|false)/);
+  win.haveFrame = bool(/mHaveFrame=(true|false)/);
+  win.forceSeamlesslyRotate = bool(/mForceSeamlesslyRotate=(true|false)/);
+  win.prepareSyncSeqId = num(/mPrepareSyncSeqId=(\d+)/);
+  win.wallpaperX = fnum(/mWallpaperX=([-\d.]+)/);
+  win.wallpaperY = fnum(/mWallpaperY=([-\d.]+)/);
+  win.wallpaperZoomOut = fnum(/mWallpaperZoomOut=([-\d.]+)/);
+  win.hScale = fnum(/mHScale=([-\d.]+)/);
+  win.vScale = fnum(/mVScale=([-\d.]+)/);
+  win.isOnScreen = bool(/isOnScreen=(true|false)/);
+  win.isVisible = bool(/isVisible=(true|false)/);
+  win.showForAllUsers = bool(/showForAllUsers=(true|false)/);
+  win.appop = g0(/appop=([^\s}]+)/);
+  win.rootTaskId = num(/rootTaskId=(\d+)/);
+  win.requestedW = fnum(/Requested w=([-\d.]+)/);
+  win.requestedH = fnum(/Requested h=([-\d.]+)/);
+  win['Requested.w'] = win.requestedW; // 用与原始 dump 一致的字段名显示（Requested w=），不发明 requestedW 这种键
+  win['Requested.h'] = win.requestedH;
+  if (!win.touchableRegion) win.touchableRegion = g0(/touchable region=([^\n]*)/);
+  win.fullConfiguration = g0(/mFullConfiguration=(\{.*)/);
+  win.lastReportedConfiguration = g0(/mLastReportedConfiguration=(\{.*)/);
+  // mAttrs={...} 块内的缩写子字段（拼接得到 mAttrs.* 字典键）
+  win.attrsSystemUiVisibility = g0(/\bvsysui=([A-Za-z0-9_| ]+)/);
+  win.attrsBehavior = g0(/\bbhv=([A-Za-z0-9_| ]+)/);
+  win.attrsWindowAnimations = g0(/\bwanim=([A-Za-z0-9_#x]+)/);
+  win.attrsFormat = g0(/\bfmt=([A-Za-z0-9_]+)/);
+  win.attrsLayoutInDisplayCutoutMode = g0(/layoutInDisplayCutoutMode=([A-Za-z]+)/);
+  win.attrsFitTypes = g0(/fitTypes=([A-Za-z_ ]+)/);
+  win.attrsFitSides = g0(/fitSides=([A-Za-z_ ]+)/);
+
+  // 通用提取：块内所有 mXxx= 字段（及 surfaceShown），保证“数据里有什么就显示什么、不省略”。
+  // 已收录字段走解析后的结构化值；这里再兜底抓取所有原始 m 字段，未收录的原始字段也照常显示。
+  win.rawAttrs = {};
+  const _rawRe = /([A-Za-z_][A-Za-z0-9_.]*)=([^\n]*?)(?=\s+[A-Za-z_][A-Za-z0-9_.]*=|\s*$)/g;
+  let _rm;
+  while ((_rm = _rawRe.exec(block)) !== null) {
+    const _k = _rm[1];
+    if (!/^m[A-Z]/.test(_k) && _k !== 'surfaceShown') continue; // 只抓 m 前缀字段（避开 mAttrs 内部 gr=/sim= 等子字段）
+    if (_k === 'mAttrs') continue;
+    let _v = _rm[2].replace(/\s+$/, '');
+    if (_v === '' || _v === '=') continue;
+    if (!(_k in win.rawAttrs)) win.rawAttrs[_k] = _v;
+  }
   if (win.frame) { win.w = win.frame.right - win.frame.left; win.h = win.frame.bottom - win.frame.top; }
   win.winType = classifyWindowType(win);
   return win;
@@ -10912,6 +11252,16 @@ function applyWindowFilter() {
     c.textContent = '显示 ' + shown + ' / ' + windowDump.windows.length + ' 个窗口';
     c.classList.toggle('zero', shown === 0);
   }
+  highlightDrawState(windowDrawFilter);
+}
+
+// 高亮处于指定绘制状态的窗口卡片（图例点击 / 下拉筛选联动）。v==='all' 时清除所有高亮。
+function highlightDrawState(v) {
+  if (!windowDump || !windowDump.windows) return;
+  windowDump.windows.forEach(function (w) {
+    if (!w.el) return;
+    w.el.classList.toggle('ds-hl', v !== 'all' && w.drawState === v);
+  });
 }
 
 function onWinVisFilter(v) {
@@ -10920,8 +11270,48 @@ function onWinVisFilter(v) {
 }
 
 function onWinDrawFilter(v) {
+  // 再次点击当前已选态 → 取消筛选（toggle 关闭）
+  if (v !== 'all' && v === windowDrawFilter) { resetWinFilter(); return; }
   windowDrawFilter = v;
+  const ds = document.getElementById('wf-draw');
+  if (ds) ds.value = v;
   applyWindowFilter();
+  // 重新渲染右侧图例，使被点选的态显示「active」标记
+  renderWindowDetail(selectedWindowId ? windowIndex.get(selectedWindowId) : null);
+}
+
+function toggleWinFocus() {
+  windowFocusMode = (windowFocusMode === 'on') ? 'off' : 'on';
+  const btn = document.getElementById('wf-focus');
+  if (btn) {
+    btn.classList.toggle('active', windowFocusMode === 'on');
+    btn.textContent = windowFocusMode === 'on' ? '🔴 排查聚焦：开' : '排查聚焦';
+  }
+  renderWindowDetail(selectedWindowId ? windowIndex.get(selectedWindowId) : null);
+}
+
+// 症状速查：点击症状 → 打开「排查聚焦」仅显🔴核心字段 + 右侧显示本症状排查指引；再点同一症状 → 退出
+function onWinSymptom(key) {
+  const turningOff = (key === windowSymptom);
+  windowSymptom = turningOff ? null : key;
+  document.querySelectorAll('.wf-symptom').forEach(function (b) {
+    b.classList.toggle('active', !turningOff && b.getAttribute('data-key') === key);
+  });
+  if (turningOff) {
+    // 退出速查：关闭排查聚焦 + 清除筛选
+    windowFocusMode = 'off';
+    const fb = document.getElementById('wf-focus');
+    if (fb) { fb.classList.remove('active'); fb.textContent = '排查聚焦'; }
+    resetWinFilter();
+  } else {
+    // 进入速查：打开排查聚焦（仅🔴核心），重绘右侧指引
+    if (windowFocusMode !== 'on') {
+      windowFocusMode = 'on';
+      const fb = document.getElementById('wf-focus');
+      if (fb) { fb.classList.add('active'); fb.textContent = '🔴 排查聚焦：开'; }
+    }
+    renderWindowDetail(selectedWindowId ? windowIndex.get(selectedWindowId) : null);
+  }
 }
 
 function resetWinFilter() {
@@ -10932,6 +11322,8 @@ function resetWinFilter() {
   if (vs) vs.value = 'all';
   if (ds) ds.value = 'all';
   applyWindowFilter();
+  // 重新渲染右侧图例，清除「active」标记
+  renderWindowDetail(selectedWindowId ? windowIndex.get(selectedWindowId) : null);
 }
 
 function escHtml(s) {
@@ -11599,7 +11991,11 @@ function renderWindowDump() {
   });
   root.appendChild(stack);
   applyWindowFilter();
-  renderWindowDetail(null);
+  // 加载即自动选中一个窗口，让详情面板（含 mFrame 等帧坐标）立即可见，无需手动点击。
+  // 优先选焦点窗口，否则选 Z 序最上的第一个；都无则清空面板。
+  var autoWin = windowDump.windows.find(function (w) { return w.focused; }) || windowDump.windows[0];
+  if (autoWin) selectWindow(autoWin.id);
+  else renderWindowDetail(null);
 }
 
 function renderWindowCard(w) {
@@ -11651,6 +12047,25 @@ function renderWindowCard(w) {
   }
   body.appendChild(badges);
 
+  // 在卡片上直接显示 ty(窗口类型) 与 fmt(像素格式) 的真实取值，无需点开详情（用户要求：卡片上显示 ty 类型值）
+  if (w.attrsType || w.attrsFormat) {
+    const tf = document.createElement('div');
+    tf.className = 'win-typefmt';
+    if (w.attrsType) {
+      const t = document.createElement('span');
+      t.className = 'ty-badge';
+      t.textContent = 'ty=' + w.attrsType;
+      tf.appendChild(t);
+    }
+    if (w.attrsFormat) {
+      const f = document.createElement('span');
+      f.className = 'fmt-badge';
+      f.textContent = 'fmt=' + w.attrsFormat;
+      tf.appendChild(f);
+    }
+    body.appendChild(tf);
+  }
+
   const meta = document.createElement('div');
   meta.className = 'win-meta';
   const parts = [];
@@ -11661,6 +12076,25 @@ function renderWindowCard(w) {
   if (w.w != null) parts.push(w.w + '×' + w.h + 'px');
   meta.textContent = parts.join('  ·  ');
   body.appendChild(meta);
+
+  // 核心异常速览：列表里一眼定位异常窗口（基于 🔴 核心字段）
+  const alerts = [];
+  if (w.obscured === true) alerts.push(['被遮挡', 'bad']);
+  if (typeof w.surfaceAlpha === 'number' && w.surfaceAlpha < 1) alerts.push(['半透 α=' + w.surfaceAlpha, 'warn']);
+  if (w.hasSurface === false && w.drawState && w.drawState !== 'NO_SURFACE') alerts.push(['无Surface', 'bad']);
+  if (w.policyVisibility === false) alerts.push(['策略隐藏', 'warn']);
+  if (w.viewVisibility && w.viewVisibility !== 'VISIBLE') alerts.push(['vis=' + w.viewVisibility, 'warn']);
+  if (alerts.length) {
+    const al = document.createElement('div');
+    al.className = 'win-alerts';
+    alerts.forEach(function (a) {
+      const s = document.createElement('span');
+      s.className = 'win-alert ' + a[1];
+      s.textContent = a[0];
+      al.appendChild(s);
+    });
+    body.appendChild(al);
+  }
 
   card.appendChild(body);
   return card;
@@ -11674,54 +12108,151 @@ function selectWindow(id) {
   renderWindowDetail(w);
 }
 
+function toggleAttrExplain(el) {
+  if (el && el.classList) el.classList.toggle('open');
+}
+
 function renderWindowDetail(w) {
   const dp = document.getElementById('details-panel');
   const content = document.getElementById('details-content');
   if (!content) return;
   if (dp) dp.classList.remove('empty');
   let html = '';
+  // 症状速查指引（常驻顶部，选中症状时显示）
+  if (windowSymptom && SYMPTOM_GUIDE[windowSymptom]) {
+    const g = SYMPTOM_GUIDE[windowSymptom];
+    html += '<div class="details-section symptom-guide"><div class="details-section-title">' + g.icon + ' 症状速查：' + weEsc(g.title)
+      + ' <button class="btn tiny ghost" onclick="onWinSymptom(\'' + windowSymptom + '\')" title="退出症状速查">退出 ✕</button></div>'
+      + '<div class="symptom-desc">' + weEsc(g.desc) + '</div>'
+      + '<div class="symptom-block"><div class="symptom-h">重点看</div><div class="symptom-fields">';
+    g.focus.forEach(function (k) {
+      const d = WINDOW_PARAM_DICT[k];
+      if (!d) return;
+      html += '<code class="symptom-field">' + weEsc(k) + '</code><span class="symptom-field-label">' + weEsc(d.label) + '</span>';
+    });
+    html += '</div></div>'
+      + '<div class="symptom-block"><div class="symptom-h symptom-ok">正常态</div><div class="symptom-text">' + weEsc(g.normal) + '</div></div>'
+      + '<div class="symptom-block"><div class="symptom-h symptom-bad">异常态</div><div class="symptom-text">' + weEsc(g.abnormal) + '</div></div>'
+      + '</div>';
+  }
   if (w) {
     html += '<div class="details-section"><div class="details-section-title">🔍 选中窗口：' + weEsc(w.name || '(无名)')
       + (w.focused ? ' <span class="win-focus-star">★ 焦点</span>' : '') + '</div>';
-    const fields = [
-      ['mDisplayId', w.displayId], ['mStackId', w.stackId],
-      ['mViewVisibility', w.viewVisibility], ['mPolicyVisibility', w.policyVisibility],
-      ['mAppOpVisibility', w.appOpVisibility], ['mAttachedHidden', w.attachedHidden],
-      ['mShown', w.shown], ['mHasSurface', w.hasSurface],
-      ['mAnimatingEnter', w.animatingEnter], ['mAnimatingExit', w.animatingExit],
-      ['mDrawState', w.drawState], ['mAnimLayer', w.animLayer],
-      ['mBaseLayer', w.baseLayer], ['mSubLayer', w.subLayer],
-      ['mOwnerUid', w.ownerUid], ['mOwnerPid', w.ownerPid],
-      ['mSession', w.session], ['mFrame', w.frame ? formatLTRB(w.frame) : null],
-      ['mAttrs.type', w.attrsType], ['mAttrs.flags', w.attrsFlags],
-      ['mAttrs.privateFlags', w.attrsPrivateFlags], ['mAttrs.gravity', w.attrsGravity],
-      ['mAttrs.package', w.attrsPackage]
-    ];
-    html += '<table class="param-table">';
-    for (let i = 0; i < fields.length; i++) {
-      const k = fields[i][0], v = fields[i][1];
-      const info = WINDOW_PARAM_DICT[k] || (k.indexOf('mAttrs.') === 0 ? WINDOW_PARAM_DICT['mAttrs'] : null);
-      const label = info ? info.label : k;
-      const desc = info ? info.desc : '';
+    // 属性渲染：展示“数据中实际存在”的全部字段（不省略），按 核心/辅助/噪声 分类；
+    // 行内显示英文原始键名 + 取值，点击行展开中文解释（避免中文干扰对比）。
+    function winProp(dictKey) {
+      if (dictKey.indexOf('Frames.') === 0) {
+        const sub = dictKey.slice(7);
+        // Frames: 行内子键(parent/display/last) 与内部存储属性名不一致，显式映射
+        return { frame: 'frame', parent: 'containingFrame', display: 'displayFrame', last: 'lastFrame' }[sub] || sub;
+      }
+      if (dictKey.indexOf('mAttrs.') === 0) { const sub = dictKey.slice(7); return 'attrs' + sub.charAt(0).toUpperCase() + sub.slice(1); }
+      if (/^m[A-Z]/.test(dictKey)) return dictKey.charAt(1).toLowerCase() + dictKey.slice(2);
+      return dictKey;
+    }
+    function presentKeys() {
+      const set = new Set();
+      const ff = w.frameFmt;
+      const isFrameKey = function (k) {
+        return k === 'mFrame' || k === 'mContainingFrame' || k === 'mDisplayFrame' || k === 'mLastFrame'
+            || k === 'Frames.frame' || k === 'Frames.parent' || k === 'Frames.display' || k === 'Frames.last';
+      };
+      const frameOk = function (k) {
+        if (k.indexOf('Frames.') === 0) return ff === 'Frames';
+        return ff === 'mFrame'; // 旧格式 mFrame 系列
+      };
+      for (const k in WINDOW_PARAM_DICT) {
+        if (isFrameKey(k) && !frameOk(k)) continue;
+        const v = w[winProp(k)];
+        if (v !== null && v !== undefined) set.add(k);
+      }
+      if (w.rawAttrs) for (const k in w.rawAttrs) {
+        if (isFrameKey(k) && !frameOk(k)) continue;
+        if (WINDOW_PARAM_DICT[k]) { if (w[winProp(k)] == null) set.add(k); continue; }
+        set.add(k); // 未收录的原始字段也照常显示（归类为辅助）
+      }
+      return set;
+    }
+    function attrValue(k) {
+      const p = winProp(k);
+      let val = w[p];
+      if (val === null || val === undefined) val = (w.rawAttrs ? w.rawAttrs[k] : undefined);
+      if (val && typeof val === 'object' && typeof val.right === 'number') return formatLTRB(val); // bounds 对象格式化
+      if (typeof val === 'boolean') return val ? 'true' : 'false';
+      if (val === null || val === undefined) return null;
+      const s = String(val);
+      return s.length > 260 ? s.slice(0, 260) + ' …(已截断，完整内容见原始 dump)' : s;
+    }
+    function attrRow(k) {
+      const info = WINDOW_PARAM_DICT[k];
+      const disp = attrValue(k);
+      if (disp === null) return ''; // 数据里没有就不显示
       let valHtml;
       if (k === 'mDrawState' && WINDOW_DRAW_STATE_MAP[w.drawState]) {
-        valHtml = '<span class="ds-badge" style="background:' + WINDOW_DRAW_STATE_MAP[w.drawState].color + '">' + weEsc(w.drawState)
-          + '</span> <span class="ds-sub">' + weEsc(WINDOW_DRAW_STATE_MAP[w.drawState].desc) + '</span>';
+        valHtml = '<span class="ds-badge" style="background:' + WINDOW_DRAW_STATE_MAP[w.drawState].color + '">' + weEsc(w.drawState) + '</span>';
       } else {
-        valHtml = '<code>' + weEsc(v == null ? '-' : v) + '</code>';
+        valHtml = '<code>' + weEsc(disp) + '</code>';
       }
-      html += '<tr><td class="pk">' + weEsc(label) + '</td><td class="pv">' + valHtml + '</td></tr>';
-      if (desc && k !== 'mDrawState') html += '<tr class="pdesc"><td></td><td>' + weEsc(desc) + '</td></tr>';
+      const explain = info
+        ? ((info.label ? '<b>' + weEsc(info.label) + '</b><br>' : '') + (info.desc ? weEsc(info.desc) : ''))
+        : '<span class="attr-unknown">（该字段未收录中文解释，原始取值见上方行）</span>';
+      return '<div class="attr-row' + (info ? '' : ' attr-row-raw') + '" onclick="toggleAttrExplain(this)">'
+        + '<div class="attr-line"><span class="attr-key">' + weEsc(k) + '</span>'
+        + '<span class="attr-val">' + valHtml + '</span>'
+        + '<span class="attr-caret">▸</span></div>'
+        + '<div class="attr-explain">' + explain + '</div></div>';
     }
-    html += '</table></div>';
+    function renderTier(pks, tier, title) {
+      const keys = [];
+      pks.forEach(function (k) { const t = WINDOW_PARAM_DICT[k] ? WINDOW_PARAM_DICT[k].tier : 'aux'; if (t === tier) keys.push(k); });
+      if (!keys.length) return '';
+      keys.sort();
+      if (tier === 'noise') {
+        return '<details class="tier-details"><summary>' + title + '（' + keys.length + '）</summary>' + keys.map(attrRow).join('') + '</details>';
+      }
+      return '<div class="details-section"><div class="details-section-title">' + title + '（' + keys.length + '）</div>' + keys.map(attrRow).join('') + '</div>';
+    }
+    const pks = presentKeys();
+    if (windowFocusMode === 'on') {
+      html += renderTier(pks, 'core', '🔴 核心属性（排查聚焦中）');
+    } else {
+      html += renderTier(pks, 'core', '🔴 核心（任何排查先看）');
+      html += renderTier(pks, 'aux', '🟡 辅助（特定场景展开）');
+      html += renderTier(pks, 'noise', '⚪ 噪声（默认折叠）');
+    }
+    // 跨源关联线索：本窗口 → Containers / Input / SF 三个数据源的交叉排查指引 + 跳转
+    const isApp = w.winType === 'app';
+    const corr = [
+      { key: 'containers', icon: '📦', title: 'Containers 层级归属',
+        clue: isApp
+          ? '该应用窗口挂在某个 Task 下（WindowToken → WindowState）。在 Containers 树核对它所在的 DisplayContent / TaskDisplayArea / Task / 栈序，与 mStackId、mAnimLayer 是否对得上；错位/重叠先看这里。'
+          : '系统窗口（状态栏/导航栏/壁纸/IME）在 WindowContainer 树中有固定挂载点。在 Containers 树核对它的容器层级与预期是否一致。',
+        btn: '看 Containers' },
+      { key: 'input', icon: '🖱️', title: 'Input 输入焦点',
+        clue: (w.obscured === true ? '本窗口 mObscured=true（被完全遮挡）——若它仍在接收输入，说明遮挡窗口没吃掉事件；' : '') + '在 Input 视图看 Focused Window / WindowStates / TouchStates，确认输入焦点窗口与本窗口一致、触摸事件落到预期窗口；点不准时重点比对本窗口 Frames.frame 与 Input 的命中窗口。',
+        btn: '看 Input' },
+      { key: 'surfaceflinger', icon: '🖥️', title: 'SurfaceFlinger 合成',
+        clue: '在 SurfaceFlinger 的 Layer Hierarchy 按包名/窗口名匹配对应图层，核对 z（应与 mAnimLayer 对齐）、alpha（应 = mSurfaceAlpha）、可见性（应 = mSurfaceShown）。黑屏/白屏/半透先看这里。',
+        btn: '看 SF' }
+    ];
+    html += '<div class="details-section corr-guide"><div class="details-section-title">🔗 跨源关联线索</div>';
+    corr.forEach(function (c) {
+      html += '<div class="corr-item"><div class="corr-head">' + c.icon + ' ' + weEsc(c.title) + '</div>'
+        + '<div class="corr-clue">' + weEsc(c.clue) + '</div>'
+        + '<button class="btn tiny" onclick="pickDataSource(\'' + c.key + '\')">' + weEsc(c.btn) + '</button></div>';
+    });
+    html += '</div>';
   }
   // 5 态图例（常驻）
   html += '<div class="details-section"><div class="details-section-title">📗 5 种 window 状态（WindowStateAnimator.mDrawState）</div><div class="state-legend">';
   for (let i = 0; i < WINDOW_DRAW_STATES.length; i++) {
     const s = WINDOW_DRAW_STATES[i];
-    html += '<div class="state-row"><span class="state-dot" style="background:' + s.color + '"></span>'
+    const active = (windowDrawFilter === s.name) ? ' active' : '';
+    html += '<div class="state-row clickable' + active + '" onclick="onWinDrawFilter(\'' + s.name + '\')" title="点击：在左侧列表中筛选并高亮处在该态的窗口（再点一次取消）">'
+      + '<span class="state-dot" style="background:' + s.color + '"></span>'
       + '<span class="state-name">' + weEsc(s.name) + ' <span class="state-val">(' + s.value + ')</span></span>'
-      + '<span class="state-desc">' + weEsc(s.desc) + '</span></div>';
+      + '<span class="state-desc">' + weEsc(s.desc) + '</span>'
+      + '<span class="state-hint">' + (active ? '已选 ✓' : '点击') + '</span></div>';
   }
   html += '</div></div>';
   // 参数速查
