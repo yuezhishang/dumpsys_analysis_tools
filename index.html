@@ -509,6 +509,92 @@ select.btn{
   color:var(--text-secondary);
   margin-bottom:6px;
 }
+/* display 自动体检（异常诊断） */
+.diag-list{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+/* ── VSync 调试面板 ── */
+.vsync-view { position: absolute; inset: 0; overflow: auto; background: var(--bg-primary); padding: 14px 16px 40px; }
+.vs-panel { max-width: 1080px; margin: 0 auto 18px; border: 1px solid var(--border-light); border-radius: var(--radius); background: var(--bg-secondary); overflow: hidden; }
+.vs-panel-head { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: var(--bg-tertiary); border-bottom: 1px solid var(--border-light); }
+.vs-panel-title { font-weight: 700; font-size: 13px; color: var(--text-primary); }
+.vs-sec { padding: 10px 12px; border-bottom: 1px solid var(--border-light); }
+.vs-sec:last-child { border-bottom: none; }
+.vs-sec-t { font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 7px; }
+/* 语义说明条：解释「预算 vs 实测」这类容易误读的前提，放在对应分区的图上方 */
+.vs-note { font-size: 11.5px; line-height: 1.7; color: var(--text-secondary); background: var(--bg-tertiary); border: 1px solid var(--border-light); border-left: 3px solid #58a6ff; border-radius: var(--radius-sm); padding: 7px 10px; margin-bottom: 9px; }
+.vs-note b { color: var(--text-primary); }
+.vs-note code { font-family: var(--mono); font-size: 10.5px; background: var(--bg-secondary); border-radius: 3px; padding: 1px 4px; color: #79c0ff; }
+.vs-banner { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 12px; border-radius: var(--radius-sm); border: 1px solid; }
+.vs-banner.bad { background: rgba(248,81,73,.10); border-color: rgba(248,81,73,.45); }
+.vs-banner.good { background: rgba(63,185,80,.10); border-color: rgba(63,185,80,.40); }
+.vs-banner.unknown { background: var(--bg-tertiary); border-color: var(--border-light); }
+.vs-banner-main { font-size: 15px; font-weight: 700; }
+.vs-banner.bad .vs-banner-main { color: #f85149; }
+.vs-banner.good .vs-banner-main { color: #3fb950; }
+.vs-banner-kv { font-family: var(--mono); font-size: 11.5px; color: var(--text-secondary); }
+.vs-banner-side { font-family: var(--mono); font-size: 11.5px; color: var(--text-muted); }
+.vs-banner-note { font-size: 11px; color: var(--text-muted); width: 100%; margin-top: 2px; }
+.vs-timeline { width: 100%; height: auto; display: block; }
+.vs-tl-name { font-family: var(--mono); font-size: 12px; fill: var(--text-primary); }
+.vs-tl-work { fill: #58a6ff; }
+.vs-tl-ready { fill: none; stroke: #58a6ff; stroke-width: 1; }
+.vs-tl-val { font-family: var(--mono); font-size: 11px; fill: var(--color-text-secondary, #9198a1); }
+.vs-tl-wake { font-family: var(--mono); font-size: 10.5px; fill: #d29922; }
+.vs-tl-axis { stroke: var(--border-light); stroke-width: 1; }
+.vs-tl-tick { font-family: var(--mono); font-size: 11px; fill: var(--text-muted); }
+.vs-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+.vs-card { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 7px 9px; min-width: 0; }
+.vs-card-t { font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px; }
+/* 字段行：键与值同行、值右对齐；放不下时值整体换到下一行（flex-wrap 比 grid 稳，
+   grid 在窄卡片里会把键列压成一个字一行） */
+.vs-fr { display: flex; flex-wrap: wrap; align-items: baseline; gap: 1px 10px; font-size: 11.5px; line-height: 1.6; cursor: help; }
+.vs-fk { flex: 0 1 auto; min-width: 0; overflow-wrap: anywhere; font-family: var(--mono); color: var(--text-muted); }
+.vs-fv { flex: 1 1 auto; padding-left: 8px; font-family: var(--mono); color: var(--text-primary); text-align: right; word-break: break-all; }
+.vs-fv.is-sentinel { color: #d29922; }
+.vs-fx { display: none; font-size: 11px; color: var(--text-secondary); padding: 2px 0 4px 2px; line-height: 1.6; }
+.vs-fr.open + .vs-fx { display: block; }
+.vs-fx-toggle { font-size: 10.5px; color: var(--text-muted); cursor: pointer; }
+.vs-rmap { width: 100%; border-collapse: collapse; font-size: 11.5px; margin-top: 8px; }
+.vs-rmap th, .vs-rmap td { border: 1px solid var(--border-light); padding: 3px 6px; text-align: left; }
+.vs-rmap th { background: var(--bg-tertiary); color: var(--text-primary); }
+.vs-rmap td { font-family: var(--mono); color: var(--text-primary); }
+/* Callbacks：每线程一张窄卡并排，不再堆成一张 15 行的高卡 */
+.vs-cb-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; margin-top: 6px; }
+.vs-cb { background: var(--bg-secondary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 6px 8px; min-width: 0; }
+.vs-cb-t { font-family: var(--mono); font-size: 11.5px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px; }
+.vs-cb-wake { font-family: var(--mono); font-size: 10.5px; color: #d29922; margin-top: 3px; line-height: 1.5; word-break: break-all; }
+/* ④相位统计 与 ⑤自动体检 两栏并排（显式两列，不用 auto-fit —— 后者受 grid item 宽度推断影响不稳定） */
+.vs-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+@media (max-width: 900px) { .vs-two-col { grid-template-columns: 1fr; } }
+/* 别名行（原名 → 归一槽位）键名较长，值另起一行右对齐，避免键名断词错位 */
+.vs-diag { display: flex; flex-direction: column; gap: 4px; }
+.vs-diag-error { border-left: 3px solid #f85149; }
+.vs-diag-warn { border-left: 3px solid #d29922; }
+.vs-diag-info { border-left: 3px solid #8b949e; }
+.vs-diag-ok { border-left: 3px solid #3fb950; }
+.vs-diag-row { display: flex; gap: 7px; align-items: baseline; font-size: 11.5px; background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 4px 8px; line-height: 1.5; }
+.vs-diag-ic { font-family: var(--mono); font-size: 10.5px; color: var(--text-muted); flex: 0 0 auto; }
+.vs-xref { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 11.5px; color: var(--text-secondary); }
+.vs-xref-warn { color: #d29922; }
+.vs-foot { font-size: 11px; color: var(--text-muted); border-top: 1px solid var(--border-light); padding: 7px 12px; line-height: 1.6; }
+
+.diag-row{
+  display:flex;gap:8px;align-items:flex-start;
+  font-size:12px;line-height:1.5;
+  padding:6px 8px;border-radius:6px;
+  border:1px solid var(--border);background:var(--bg-tertiary);
+}
+.diag-ic{flex-shrink:0;font-size:13px;line-height:1.4}
+.diag-scen{flex-shrink:0;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;background:rgba(139,148,158,.18);color:var(--text-secondary);white-space:nowrap}
+.diag-msg{color:var(--text-secondary)}
+.diag-row.diag-error{border-color:rgba(248,81,73,.5);background:rgba(248,81,73,.10)}
+.diag-row.diag-error .diag-ic{color:#f85149}
+.diag-row.diag-warn{border-color:rgba(210,153,34,.5);background:rgba(210,153,34,.10)}
+.diag-row.diag-warn .diag-ic{color:#e3b341}
+.diag-row.diag-info{border-color:var(--border);background:var(--bg-tertiary)}
+.diag-row.diag-info .diag-ic{color:var(--text-secondary)}
+.diag-row.diag-ok{border-color:rgba(63,185,80,.45);background:rgba(63,185,80,.10)}
+.diag-row.diag-ok .diag-ic{color:#3fb950}
+.diag-empty{font-size:12px;color:var(--text-muted);padding:4px 0}
 .prop-list{display:flex;flex-direction:column;gap:1px}
 .prop-row{
   display:flex;gap:8px;
@@ -630,6 +716,30 @@ select.btn{
 .conn-ch{font-family:ui-monospace,monospace;color:var(--text-primary);word-break:break-all}
 .conn-meta{color:var(--text-muted)}
 .conn-meta b{color:var(--accent-red)}
+/* dumpsys input：设备行（含 Affine 缩放）+ 输入窗口清单 */
+.dev-row{padding:6px 8px;border-radius:6px;background:var(--bg-tertiary);margin-bottom:5px;border:1px solid var(--border)}
+.win-row{padding:8px 10px;border-radius:7px;background:var(--bg-tertiary);margin:6px 0;border:1px solid var(--border);font-size:12.5px;cursor:pointer;transition:border-color .15s,background .15s}
+.win-row:hover{border-color:var(--accent-blue);background:rgba(59,130,246,.08)}
+.win-row.focused{background:rgba(34,197,94,.10);border-color:rgba(34,197,94,.5)}
+.win-row.focused:hover{border-color:rgba(34,197,94,.8)}
+.win-detail-hint{margin-left:auto;font-size:11px;color:var(--accent-blue);flex-shrink:0;opacity:.75}
+.win-geo-svg{display:block;border-radius:8px;border:1px solid var(--border);margin:6px 0}
+.win-geo-legend{font-size:11.5px;color:var(--text-muted);display:flex;gap:14px;flex-wrap:wrap;align-items:center}
+.win-geo-legend .lg-frame{color:#3b82f6}
+.win-geo-legend .lg-touch{color:#22c55e}
+.win-geo-legend .lg-note{opacity:.7}
+.win-xref{margin-top:8px}
+.win-xref .mini-btn{font-size:12px;padding:4px 10px;border-radius:7px;border:1px solid var(--accent-blue);background:rgba(59,130,246,.1);color:var(--accent-blue);cursor:pointer}
+.win-xref .mini-btn:hover{background:rgba(59,130,246,.2)}
+.ev-raw-pre{background:var(--bg-tertiary);border:1px solid var(--border);border-radius:7px;padding:8px 10px;font-family:ui-monospace,monospace;font-size:11.5px;white-space:pre-wrap;color:var(--text-secondary)}
+.type-badge.window{background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.45);color:#c084fc}
+.win-head{display:flex;align-items:center;gap:8px;margin-bottom:3px}
+.win-idx{font-family:ui-monospace,monospace;color:var(--text-muted);font-size:12px;flex-shrink:0}
+.win-name{color:var(--text-primary);font-weight:600;word-break:break-all;flex:1}
+.win-focus-tag{font-size:11px;padding:1px 8px;border-radius:10px;background:rgba(34,197,94,.18);color:#22c55e;flex-shrink:0}
+.win-meta{color:var(--text-muted);font-size:12px;line-height:1.6;word-break:break-all}
+.win-meta.muted{color:var(--text-muted)}
+.win-cfg{color:var(--text-secondary);font-size:12px;line-height:1.6;word-break:break-all;margin-top:2px}
 /* dumpsys input：可点击队列条目 + 解释按钮 + 事件详情表 */
 .q-item{display:flex;align-items:center;gap:10px;padding:6px 10px;margin:4px 0;border:1px solid var(--border);border-radius:7px;background:var(--bg-tertiary);cursor:pointer;font-size:12.5px}
 .q-item:hover{border-color:var(--accent-blue);background:rgba(59,130,246,.08)}
@@ -1029,6 +1139,8 @@ select.btn{
 .acts-diag .ad-anchor { background: var(--bg-tertiary); border: 1px solid var(--border-light); border-radius: var(--radius-sm); padding: 6px 9px; min-width: 0; }
 .acts-diag .ad-ak { font-size: 10.5px; color: var(--text-muted); font-family: var(--mono); }
 .acts-diag .ad-av { font-size: 12px; color: var(--text-primary); word-break: break-all; overflow-wrap: anywhere; max-height: 3.6em; overflow: hidden; }
+.acts-diag .ad-av.clamp { cursor: pointer; }
+.acts-diag .ad-av.expanded { max-height: none; }
 .acts-diag .ad-av.resumed { color: #3fb950; }
 .acts-diag .ad-av.focused { color: #d29922; }
 .acts-diag .ad-sum { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 8px; }
@@ -1106,7 +1218,8 @@ select.btn{
         window: { min: 9, note: "Android 9 起 WindowState/mDrawState 格式稳定" },
         viewtop: { min: 9, note: "dumpsys activity top 各版本 View 树格式稳定（class{hash 9+8 位标志位 bounds}）；指定包名/类名时用 dumpsys activity <component>，后者可能含多个 View Hierarchy 段（一个 Activity 一段）" },
         surfaceflinger: { min: 9, note: "HWC 预览 A9+；层级树 A14+" },
-        input: { min: 12, note: "Android 12+ 起 Input Dispatcher State 格式稳定（FocusedWindows/FocusedApplications/Connections/InboundQueue 等）；A9–A11 字段命名不同、暂未适配" }
+        input: { min: 12, note: "Android 12+ 起 Input Dispatcher State 格式稳定（FocusedWindows/FocusedApplications/Connections/InboundQueue 等）；A9–A11 字段命名不同、暂未适配" },
+        display: { min: 9, note: "dumpsys window displays 各版本字段相近（分辨率/DPI/旋转/状态栏导航栏/挖孔屏/圆角）；当前以 A14 单屏真实样例校准，多屏与灭屏/唤醒场景待真实数据补充" }
       };
       window.VERSION_LIST = [
         { v: 9, label: "Android 9.0 (Pie)" },
@@ -1161,6 +1274,7 @@ select.btn{
       <button class="seg-btn" id="view-hwc" onclick="switchView('hwc')" title="HWC 合成预览：把合成图层按硬件合成（Hardware Composer）顺序堆叠成屏幕画面，直观看显示层级与合成方式">🖥 HWC 合成预览</button>
       <button class="seg-btn" id="view-sftree" onclick="switchView('sf-tree')" title="SurfaceFlinger 层级树（Layer Hierarchy）：包括 Display / Task / Activity / 壁纸 / 状态栏等完整窗口与图层层级。AOSP 自 Android 14 起整合为树形 Layer Hierarchy 段；Android 12/13 为分散旧格式（层级信息在 TimeStats miniDump 段、靠 parent= 字段重建父子），本工具均已适配">🌳 层级树</button>
       <button class="seg-btn" id="view-sfoff" onclick="switchView('sf-offscreen')" title="SurfaceFlinger 离屏层级树（Offscreen Hierarchy，Android 14+）：仅含当前未上屏的 Activity / 过渡 leash 等离屏图层。与 Layer Hierarchy 同为树形语法，本工具已适配；Android 12/13 旧格式无此段">🌑 离屏层级</button>
+      <button class="seg-btn" id="view-vsync" onclick="switchView('vsyncpanel')" title="VSync 调度与时序（与上面三个视图同出一份 dumpsys SurfaceFlinger）：硬件 vsync 开关状态、app·appSf·sf 三信号 workDuration·readyDuration 时间预算、VsyncController/VSyncTracker/Timer 字段与字段矛盾自动体检">⏱ VSync</button>
       <button class="seg-btn" id="view-windowlist" onclick="switchView('windowlist')" title="dumpsys window 窗口图层：按 Z 序堆叠每个 Window，标注 5 种 mDrawState 绘制状态与关键参数（点击窗口看参数解释）" style="display:none">🪟 窗口图层</button>
       <span class="view-hint" id="view-hint" style="display:none">链序 = Z 序（上=顶层）</span>
     </div>
@@ -1286,6 +1400,7 @@ select.btn{
     </div>
     <!-- dumpsys input 排障面板（独立视图，非画布树） -->
     <div class="input-view" id="input-view" style="display:none"></div>
+    <div class="vsync-view" id="vsync-view" style="display:none"></div>
     <div class="details-panel empty" id="details-panel">
       <div class="details-header">
         <span class="details-title" id="details-title">详情 / 解释</span>
@@ -1325,7 +1440,7 @@ select.btn{
 /* ========================================================================
    STATE
    ======================================================================== */
-const APP_VERSION = 'v1.47'; // v1.47 修复聚焦模式只能看第一个 Task：聚焦工具条新增 Task 下拉选择器（列出所有 Task #id / 包名 / Activity，切换即把焦点重置到该 Task 根）+ 当前 Task 标识行。v1.44 把 View Top 从「横向画布树」改为「竖向可折叠大纲」：按 TASK 分段（每个 TASK 一段 View Hierarchy，带 Task id / 包名 / Activity 表头），节点竖向缩进、可展开折叠，ViewGroup 橙色区分；顶部专属工具条提供「类名/资源 id/tag 筛选」+「展开/折叠全部」；隐藏画布工具栏与统计条。v1.43 新增第七种数据源「🌳 View Top」（dumpsys activity top / dumpsys activity <component> 的 View 层级树：按 class{hash 9+8 位标志位 bounds} 缩进建树，覆盖 A9–A16；详情面板新增 VIEW_PROP_DICT 字段注释；输入框新增「目标 Activity」可选栏，留空看前台、填 <包名/类名> 指定某个 Activity；ViewGroup 节点以橙色描边区分）。v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。
+const APP_VERSION = 'v1.57'; // v1.57 新增 dumpsys input 可视化（OQ/WQ 恒显 + 输入窗口结构化解析与详情面板 + 设备 Affine xScale/yScale）、VSync 面板 UI 重构（①–⑩ 顺排 + 英文(中文) + 去 --vsync 脚注）；v1.56 = R0 判据升级为 state 字段 + 解析 Scheduler 段与 ScreenOff 累计；v1.51 修复状态诊断浮层两问题：①切到其他数据源后浮层残留不隐藏（switchDataSource 清数据后不走 renderTree，改在 updateDataSourceUI 统一同步显隐）；②锚点字段（ResumedActivity/mFocusedApp/mCurrentFocus）超过约 2.5 行被硬截断——max-height 3.6em 在默认行高下裁到字中间，改为悬停 title 看全文 + 点击展开/收起（.ad-av.clamp/.expanded）。v1.50 display 视图新增 deferred / mLayoutNeeded / mTouchExcludeRegion 三字段：核心段陈列 + 「🖐 触摸排除区」叠加图（橙色矩形，排查点不动/点不准）+ 自动体检新增「触摸排除」信息；内置示例已含该字段。v1.49 新增 display 视图「🔧 自动体检」段落（6 大调试场景字段矛盾检测：旋转/方向、挖孔圆角、状态栏导航栏、多屏、灭屏唤醒、wm size/density），并清理 display 视图下误显的 HWC/窗口图层按钮（其他数据源保留）。v1.47 修复聚焦模式只能看第一个 Task：聚焦工具条新增 Task 下拉选择器（列出所有 Task #id / 包名 / Activity，切换即把焦点重置到该 Task 根）+ 当前 Task 标识行。v1.44 把 View Top 从「横向画布树」改为「竖向可折叠大纲」：按 TASK 分段（每个 TASK 一段 View Hierarchy，带 Task id / 包名 / Activity 表头），节点竖向缩进、可展开折叠，ViewGroup 橙色区分；顶部专属工具条提供「类名/资源 id/tag 筛选」+「展开/折叠全部」；隐藏画布工具栏与统计条。v1.43 新增第七种数据源「🌳 View Top」（dumpsys activity top / dumpsys activity <component> 的 View 层级树：按 class{hash 9+8 位标志位 bounds} 缩进建树，覆盖 A9–A16；详情面板新增 VIEW_PROP_DICT 字段注释；输入框新增「目标 Activity」可选栏，留空看前台、填 <包名/类名> 指定某个 Activity；ViewGroup 节点以橙色描边区分）。v1.31 已封版（output/dumpsys-activity-containers-visualizer.v1.31.html）。v1.32 新增第四种数据源「dumpsys window」（窗口图层 + 5 种 mDrawState）。v1.33 新增第五/六数据源「🎯 Activities」(dumpsys activity activities，ATMS 逻辑层) 与「🪟 Window Containers」(dumpsys window containers，WMS 原生入口，与 activity containers 同一棵 WindowContainer 树)，并新增「ℹ️ 视角/排查」对照面板标注每条命令的视角与适用排查场景；桥接抓取同步支持 activities/windowcontainers。v1.36 按排查目的重规划三个数据源：Stack List 改为「任务栈速览面板」（非层级树）；Activities 详情面板顶部新增「排查洞察」；Window Containers 树中把 ActivityRecord 下的窗口 token 标注为「🪟 surface 归属」；并补全所有字段说明字典。v1.37 用真实设备输出（LineageOS 21 / A14）修正 am stack list 解析：容器头识别 `RootTask id=N`；解析 `configuration={...}` 提取权威布局字段；task 按出现顺序归属最近容器头；删除伪造的“未识别到 Stack 头”假根；只按 visible 判定可见/前台；Stack List 改卡片式。v1.38 三项修复：①启动器不再与桥接重复打开浏览器（此前会开出两个 index 标签页）——改为桥接用真实端口打开、启动器仅在桥接退出码非 0 时兜底打开本地降级页；②Stack List 完全画布化——去掉原生滚动条（旧 .stacklist-root 的 overflow:auto 与 panX/panY transform 语义冲突，拖拽像“搬动一个带滚动条的框”），改为拖拽平移 + 滚轮缩放 + 重置布局，与 window 树视图手感一致，并区分「拖拽」与「点击」避免误触 task 卡；③am stack list 按版本差异适配——容器头兼容 `Stack id=N`(A9/A10) 与 `RootTask id=N`(A11+)、字段顺序无关，`configuration` 行可缺（缺失时布局/可见性一律标注“该版本无此字段”，不显示“未知”也不用 bounds 猜），task 行支持仅 `pkg/act` 的早期格式，示例数据按 A9 / A10 / A11–13 / A14+ 四个格式档分版本提供（均为真实设备输出并注明来源）。v1.39 重做 Activities 数据源（按实际排查用途，不照抄 am stack list）：①解析层推翻重写——此前的解析器在真实 `dumpsys activity activities` 上几乎全失效（不认 `* Task{...}` 与 `* Hist  #N:`，锚点 `mResumedActivity:`/`mFocusedApp:` 也命中不上）；现按容器头 `Display #N` / `Stack #N:` / `* TaskRecord{}` / `* Task{}` / `* Hist #N:` 逐类识别，字段取值与顺序无关，并在 `Resumed activities in task display areas` / `ActivityTaskSupervisor state:` 等重复树段处截断（否则节点数翻倍）；②新增「顶部诊断面板」（画布左上浮层，可折叠），按该命令的实际用途分 G1–G6 六组：前台与焦点归属、生命周期状态、绘制与启动、Task 栈结构、Intent 与进程归属、多窗口·转屏·兼容；每条结论可点击定位到树；新增「环境抑制」：熄屏/锁屏/AOD 时将受环境影响的红黄项降级为环境项并注明原因，不把「手机在口袋里」判成 bug；③全版本容错 + 能力降级：逐版源码实证 A9–A16 的容器头 / 任务行 / Hist 双空格 / `taskAffinity` 的 `<uid>:` 前缀差异（A12 起由 `ActivityRecord.computeTaskAffinity()` 加上，A12–A13 的 singleInstance 是 `<uid>-si:`），缺失字段一律跳过不报、不猜；示例数据按 9–10 / 11 / 12 / 13 / 14–16 五个格式档分版本提供并注明来源；④`activities` 数据源最低支持版本从 A10 下降到 **A9**（A9 的 `dumpsys activity activities` 由 AMS 提供，确实存在）；⑤删除 `renderDetails` 里从未生效的「排查洞察」注入（拼接后立即被 `content.innerHTML=''` 清空）。v1.40 用 AOSP 源码逐版复核 Activities 的【缩进台阶】后修 6 处：①A9/A10 独有的「Task 前置块」——`Task id #N` 与 `mBounds=`/`mMinWidth=`/`mMinHeight=`/`mLastNonFullscreenBounds=` 五行都打在 4 空格、与紧随其后的 `* TaskRecord{…}` 同缩进（`ActivityStack.dumpActivitiesLocked()` 内 `final String prefix = "    "`），靠缩进根本区分不了归属；此前这几行会被吸收到上级 Stack 上，把 Task 的 mBounds 显示成 Stack 的 mBounds（事实错误）。现按「语义属于下面那个 Task」先寄存、建节点时按 id 认领；A11 起该前置块已取消（源码实证）。②Stack 头块里有【两行与头同缩进】的随行属性（`isSleeping=` / `mBounds=`，A9–A11 皆然），原先被「属性必须比节点更深」的规则整行丢弃，现单独放行。③诊断标签统一走 tLabel()：tasks[] 同时收 Stack 与 Task 节点，而 Stack 没有 taskId，旧写法会在 A9/A10 的 dump 上打出「Task #undefined 是空任务」—— 把跨版本格式差异伪装成解析失败。④内置 A9/A11 样例按源码重构（此前 Task 行缩进少一级，Task 被当成 Stack 的兄弟，连带 4 条误报）。⑤环境判定修正：pick() 取不到时返回 null，而 envKnown 只判 `!== undefined`，导致 A9–A12 这类【整份 dump 没有屏幕/锁屏字段】的输入也被判成「环境已知」并显示「屏幕已点亮」；现按非空判定。⑥诊断面板新增「字段能力」一行，逐项标注该版本 dump 有哪些字段（state / 绘制统计 / Intent / 进程 / 可见性请求 / 多窗口上报 / letterbox / 环境 / Stack 头 / Task 前置块），缺失项灰显，跨版本对齐时一眼可辨。v1.41 数据源栏【分组化】（用户要求：把同族的 dump 命令合并成一个入口，便于后期扩展）：①原来的 6 个平铺按钮合并为 4 个入口——「📦 Activity」（activity containers + activity activities）、「🗂 Stack List」、「🪟 Window」（window containers + window windows）、「🖥 SurfaceFlinger」，分组按钮点击后弹出子项菜单（菜单项含完整命令、视角说明与「当前」标记），组内某项被选中时按钮高亮并把子项名显示在按钮上；②新增 `DATA_SOURCE_GROUPS` 单一配置（分组 id / 图标 / 名称 / 命令 / 子项 label·cmd·desc·view·paste），数据源条、子项菜单、激活态、输入框占位提示、默认视图、toast 文案、版本下拉过滤全部由它驱动——给 Activity 或 Window 增加新的 dumpsys 子命令时，只需在配置里追加一条 + 在 parseInput() 加一个分支 + 在 VERSION_SUPPORT 加一条，且分组会自动从「单项直切」变为「点击弹菜单」；③「视角/排查」对照表补上此前遗漏的 `dumpsys window windows` 一行，各条命令的「工具中的入口」改为分组路径（如 活动 → Activities），并把已废弃的「详情面板顶部排查洞察」表述更正为 v1.39 起的「画布左上诊断面板 G1–G6」。v1.42 数据源顺序调整：把「🗂 Stack List」从分组栏的第二位挪到末位，四个入口的顺序变为 📦 Activity → 🪟 Window → 🖥 SurfaceFlinger → 🗂 Stack List；「视角/排查」对照表里 `am stack list` 一行同步挪到 `dumpsys SurfaceFlinger` 之后。仅调整排列顺序，功能、解析、交互与快捷键一律未变；并在「视角/排查」对照表新增 activity containers 与 window containers 两者的关系/差异说明（其余行不补充）。 // v1.52 新增第 10 个数据源「VSync」（dumpsys SurfaceFlinger --vsync / A9-13 --dispsync）：段名锚点解析 + 一行多键值扫描器、命令按 Android 版本分派（桥接 COMMAND_MAP 新增 sfvsync / sfdispsync）、1 硬件 vsync 开关横幅 2 app/appSf/sf 三信号 workDuration 与 readyDuration 时间预算 SVG 3 五组字段卡（24 条中文字典，点行展开）4 自动体检 R1-R9（哨兵溢出/关闭态自洽/传递链/预算超周期/fence 堆积/周期未确认/模式切换/多屏分歧）5 旧版 phase 组 6 与 HWC 表图层 Frame Rate 交叉核对；阈值仅由 A14 vsync 关闭态样本标定，开启态与旧版待真实数据补充。 // // v1.56 三项新增（真机A12/SDK31 + 源码核实）：①R0 判据升级为state 字段 —— `app: state=<X> VSyncState={displayId=…, count=…[, synthetic]}` 是「硬件 vsync 是否真在跑」的跨版本主判据（A9~A16 全版本都有；hwVsyncState 只有 A13+ 且仅 --vsync 出口），**synthetic 标记的有无才是硬证据，state 字面值不是**（state=Idle 只表示当前无客户端请求）；依据 EventThread.cpp:523-527/737/766-776。②新增解析 Scheduler: 段（A9~A14 都有，此前从未读；A12/A13 是 `+ Idle timer: off` 列表形态、A14 是 Features/Policy 形态，字段名完全不同，按存在与否分别渲染）+ ScreenOff 与各刷新率累计时长（VSYNC_SCREENOFF_RE / VSYNC_RATE_ACC_RE）。③横幅措辞不再用「已关闭」—— 源码 VsyncSchedule.h:151 初值即 Disallowed，硬件 vsync 只在精确校准时临时打开，未启用是默认常态而非故障；SyntheticVSync 才用红色告警。
 let targetAndroidVersion = '';
 
 // adb 桥接服务端口（由 start-tool.sh / adb-bridge.js 提供，默认 7788；可用 ?adbport= 覆盖）
@@ -2896,11 +3011,13 @@ function updateViewToggleUI() {
   const sst = document.getElementById('view-sftree');
   const sfo = document.getElementById('view-sfoff');
   const vl = document.getElementById('view-windowlist');
+  const vv = document.getElementById('view-vsync');
   if (w) w.classList.toggle('active', currentView === 'window');
   if (h) h.classList.toggle('active', currentView === 'hwc');
   if (sst) sst.classList.toggle('active', currentView === 'sf-tree');
   if (sfo) sfo.classList.toggle('active', currentView === 'sf-offscreen');
   if (vl) vl.classList.toggle('active', currentView === 'windowlist');
+  if (vv) vv.classList.toggle('active', currentView === 'vsyncpanel');
   const isWin = currentView === 'windowlist';
   const hint = document.getElementById('view-hint');
   if (hint) {
@@ -2962,8 +3079,17 @@ function switchView(v) {
   if (v === currentView) return;
   currentView = v;
   // SF 数据源下：离屏视图用离屏索引，其余 SF 视图用 Layer Hierarchy 索引（搜索/选中/详情依赖 nodeIndex）
-  if (dataSource === 'surfaceflinger') nodeIndex = (v === 'sf-offscreen') ? sfOffscreenIndex : sfNodeIndex;
+  if (dataSource === 'surfaceflinger' && v !== 'vsyncpanel') nodeIndex = (v === 'sf-offscreen') ? sfOffscreenIndex : sfNodeIndex;
   updateViewToggleUI();
+  // VSync 是独立面板：既不进画布树也不碰平移/居中逻辑。
+  // 画布上的全部浮层（屏幕占位、图层类型图例）都挂在 #hwc-overlays 容器里，
+  // 切到 VSync 时必须清空 —— 否则 HWC 视图留下的浮层会浮在 vsync 面板上。
+  // 各视图的 renderTree 在切回时会按 hwcShowScreen/hwcShowLegend 重新构建，无需另行还原。
+  if (v === 'vsyncpanel') {
+    const ov = document.getElementById('hwc-overlays');
+    if (ov) ov.innerHTML = '';
+    renderVsyncDump(); updateDataSourceUI(); return;
+  }
   // 切换视图属于内容变更，重置画布平移避免旧偏移叠加
   panX = 0; panY = 0; applyPan();
   selectedNodeId = null;
@@ -3014,6 +3140,19 @@ function renderTree() {
   if (dpEl) dpEl.style.display = '';
   if (proEl) proEl.style.display = (dpEl && dpEl.classList.contains('collapsed')) ? 'flex' : 'none';
   if (dataSource === 'viewtop') { renderViewTop(); return; }
+  // VSync 面板：独立容器，不进画布树（与 input 源同理，避开 #tree-root 的 pan/zoom 语义）
+  const vsView = document.getElementById('vsync-view');
+  if (dataSource === 'surfaceflinger' && currentView === 'vsyncpanel') {
+    if (vsView) vsView.style.display = '';
+    if (treePanelEl) treePanelEl.style.display = 'none';
+    if (inputViewEl) inputViewEl.style.display = 'none';
+    if (dpEl) dpEl.style.display = 'none';
+    if (proEl) proEl.style.display = 'none';
+    const sbVs = document.getElementById('stats-bar'); if (sbVs) sbVs.style.display = 'none';
+    renderVsyncDump();
+    return;
+  }
+  if (vsView) vsView.style.display = 'none';
   const root = document.getElementById('tree-root');
   const emptyState = document.getElementById('empty-state');
   root.innerHTML = '';
@@ -3166,11 +3305,20 @@ function renderInputPanel() {
     m.connections.forEach(function (c, ci) {
       const blocked = (!c.waitEmpty || !c.outboundEmpty);
       qHtml += '<div class="conn-row' + (blocked ? ' stuck' : '') + '">';
-      qHtml += '<div class="conn-ch">' + esc(c.channel) + '</div>';
+      qHtml += '<div class="conn-ch">' + esc(c.channel) + (c.responsive === false ? ' <span class="conn-bad">· 无响应</span>' : '') + '</div>';
       qHtml += '<div class="conn-meta">status=' + esc(c.status) + (c.monitor ? ' · monitor' : '') + (c.waitEmpty ? '' : ' · <b>WaitQueue 非空</b>') + (c.outboundEmpty ? '' : ' · <b>OutboundQueue 非空</b>') + '</div>';
-      if (!c.waitEmpty && c.wqItems.length) c.wqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'wq', ci, idx); });
-      if (!c.outboundEmpty && c.oqItems.length) c.oqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'oq', ci, idx); });
-      if (blocked && !c.wqItems.length && !c.oqItems.length) { if (c.wqRaw) qHtml += '<pre class="q-block">' + esc(c.wqRaw) + '</pre>'; if (c.oqRaw) qHtml += '<pre class="q-block">' + esc(c.oqRaw) + '</pre>'; }
+      // WaitQueue (WQ)：始终显示分组（空时给占位），便于一眼看出每条连接是否有事件堆积
+      qHtml += '<div class="kv-group conn-subq"><span class="kv-label">WaitQueue (WQ) <span class="q-doc-btn" data-doc="WQ" title="查看 WaitQueue / OutboundQueue 解释">?</span></span>';
+      if (c.wqItems.length) c.wqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'wq', ci, idx); });
+      else if (!c.waitEmpty && c.wqRaw) qHtml += '<pre class="q-block">' + esc(c.wqRaw) + '</pre>';
+      else qHtml += '<div class="kv"><span class="kv-v muted">空（无堆积）</span></div>';
+      qHtml += '</div>';
+      // OutboundQueue (OQ)：同样始终显示，空时标「未发出」，确保 oq 不再被漏掉
+      qHtml += '<div class="kv-group conn-subq"><span class="kv-label">OutboundQueue (OQ) <span class="q-doc-btn" data-doc="OQ" title="查看 OutboundQueue 解释">?</span></span>';
+      if (c.oqItems.length) c.oqItems.forEach(function (ev, idx) { qHtml += inputEventRowHtml(ev, 'oq', ci, idx); });
+      else if (!c.outboundEmpty && c.oqRaw) qHtml += '<pre class="q-block">' + esc(c.oqRaw) + '</pre>';
+      else qHtml += '<div class="kv"><span class="kv-v muted">空（未发出）</span></div>';
+      qHtml += '</div>';
       qHtml += '</div>';
     });
   } else qHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
@@ -3204,12 +3352,21 @@ function renderInputPanel() {
   monHtml += '</div>';
   monHtml += '</div>';
 
-  // 设备 mini 段
+  // 设备 mini 段（含触摸设备的 Affine 缩放 X/Y scale）
   let devHtml = '<div class="input-card">';
   devHtml += '<h3>🖱 输入设备（' + m.devices.count + '）</h3>';
   if (m.devices.list.length) {
     m.devices.list.forEach(function (d) {
+      let affine = '';
+      if (d.xScale != null) {
+        affine = '<div class="kv"><span class="kv-k">Affine X/Y scale</span><span class="kv-v">xScale=' + d.xScale + ' · yScale=' + d.yScale + (d.viewportDisplayId != null ? ' · viewport displayId=' + d.viewportDisplayId : '') + '</span></div>';
+      } else {
+        affine = '<div class="kv"><span class="kv-k">Affine X/Y scale</span><span class="kv-v muted">（非触摸设备，无此项）</span></div>';
+      }
+      devHtml += '<div class="dev-row">';
       devHtml += '<div class="kv"><span class="kv-k">' + esc(d.id) + ': ' + esc(d.name) + '</span><span class="kv-v muted">' + esc(d.classes || '') + '</span></div>';
+      devHtml += affine;
+      devHtml += '</div>';
     });
   } else devHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
   devHtml += '</div>';
@@ -3224,7 +3381,32 @@ function renderInputPanel() {
   });
   docHtml += '</div>';
 
-  el.innerHTML = sw + focusHtml + qHtml + monHtml + devHtml + docHtml;
+  // 输入窗口清单：Input Dispatcher State 的 Windows: 段，每个窗口单独渲染、可点击看解析详情
+  let winHtml = '<div class="input-card">';
+  winHtml += '<h3>🪟 输入窗口清单（Windows）</h3>';
+  if (m.windowDisplays.length) {
+    m.windowDisplays.forEach(function (g) {
+      winHtml += '<div class="kv-group"><span class="kv-label">Display ' + g.displayId + (g.logicalSize ? '（' + esc(g.logicalSize) + '）' : '') + ' · ' + g.windows.length + ' 个窗口（点击任意窗口查看解析详情）</span>';
+      g.windows.forEach(function (w) {
+        const focused = m.focusedWindows.some(function (fw) { return fw.name === w.name; });
+        const flags = decodeInputConfig(w.inputConfig);
+        const flagSummary = flags.map(function (f) { return f.flag + '（' + (f.desc.split('（')[0]) + '）'; }).join(' · ');
+        winHtml += '<div class="win-row' + (focused ? ' focused' : '') + '" data-win-display="' + g.displayId + '" data-win-idx="' + w.idx + '">';
+        winHtml += '<div class="win-head"><span class="win-idx">#' + w.idx + '</span> <span class="win-name">' + esc(w.name) + '</span>' + (focused ? ' <span class="win-focus-tag">★ 焦点窗口</span>' : '') + ' <span class="win-detail-hint">点击解析详情 ›</span></div>';
+        winHtml += '<div class="win-meta">id=' + w.id + ' · displayId=' + w.displayId + ' · alpha=' + w.alpha + ' · globalScale=' + w.globalScale + ' · owner pid/uid=' + w.ownerPid + '/' + w.ownerUid + ' · dispatchTimeout=' + w.dispatchTimeout + 'ms · ' + esc(w.touchOcclusionMode) + '</div>';
+        winHtml += '<div class="win-meta">frame=' + esc(w.frame) + ' · touchableRegion=' + esc(w.touchableRegion) + '</div>';
+        if (flagSummary) winHtml += '<div class="win-cfg">inputConfig：' + esc(flagSummary) + '</div>';
+        if (w.appName) winHtml += '<div class="win-meta muted">app=' + esc(w.appName) + '</div>';
+        winHtml += '</div>';
+      });
+      winHtml += '</div>';
+    });
+  } else {
+    winHtml += '<div class="kv"><span class="kv-v muted">（无）</span></div>';
+  }
+  winHtml += '</div>';
+
+  el.innerHTML = sw + focusHtml + winHtml + qHtml + monHtml + devHtml + docHtml;
   bindInputEvents(el);
 }
 
@@ -3246,6 +3428,18 @@ function bindInputEvents(el) {
   });
   el.querySelectorAll('[data-doc]').forEach(function (node) {
     node.addEventListener('click', function (e) { e.stopPropagation(); showInputQueueDoc(node.getAttribute('data-doc')); });
+  });
+  el.querySelectorAll('.win-row').forEach(function (node) {
+    node.addEventListener('click', function () {
+      const di = parseInt(node.getAttribute('data-win-display'), 10);
+      const idx = parseInt(node.getAttribute('data-win-idx'), 10);
+      let w = null;
+      if (parsedInput && parsedInput.windowDisplays) {
+        const g = parsedInput.windowDisplays.find(function (x) { return x.displayId === di; });
+        if (g) w = g.windows.find(function (x) { return x.idx === idx; });
+      }
+      if (w) renderInputWindowDetails(w);
+    });
   });
 }
 
@@ -3294,6 +3488,82 @@ function showInputQueueDoc(key) {
   h += '<div class="doc-sec"><div class="doc-label">事件流向</div><div class="doc-flow">' + esc(d.flow) + '</div></div>';
   content.innerHTML = h;
   const t = document.getElementById('details-title'); if (t) t.textContent = '队列解释 / ' + d.title;
+}
+
+// 右侧「详情/解释」面板：渲染单个输入窗口的解析详情（字段 / inputConfig 解码 / 几何小图 / 跨源关联）
+function renderInputWindowDetails(w) {
+  const panel = document.getElementById('details-panel');
+  const content = document.getElementById('details-content');
+  if (!panel || !content || !w) return;
+  panel.classList.remove('empty');
+  const focused = parsedInput && parsedInput.focusedWindows.some(function (fw) { return fw.name === w.name; });
+  const evRow = function (k, v, desc) {
+    return '<tr><td class="ev-k">' + esc(k) + '</td><td class="ev-v">' + esc(v == null ? '—' : String(v)) + '</td><td class="ev-d">' + (desc ? esc(desc) : '<span class="muted">—</span>') + '</td></tr>';
+  };
+  let h = '';
+  h += '<div class="ev-detail-head"><span class="type-badge window">Window</span><span class="ev-ctx">输入窗口 #' + w.idx + (focused ? ' · ★焦点窗口' : '') + '</span></div>';
+  h += '<div class="kv-label ev-fields-title">名称 / 标识</div>';
+  h += '<table class="ev-table"><tbody>';
+  h += evRow('name（窗口名）', w.name, '输入调度器登记的可触摸窗口名（含 SurfaceControl hash 前缀）。');
+  h += evRow('id', w.id, '');
+  h += evRow('displayId', w.displayId, '');
+  h += evRow('token', w.token, '');
+  h += evRow('app（applicationInfo.name）', w.appName || '（空）', '');
+  h += evRow('appToken', w.appToken || '（空）', '');
+  h += evRow('ownerPid / ownerUid', w.ownerPid + ' / ' + w.ownerUid, '拥有该窗口的进程与用户。');
+  h += evRow('alpha（透明度）', w.alpha, '0=全透明，1=不透明。');
+  h += evRow('globalScale', w.globalScale, '全局缩放（0 表示按父级缩放）。');
+  h += evRow('dispatchingTimeout', w.dispatchTimeout + 'ms', '输入派发超时，超时触发 ANR。');
+  h += evRow('touchOcclusionMode', w.touchOcclusionMode, '触摸遮挡模式（BLOCK_UNTRUSTED 等）。');
+  h += '</tbody></table>';
+
+  const flags = decodeInputConfig(w.inputConfig);
+  h += '<div class="kv-label ev-fields-title">inputConfig（输入配置标志解码）</div>';
+  if (flags.length) {
+    h += '<table class="ev-table"><thead><tr><th>标志</th><th>含义</th></tr></thead><tbody>';
+    flags.forEach(function (f) { h += '<tr><td class="ev-k">' + esc(f.flag) + '</td><td class="ev-d">' + esc(f.desc) + '</td></tr>'; });
+    h += '</tbody></table>';
+  } else h += '<div class="muted">（无）</div>';
+
+  const frameRects = parseRectList(w.frame);
+  const touchRects = parseRectList(w.touchableRegion);
+  h += '<div class="kv-label ev-fields-title">几何布局（frame / touchableRegion 解析为矩形）</div>';
+  if (frameRects.length || touchRects.length) {
+    h += inputWindowGeoSvg(frameRects, touchRects);
+    h += '<div class="win-geo-legend"><span class="lg-frame">■ frame 边界</span><span class="lg-touch">■ touchableRegion</span><span class="lg-note">（小图为归一化比例，非真实像素）</span></div>';
+  } else h += '<div class="muted">（无几何数据）</div>';
+
+  if (typeof windowDump !== 'undefined' && windowDump && windowDump.windows && windowDump.windows.length) {
+    const suf = w.name.indexOf(' ') >= 0 ? w.name.slice(w.name.indexOf(' ') + 1) : w.name;
+    const tw = windowDump.windows.find(function (x) { return x.name === suf || x.name === w.name; });
+    if (tw) h += '<div class="win-xref"><button class="mini-btn" onclick="jumpToWindow(' + tw.id + ')">↪ 跳转 Windows 视图：' + esc(tw.name) + '</button></div>';
+  }
+
+  if (w.transformRaw) {
+    h += '<div class="kv-label ev-fields-title">transform（变换矩阵）</div>';
+    h += '<pre class="ev-raw-pre">' + esc(w.transformRaw) + '</pre>';
+  }
+  content.innerHTML = h;
+  const t = document.getElementById('details-title'); if (t) t.textContent = '输入窗口解析详情';
+}
+
+// 把 frame / touchableRegion 解析出的矩形归一化画进一张小 SVG
+function inputWindowGeoSvg(frameRects, touchRects) {
+  const all = frameRects.concat(touchRects);
+  if (!all.length) return '<div class="muted">（无可解析矩形）</div>';
+  let minX = 1e9, minY = 1e9, maxX = -1e9, maxY = -1e9;
+  all.forEach(function (r) { minX = Math.min(minX, r.x1, r.x2); minY = Math.min(minY, r.y1, r.y2); maxX = Math.max(maxX, r.x1, r.x2); maxY = Math.max(maxY, r.y1, r.y2); });
+  const pad = 12, W = 260, H = 260;
+  const bw = (maxX - minX) || 1, bh = (maxY - minY) || 1;
+  const s = Math.min((W - 2 * pad) / bw, (H - 2 * pad) / bh);
+  const ox = pad - minX * s, oy = pad - minY * s;
+  const tx = function (v) { return v * s + ox; }, ty = function (v) { return v * s + oy; };
+  let svg = '<svg class="win-geo-svg" viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '">';
+  svg += '<rect x="0" y="0" width="' + W + '" height="' + H + '" fill="var(--bg-tertiary)"/>';
+  touchRects.forEach(function (r) { svg += '<rect x="' + tx(r.x1) + '" y="' + ty(r.y1) + '" width="' + ((r.x2 - r.x1) * s) + '" height="' + ((r.y2 - r.y1) * s) + '" fill="rgba(34,197,94,.35)" stroke="rgba(34,197,94,.85)" stroke-width="1"/>'; });
+  frameRects.forEach(function (r) { svg += '<rect x="' + tx(r.x1) + '" y="' + ty(r.y1) + '" width="' + ((r.x2 - r.x1) * s) + '" height="' + ((r.y2 - r.y1) * s) + '" fill="none" stroke="#3b82f6" stroke-width="1.5"/>'; });
+  svg += '</svg>';
+  return svg;
 }
 
 /* ===== View Top 竖向可折叠大纲（替代横向画布树，更直观） ===== */
@@ -3661,8 +3931,12 @@ function parseBoundsString(str) {
 
 function formatLTRB(rect) {
   if (!rect) return '-';
-  return [rect.left, rect.top, rect.right, rect.bottom].map(function (n) {
-    return Number.isInteger(n) ? String(n) : n.toFixed(1);
+  const l = rect.left != null ? rect.left : rect.l;
+  const t = rect.top != null ? rect.top : rect.t;
+  const r = rect.right != null ? rect.right : rect.r;
+  const b = rect.bottom != null ? rect.bottom : rect.b;
+  return [l, t, r, b].map(function (n) {
+    return (n == null) ? '-' : (Number.isInteger(n) ? String(n) : n.toFixed(1));
   }).join(' ');
 }
 
@@ -4812,9 +5086,14 @@ function nodeMatches(node, q) {
       const val = w[p];
       if (val != null && (k.toLowerCase().indexOf(q) >= 0 || String(val).toLowerCase().indexOf(q) >= 0)) return true;
     }
-    if (w.rawAttrs) for (const rk in w.rawAttrs) {
-      if (rk.toLowerCase().indexOf(q) >= 0 || String(w.rawAttrs[rk]).toLowerCase().indexOf(q) >= 0) return true;
-    }
+      if (w.rawAttrs) for (const rk in w.rawAttrs) {
+        if (rk.toLowerCase().indexOf(q) >= 0 || String(w.rawAttrs[rk]).toLowerCase().indexOf(q) >= 0) return true;
+      }
+  }
+  // 整屏(display)对象：按全部字段名/值检索（旋转/挖孔/状态栏/多屏等调试关键词都能命中）
+  if (node.displayId !== undefined && node.insetsSources) {
+    if (!node.__search) node.__search = displaySearchIndex(node).toLowerCase();
+    if (node.__search.indexOf(q) >= 0) return true;
   }
   return false;
 }
@@ -4834,7 +5113,7 @@ function handleSearch(query) {
   // 搜索索引按「当前视图」选择：窗口树与 SF 层级树都是树节点（nodeIndex）；HWC 合成预览搜索 HWC 图层（layerIndex）；
   // 窗口图层视图（windowlist）搜索 Window 对象（windowIndex）。
   // 以前按 dataSource 判断，导致 SF 数据源下切到「层级树」时仍在搜 HWC 图层，搜索失效。
-  const activeIdx = (currentView === 'hwc') ? layerIndex : (currentView === 'windowlist' ? windowIndex : nodeIndex);
+  const activeIdx = (currentView === 'hwc') ? layerIndex : (currentView === 'windowlist' ? windowIndex : (currentView === 'displaylist' ? displayIndex : (currentView === 'vsyncpanel' ? vsyncIndex : nodeIndex)));
   const matches = [];
   for (const [id, node] of activeIdx) {
     if (nodeMatches(node, searchQuery)) matches.push(node);
@@ -4910,6 +5189,11 @@ function renderStats() {
   if (!sb) return;
   if (currentView === 'windowlist') {
     renderWindowStats();
+    return;
+  }
+  if (currentView === 'displaylist') {
+    const sb2 = document.getElementById('stats-bar');
+    if (sb2) { sb2.style.display = ''; sb2.textContent = 'Display ' + (displayDump && displayDump.displays ? displayDump.displays.length : 0) + ' 个 · 整屏调试视图'; }
     return;
   }
   if (currentView === 'hwc') {
@@ -4992,6 +5276,517 @@ function countLayerSystem() {
 /* ========================================================================
    ACTIONS
    ======================================================================== */
+
+/* ========================================================================
+   dumpsys window displays —— 整屏级（per-display）调试数据源
+   规划经 grill-me + jev 决策：独立数据源 / 6 类场景全做 / 单屏 A14 样本开工 /
+   列表+详情+DisplayFrames 嵌套矩形叠加图 / 双向联动 window 视图
+   ======================================================================== */
+let displayDump = null;            // { displays: [...] }
+let displayIndex = new Map();      // 搜索/选中索引：id -> display 对象
+let selectedDisplayId = null;
+
+const DISPLAY_PARAM_DICT = {
+  'DisplayId':        { tier: 'core', label: '显示屏 ID', desc: '整屏唯一编号。多屏/副屏/投屏时用于区分是哪一个屏；窗口的 mDisplayId 即指向这里。' },
+  'Resolution':       { tier: 'core', label: '分辨率', desc: 'init=WxH 中的 WxH，物理像素分辨率。' },
+  'DensityDpi':       { tier: 'aux', label: '屏幕密度', desc: 'dpi（如 420dpi）。影响 dp→px 换算与布局。' },
+  'AppSize':          { tier: 'aux', label: '应用可用尺寸', desc: 'app=WxH：应用可使用的尺寸（去掉永久系统栏后的可用区）。' },
+  'DisplayFrames':    { tier: 'core', label: 'DisplayFrames', desc: 'DisplayFrames w=W h=H r=R。注意 A14 起这里只有一行汇总（w/h/旋转），详细各帧矩形来自 mDecorInsetsInfo 与 InsetsSource。' },
+  'CurrentFocus':     { tier: 'core', label: '当前焦点窗口', desc: 'mCurrentFocus：当前正在接收输入焦点的窗口。点不准/输入落错窗口时看这里。' },
+  'FocusedApp':       { tier: 'aux', label: '焦点应用', desc: 'mFocusedApp：前台聚焦的 ActivityRecord。' },
+  'Awake':            { tier: 'core', label: '是否唤醒', desc: 'DisplayPolicy.mAwake：屏幕是否处于唤醒状态。false=可能息屏。' },
+  'ScreenOnFully':    { tier: 'aux', label: '屏幕全亮', desc: 'DisplayPolicy.mScreenOnFully：屏幕是否完全点亮（区别于 early）。' },
+  'StatusBar':        { tier: 'core', label: '状态栏窗口', desc: 'DisplayPolicy.mStatusBar：状态栏对应的 WindowState。' },
+  'NavigationBar':    { tier: 'core', label: '导航栏窗口', desc: 'DisplayPolicy.mNavigationBar：导航栏对应的 WindowState。' },
+  'NavBarPosition':   { tier: 'aux', label: '导航栏位置', desc: 'DisplayPolicy.mNavigationBarPosition：导航栏方位（0=左下/1=右/4=底等，因版本而异）。' },
+  'TopIsFullscreen':  { tier: 'aux', label: '顶层全屏', desc: 'DisplayPolicy.mTopIsFullscreen：最顶层是否为全屏不透明窗口（沉浸式/全屏视频时常变 true）。' },
+  'ForceShowNavBar':  { tier: 'aux', label: '强制显示导航栏', desc: 'DisplayPolicy.mForceShowNavigationBarEnabled：是否强制显示导航栏。' },
+  'Rotation':         { tier: 'core', label: '旋转角度', desc: 'DisplayRotation.mRotation：当前屏幕旋转（0/90/180/270）。旋转错乱时看这里。' },
+  'LastOrientation':  { tier: 'aux', label: '上次方向', desc: 'DisplayRotation.mLastOrientation：上一次生效的方向编号。' },
+  'AppOrientation':   { tier: 'aux', label: '应用方向', desc: 'DisplayRotation.mCurrentAppOrientation：当前应用请求的方向（如 SCREEN_ORIENTATION_NOSENSOR）。' },
+  'UserRotation':     { tier: 'aux', label: '用户旋转', desc: 'DisplayRotation.mUserRotation：用户设定/锁定的旋转（配合 mUserRotationMode）。' },
+  'UserRotationMode': { tier: 'aux', label: '旋转锁定模式', desc: 'DisplayRotation.mUserRotationMode：USER_ROTATION_LOCKED（锁定）/ USER_ROTATION_FREE（自动）。' },
+  'DisplayCutout':    { tier: 'core', label: '挖孔/刘海', desc: 'mDisplayCutout：刘海/挖孔区域（insets 顶部 inset、boundingRect 为具体挖孔矩形）。内容被遮挡、安全区算错时看这里。' },
+  'RoundedCorners':   { tier: 'aux', label: '圆角', desc: 'mRoundedCorners：屏幕四角圆角半径与圆心。' },
+  'InsetsPolicy':     { tier: 'aux', label: 'Insets 策略', desc: 'InsetsPolicy：status/nav 的 WINDOW_STATE_SHOWING/HIDDEN 等状态。' },
+  'Deferred':         { tier: 'aux', label: '布局延迟(deferred)', desc: 'DisplayContent.mDeferred：是否延迟本次布局。转屏/动画过渡期间常为 true（布局推迟到下一帧），普通稳态应为 false。' },
+  'LayoutNeeded':     { tier: 'aux', label: '需要重布局', desc: 'mLayoutNeeded：是否存在未完成的布局请求。true 表示下次 performLayout 会重新排布整屏窗口。' },
+  'TouchExcludeRegion': { tier: 'core', label: '触摸排除区', desc: 'mTouchExcludeRegion：触摸输入被排除的矩形集合（SkRegion）。系统栏、窗口装饰、freeform/分屏窗口边界会在此排除；应用可点区被其覆盖时，会出现「点不动/点不准」。' }
+};
+
+function splitDisplayBlocks(text) {
+  const lines = text.split('\n');
+  const blocks = [];
+  let cur = null;
+  let headerSeen = false;
+  for (let i = 0; i < lines.length; i++) {
+    const ln = lines[i];
+    const m = ln.match(/^\s{2}Display:\s*mDisplayId=(\d+)\s*\((.*?)\)\s*$/);
+    if (m) {
+      if (cur) blocks.push(cur);
+      cur = { displayId: parseInt(m[1], 10), organized: m[2], text: ln + '\n' };
+    } else if (cur) {
+      cur.text += ln + '\n';
+    } else if (/WINDOW MANAGER DISPLAY CONTENTS/.test(ln)) {
+      headerSeen = true;
+    }
+  }
+  if (cur) blocks.push(cur);
+  if (blocks.length === 0 && headerSeen) blocks.push({ displayId: 0, organized: 'unknown', text: text });
+  return blocks;
+}
+
+function parseRect(str) {
+  const m = String(str || '').match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/);
+  if (!m) return null;
+  return { l: +m[1], t: +m[2], r: +m[3], b: +m[4] };
+}
+function parseRectParen(str) {
+  const m = String(str || '').match(/Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/);
+  if (!m) return null;
+  return { l: +m[1], t: +m[2], r: +m[3], b: +m[4] };
+}
+// 解析 SkRegion 内部矩形集合，如 "(0,0,1080,88)(111,88,802,1408)" → [{l,t,r,b}...]
+// 注意：格式是 4 个逗号分隔整数 (l,t,r,b)，与别处的 [l,t][r,b] 不同。
+function parseSkRegion(inner) {
+  const rects = [];
+  const re = /\((\d+),(\d+),(\d+),(\d+)\)/g;
+  let m;
+  while ((m = re.exec(String(inner || '')))) {
+    rects.push({ l: +m[1], t: +m[2], r: +m[3], b: +m[4] });
+  }
+  return rects.length ? rects : null;
+}
+function numRe(block, re) { const m = block.match(re); return m ? (isNaN(+m[1]) ? m[1] : +m[1]) : null; }
+function strRe(block, re) { const m = block.match(re); return m ? m[1] : null; }
+
+function parseOneDisplay(b) {
+  const block = b.text;
+  const d = { id: 'disp-' + b.displayId, displayId: b.displayId, organized: b.organized };
+  const initM = block.match(/init=(\d+)x(\d+)\s+(\d+)dpi/);
+  if (initM) { d.initW = +initM[1]; d.initH = +initM[2]; d.dpi = +initM[3]; }
+  const appM = block.match(/app=(\d+)x(\d+)/); if (appM) { d.appW = +appM[1]; d.appH = +appM[2]; }
+  const dfM = block.match(/DisplayFrames w=(\d+) h=(\d+) r=(\d+)/);
+  if (dfM) { d.dfW = +dfM[1]; d.dfH = +dfM[2]; d.dfR = +dfM[3]; }
+  d.minResizeDp = numRe(block, /mMinSizeOfResizeableTaskDp=(\d+)/);
+  d.range = strRe(block, /rng=([\d]+x[\d]+-[\d]+x[\d]+)/);
+  d.deferred = strRe(block, /deferred=(\w+)/);
+  d.layoutNeeded = strRe(block, /mLayoutNeeded=(\w+)/);
+  const terM = block.match(/mTouchExcludeRegion=SkRegion\(((?:\([\d,]+\))+)\)/);
+  if (terM) d.touchExcludeRegion = parseSkRegion(terM[1]);
+  d.currentFocus = strRe(block, /mCurrentFocus=(Window\{[^}]*\})/);
+  d.focusedApp = strRe(block, /mFocusedApp=(ActivityRecord\{[^}]*\})/);
+  const wcM = block.match(/winConfig=\{([^}]*)\}/);
+  if (wcM) {
+    const wc = wcM[1];
+    const pr = function (s) { const m = (s || '').match(/Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/); return m ? { l:+m[1], t:+m[2], r:+m[3], b:+m[4] } : null; };
+    d.winConfig = {
+      bounds: pr((wc.match(/mBounds=(Rect\([^)]*\))/) || [])[0]),
+      appBounds: pr((wc.match(/mAppBounds=(Rect\([^)]*\))/) || [])[0]),
+      maxBounds: pr((wc.match(/mMaxBounds=(Rect\([^)]*\))/) || [])[0]),
+      displayRotation: strRe(wc, /mDisplayRotation=(\w+)/),
+      windowingMode: strRe(wc, /mWindowingMode=(\w+)/),
+      activityType: strRe(wc, /mActivityType=(\w+)/),
+      rotation: strRe(wc, /mRotation=(\w+)/)
+    };
+  }
+  const polM = block.match(/DisplayPolicy([\s\S]*?)(?=\n\s{2}DisplayRotation)/);
+  if (polM) {
+    const pol = polM[1];
+    d.policy = {
+      awake: strRe(pol, /mAwake=(\w+)/),
+      screenOnEarly: strRe(pol, /mScreenOnEarly=(\w+)/),
+      screenOnFully: strRe(pol, /mScreenOnFully=(\w+)/),
+      statusBar: strRe(pol, /mStatusBar=(Window\{[^}]*\})/),
+      navigationBar: strRe(pol, /mNavigationBar=(Window\{[^}]*\})/),
+      navBarPosition: numRe(pol, /mNavigationBarPosition=(\d+)/),
+      navBarOpacityMode: numRe(pol, /mNavBarOpacityMode=(\d+)/),
+      topIsFullscreen: strRe(pol, /mTopIsFullscreen=(\w+)/),
+      forceShowNavBar: strRe(pol, /mForceShowNavigationBarEnabled=(\w+)/),
+      decorInsets: {}
+    };
+    ['ROTATION_0', 'ROTATION_90', 'ROTATION_180', 'ROTATION_270'].forEach(function (rot) {
+      const rm = pol.match(new RegExp(rot + '=\\{([^}]*)\\}'));
+      if (rm) {
+        const s = rm[1];
+        d.policy.decorInsets[rot] = {
+          nonDecorInsets: parseRect((s.match(/nonDecorInsets=(\[[^\]]*\]\[[^\]]*\])/) || [])[0]),
+          configInsets: parseRect((s.match(/configInsets=(\[[^\]]*\]\[[^\]]*\])/) || [])[0]),
+          nonDecorFrame: parseRect((s.match(/nonDecorFrame=(\[[^\]]*\]\[[^\]]*\])/) || [])[0]),
+          configFrame: parseRect((s.match(/configFrame=(\[[^\]]*\]\[[^\]]*\])/) || [])[0])
+        };
+      }
+    });
+  }
+  const rotM = block.match(/DisplayRotation([\s\S]*?)(?=\n\s{2}InputConsumers|\n\s{2}WindowInsetsStateController|$)/);
+  if (rotM) {
+    const rt = rotM[1];
+    d.rotation = {
+      rotation: numRe(rt, /mRotation=(\d+)/),
+      lastOrientation: numRe(rt, /mLastOrientation=(\d+)/),
+      currentAppOrientation: strRe(rt, /mCurrentAppOrientation=(\w+)/),
+      portrait: strRe(rt, /mPortraitRotation=ROTATION_(\w+)/),
+      landscape: strRe(rt, /mLandscapeRotation=ROTATION_(\w+)/),
+      seascape: strRe(rt, /mSeascapeRotation=ROTATION_(\w+)/),
+      upsideDown: strRe(rt, /mUpsideDownRotation=ROTATION_(\w+)/),
+      userRotation: strRe(rt, /mUserRotation=ROTATION_(\w+)/),
+      userRotationMode: strRe(rt, /mUserRotationMode=(\w+)/)
+    };
+  }
+  const cutM = block.match(/mDisplayCutout=DisplayCutout\{insets=Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/);
+  if (cutM) d.cutout = { insets: { l: +cutM[1], t: +cutM[2], r: +cutM[3], b: +cutM[4] } };
+  const bndM = block.match(/boundingRect=\{Bounds=(\[[^\]]*\])\}/);
+  if (bndM) {
+    d.cutout = d.cutout || {};
+    const rects = (bndM[1].match(/Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/g) || []).map(function (s) {
+      const m = s.match(/Rect\((\d+),\s*(\d+)\s*-\s*(\d+),\s*(\d+)\)/);
+      return { l: +m[1], t: +m[2], r: +m[3], b: +m[4] };
+    }).filter(function (r) { return !(r.l === 0 && r.t === 0 && r.r === 0 && r.b === 0); });
+    if (rects.length) d.cutout.boundingRects = rects;
+  }
+  const rcM = block.match(/mRoundedCorners=RoundedCorners\{(\[[^\]]*\])\}/);
+  if (rcM) {
+    const arr = rcM[1].match(/RoundedCorner\{position=(\w+), radius=(\d+), center=Point\((\d+), (\d+)\)\}/g);
+    if (arr) d.roundedCorners = arr.map(function (s) {
+      const m = s.match(/RoundedCorner\{position=(\w+), radius=(\d+), center=Point\((\d+), (\d+)\)\}/);
+      return { position: m[1], radius: +m[2], center: { x: +m[3], y: +m[4] } };
+    });
+  }
+  d.insetsSources = [];
+  const isRe = /InsetsSource id=(\w+) type=(\w+) frame=\[(\d+),(\d+)\]\[(\d+),(\d+)\] visible=(\w+) flags=([\w|]*) sideHint=(\w+)/g;
+  let im;
+  while ((im = isRe.exec(block))) {
+    d.insetsSources.push({ id: im[1], type: im[2], frame: { l: +im[3], t: +im[4], r: +im[5], b: +im[6] }, visible: im[7] === 'true', flags: im[8], sideHint: im[9] });
+  }
+  const ipM = block.match(/status:\s*(\w+)\s*\n\s*nav:\s*(\w+)/);
+  if (ipM) d.insetsPolicy = { status: ipM[1], nav: ipM[2] };
+  return d;
+}
+
+function parseDisplayDump(text) {
+  const blocks = splitDisplayBlocks(text);
+  const displays = blocks.map(parseOneDisplay).filter(Boolean);
+  displayDump = { displays: displays, raw: text };
+}
+
+function displaySearchIndex(d) {
+  const out = [];
+  (function walk(o, p) {
+    if (o == null || typeof o === 'function') return;
+    if (typeof o === 'object') {
+      if (Array.isArray(o)) o.forEach(function (v) { walk(v, p); });
+      else for (const k in o) walk(o[k], p ? p + '.' + k : k);
+    } else { out.push(p, String(o)); }
+  })(d, '');
+  return out.join(' ');
+}
+
+function renderDisplayDump() {
+  const root = document.getElementById('tree-root');
+  const emptyState = document.getElementById('empty-state');
+  const ov = document.getElementById('hwc-overlays'); if (ov) ov.innerHTML = '';
+  if (!root) return;
+  root.style.width = ''; root.style.height = '';
+  zoom = 1; panX = 0; panY = 0; applyPan();
+  root.innerHTML = '';
+  displayIndex = new Map();
+  const disps = (displayDump && displayDump.displays) || [];
+  if (disps.length === 0) {
+    const c = document.getElementById('wf-count');
+    if (c) { c.textContent = '显示 0 个 Display'; c.classList.add('zero'); }
+    if (emptyState) emptyState.style.display = 'flex';
+    root.style.display = 'none';
+    return;
+  }
+  if (emptyState) emptyState.style.display = 'none';
+  root.style.display = 'block';
+  root.className = 'diagram-root win-root';
+  const stack = document.createElement('div'); stack.className = 'win-stack';
+  disps.forEach(function (d) {
+    const card = renderDisplayCard(d);
+    d.el = card;
+    displayIndex.set(d.id, d);
+    stack.appendChild(card);
+  });
+  root.appendChild(stack);
+  const cnt = document.getElementById('wf-count');
+  if (cnt) { cnt.textContent = '显示 ' + disps.length + ' 个 Display'; cnt.classList.remove('zero'); }
+  if (disps[0]) selectDisplay(disps[0].id); else renderDisplayDetail(null);
+}
+
+function renderDisplayCard(d) {
+  const card = document.createElement('div');
+  card.className = 'win-card disp-card';
+  card.dataset.id = d.id;
+  card.onclick = function () { selectDisplay(d.id); };
+  const idx = document.createElement('div'); idx.className = 'win-idx'; idx.textContent = 'Disp';
+  card.appendChild(idx);
+  const body = document.createElement('div'); body.className = 'win-body';
+  const top = document.createElement('div'); top.className = 'win-top';
+  const name = document.createElement('span'); name.className = 'win-name';
+  name.textContent = 'Display #' + d.displayId + (d.organized && d.organized !== 'unknown' ? ' (' + d.organized + ')' : '');
+  top.appendChild(name); body.appendChild(top);
+  const badges = document.createElement('div'); badges.className = 'win-badges';
+  if (d.initW) { const b = document.createElement('span'); b.className = 'ty-badge'; b.textContent = d.initW + '×' + d.initH; badges.appendChild(b); }
+  if (d.dpi) { const b = document.createElement('span'); b.className = 'fmt-badge'; b.textContent = d.dpi + 'dpi'; badges.appendChild(b); }
+  const rot = (d.rotation && d.rotation.rotation != null) ? d.rotation.rotation : (d.dfR != null ? d.dfR : null);
+  if (rot != null) { const b = document.createElement('span'); b.className = 'ds-badge'; b.style.background = '#8957e5'; b.textContent = 'rot=' + rot; badges.appendChild(b); }
+  if (d.policy && d.policy.awake != null) { const b = document.createElement('span'); b.className = 'vis-badge ' + (d.policy.awake === 'true' ? 'v-visible' : 'v-gone'); b.textContent = d.policy.awake === 'true' ? '唤醒' : '息屏?'; badges.appendChild(b); }
+  body.appendChild(badges);
+  card.appendChild(body);
+  return card;
+}
+
+function selectDisplay(id) {
+  selectedDisplayId = id;
+  const d = displayIndex.get(id);
+  document.querySelectorAll('.disp-card').forEach(function (el) { el.classList.toggle('selected', el.dataset.id === id); });
+  renderDisplayDetail(d);
+}
+
+function dVal(v) {
+  if (v === null || v === undefined) return null;
+  if (v && typeof v === 'object' && typeof v.l === 'number' && typeof v.r === 'number') return formatLTRB(v);
+  if (typeof v === 'boolean') return v ? 'true' : 'false';
+  const s = String(v);
+  return s.length > 260 ? s.slice(0, 260) + ' …(已截断)' : s;
+}
+function dRow(key, rawVal, info) {
+  const disp = dVal(rawVal);
+  if (disp === null) return '';
+  const explain = info ? ('<b>' + weEsc(info.label) + '</b><br>' + weEsc(info.desc)) : '<span class="attr-unknown">（未收录解释）</span>';
+  return '<div class="attr-row' + (info ? '' : ' attr-row-raw') + '" onclick="toggleAttrExplain(this)">'
+    + '<div class="attr-line"><span class="attr-key">' + weEsc(key) + '</span>'
+    + '<span class="attr-val"><code>' + weEsc(disp) + '</code></span>'
+    + '<span class="attr-caret">▸</span></div>'
+    + '<div class="attr-explain">' + explain + '</div></div>';
+}
+
+function displayOverlaySVG(d) {
+  const W = d.initW || d.dfW || 1080, H = d.initH || d.dfH || 2400;
+  const sw = 320, sh = Math.round(H * sw / W);
+  const sc = function (v) { return Math.round(v * sw / W); };
+  const R = function (r) { return 'x="' + sc(r.l) + '" y="' + sc(r.t) + '" width="' + sc(r.r - r.l) + '" height="' + sc(r.b - r.t) + '"'; };
+  let s = '<svg class="disp-overlay" viewBox="0 0 ' + sw + ' ' + sh + '" width="' + sw + '" height="' + sh + '" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect x="0" y="0" width="' + sw + '" height="' + sh + '" fill="#0d1117" stroke="#30363d"/>';
+  const cf = d.policy && d.policy.decorInsets && d.policy.decorInsets.ROTATION_0 && d.policy.decorInsets.ROTATION_0.configFrame;
+  if (cf) s += '<rect ' + R(cf) + ' fill="#161b22"/>';
+  const sb = (d.insetsSources || []).find(function (x) { return x.type === 'statusBars'; });
+  if (sb) s += '<rect ' + R(sb.frame) + ' fill="rgba(248,81,73,.30)"/>';
+  const nb = (d.insetsSources || []).find(function (x) { return x.type === 'navigationBars'; });
+  if (nb) s += '<rect ' + R(nb.frame) + ' fill="rgba(88,166,255,.30)"/>';
+  if (d.cutout && d.cutout.boundingRects && d.cutout.boundingRects[0]) s += '<rect ' + R(d.cutout.boundingRects[0]) + ' fill="#000"/>';
+  s += '<text x="6" y="14" fill="#8b949e" font-size="10">整屏 ' + W + '×' + H + '</text>';
+  if (sb) s += '<text x="6" y="' + (sc(sb.frame.b) - 3) + '" fill="#f85149" font-size="9">状态栏 ' + formatLTRB(sb.frame) + '</text>';
+  if (nb) s += '<text x="6" y="' + (sc(nb.frame.t) + 10) + '" fill="#58a6ff" font-size="9">导航栏 ' + formatLTRB(nb.frame) + '</text>';
+  if (cf)   s += '<text x="6" y="' + (sc(cf.t) + 10) + '" fill="#c9d1d9" font-size="9">安全区 ' + formatLTRB(cf) + '</text>';
+  s += '</svg>';
+  return s;
+}
+
+// 触摸排除区叠加图：把 mTouchExcludeRegion 的每块 SkRegion 矩形画出来（橙色）。
+// 用于排查「点不动/点不准」——应用可点区被这些矩形盖住时，触摸会落到系统/窗口装饰。
+function displayTouchExcludeSVG(d) {
+  if (!d.touchExcludeRegion || !d.touchExcludeRegion.length) return '';
+  const W = d.initW || d.dfW || 1080, H = d.initH || d.dfH || 2400;
+  const sw = 320, sh = Math.round(H * sw / W);
+  const sc = function (v) { return Math.round(v * sw / W); };
+  let s = '<svg class="disp-overlay touch-exclude" viewBox="0 0 ' + sw + ' ' + sh + '" width="' + sw + '" height="' + sh + '" xmlns="http://www.w3.org/2000/svg">';
+  s += '<rect x="0" y="0" width="' + sw + '" height="' + sh + '" fill="#0d1117" stroke="#30363d"/>';
+  d.touchExcludeRegion.forEach(function (r, i) {
+    s += '<rect x="' + sc(r.l) + '" y="' + sc(r.t) + '" width="' + sc(r.r - r.l) + '" height="' + sc(r.b - r.t) + '" fill="rgba(210,153,34,.35)" stroke="#d29922"/>';
+    s += '<text x="' + (sc(r.l) + 3) + '" y="' + (sc(r.t) + 12) + '" fill="#e3b341" font-size="9">#' + i + ' ' + formatLTRB(r) + '</text>';
+  });
+  s += '<text x="6" y="14" fill="#8b949e" font-size="10">整屏 ' + W + '×' + H + ' · 触摸排除区 ' + d.touchExcludeRegion.length + ' 块</text>';
+  s += '</svg>';
+  return s;
+}
+
+// display 异常自动诊断：对 6 大调试场景做"自动体检"，列出字段矛盾/一致性结论。
+// 输入：单屏 d（已解析），allDisplays（全部屏，用于多屏一致性）。输出 [{level,scenario,msg}]。
+// level: error(红) / warn(黄) / info(灰) / ok(绿)。基于真实 A14 display.txt 校准，避免误报。
+function diagnoseDisplay(d, allDisplays) {
+  const out = [];
+  if (!d) return out;
+  const add = function (level, scenario, msg) { out.push({ level: level, scenario: scenario, msg: msg }); };
+  const sb = (d.insetsSources || []).find(function (x) { return x.type === 'statusBars'; });
+  const nav = (d.insetsSources || []).find(function (x) { return x.type === 'navigationBars'; });
+  const pol = d.policy || {};
+  const rot = d.rotation || {};
+
+  // ===== 场景① 旋转 / 方向 =====
+  if (rot.userRotationMode && /LOCKED|FROZEN/.test(rot.userRotationMode)) {
+    add('info', '旋转', '旋转已锁定（mUserRotationMode=' + rot.userRotationMode + '），屏幕不会随传感器自动旋转。');
+  }
+  if (rot.currentAppOrientation && /NOSENSOR|UNSPECIFIED/.test(rot.currentAppOrientation)) {
+    add('info', '旋转', '前台应用方向策略=' + rot.currentAppOrientation + '：应用不响应传感器，方向固定（若期望自动转但不变，属正常）。');
+  }
+  if (rot.userRotation != null && rot.rotation != null && Number(rot.userRotation) !== Number(rot.rotation)) {
+    add('warn', '旋转', '用户旋转 mUserRotation=' + rot.userRotation + ' 与当前 mRotation=' + rot.rotation + ' 不一致，用户旋转设定未生效或被覆盖。');
+  }
+
+  // ===== 场景② 挖孔屏 / 圆角 =====
+  if (d.cutout && d.cutout.insets && sb && sb.frame) {
+    if (d.cutout.insets.t > sb.frame.b) {
+      add('warn', '挖孔', '挖孔顶部 inset=' + d.cutout.insets.t + ' 超出状态栏底=' + sb.frame.b + '：状态栏盖不住挖孔，内容可能从挖孔区域漏出。');
+    } else if (d.cutout.insets.t === sb.frame.b) {
+      add('ok', '挖孔', '挖孔顶部 inset(' + d.cutout.insets.t + ') 与状态栏高度一致，挖孔被状态栏完整覆盖。');
+    }
+  }
+  if (d.roundedCorners && d.roundedCorners.length) {
+    add('info', '挖孔', '屏幕四角圆角半径=' + d.roundedCorners[0].radius + 'px，全屏窗口内容四角会被系统裁切。');
+  }
+
+  // ===== 场景③ 状态栏 / 导航栏 =====
+  if (sb && sb.frame && d.appH != null && sb.frame.b > d.appH) {
+    add('warn', '状态栏', '状态栏底=' + sb.frame.b + ' 超过 app 高度=' + d.appH + '，状态栏与内容区重叠。');
+  }
+  if (nav && nav.frame && d.appH != null && nav.frame.t < d.appH) {
+    add('warn', '导航栏', '导航栏顶=' + nav.frame.t + ' 小于 app 高度=' + d.appH + '，导航栏与内容区重叠（未正确避让）。');
+  }
+  if (pol.topIsFullscreen === 'true' && sb && sb.frame && sb.frame.b > 0) {
+    add('warn', '状态栏', 'mTopIsFullscreen=true(沉浸) 但 statusBars frame 仍存在(' + formatLTRB(sb.frame) + ')，沉浸可能未真正生效或被覆盖。');
+  }
+  if (pol.navBarPosition != null && pol.navBarPosition !== 4) {
+    add('info', '导航栏', 'mNavBarPosition=' + pol.navBarPosition + '（非底部，折叠屏/平板侧边导航常见，正常）。');
+  }
+
+  // ===== 场景④ 多屏 =====
+  if (allDisplays && allDisplays.length > 1) {
+    const ids = allDisplays.map(function (x) { return x.displayId; });
+    if (new Set(ids).size !== ids.length) add('error', '多屏', '存在重复 displayId，多屏标识异常。');
+    if (allDisplays.filter(function (x) { return x.displayId === 0; }).length === 0) add('warn', '多屏', '缺少 Display #0（内置主屏），多屏配置异常。');
+  }
+
+  // ===== 场景⑤ 灭屏 / 唤醒 =====
+  if (pol.awake === 'false') add('info', '灭屏', '屏幕当前息屏（mAwake=false）。');
+  if (pol.awake === 'false' && pol.screenOnFully === 'true') add('warn', '灭屏', 'mAwake=false 但 mScreenOnFully=true，唤醒状态不一致。');
+
+  // ===== 场景⑥ wm size / density =====
+  if (d.initW && d.appW != null && (d.appW !== d.initW || d.appH !== d.initH)) {
+    const dh = d.initH - d.appH;
+    const sysH = (sb ? sb.frame.b : 0) + (nav ? (d.initH - nav.frame.t) : 0);
+    if (Math.abs(dh - sysH) > 4) {
+      add('warn', 'wm尺寸', 'app 尺寸(' + d.appW + '×' + d.appH + ') 与物理尺寸(' + d.initW + '×' + d.initH + ') 不一致，且差值无法用状态栏/导航栏解释，可能设置了 wm size/density 覆盖或存在异常 inset。');
+    } else {
+      add('ok', 'wm尺寸', 'app 尺寸比物理尺寸小，差值恰好等于状态栏+导航栏高度，属正常系统边衬。');
+    }
+  }
+  if (d.dfW && d.initW && (d.dfW !== d.initW || d.dfH !== d.initH)) {
+    add('warn', 'wm尺寸', 'DisplayFrames(' + d.dfW + '×' + d.dfH + ') 与物理分辨率(' + d.initW + '×' + d.initH + ') 不一致。');
+  }
+
+  // ===== 场景⑦ 触摸排除区 =====
+  if (d.touchExcludeRegion && d.touchExcludeRegion.length) {
+    const full = (d.initW || 1080) * (d.initH || 2400);
+    const total = d.touchExcludeRegion.reduce(function (a, r) { return a + (r.r - r.l) * (r.b - r.t); }, 0);
+    add('info', '触摸排除', '存在 ' + d.touchExcludeRegion.length + ' 块触摸排除区(mTouchExcludeRegion)，合计覆盖约 ' + Math.round(total / full * 100) + '% 屏幕面积（含状态栏/导航栏/窗口装饰）。点不动/点不准时排查这些矩形是否盖住了应用可点区。');
+  }
+  return out;
+}
+
+function renderDisplayDetail(d) {
+  const content = document.getElementById('details-content');
+  if (!content) return;
+  const dp = document.getElementById('details-panel'); if (dp) dp.classList.remove('empty');
+  if (!d) { content.innerHTML = '<div class="details-section"><div class="details-section-title">🔍 选中 Display</div><div class="symptom-desc">点击左侧任意 Display 卡片查看整屏级调试信息。</div></div>'; return; }
+  let html = '';
+  html += '<div class="details-section"><div class="details-section-title">🔍 Display #' + d.displayId + (d.organized ? ' (' + weEsc(d.organized) + ')' : '') + '</div>';
+  const chips = [];
+  if (d.initW) chips.push(d.initW + '×' + d.initH + 'px');
+  if (d.dpi) chips.push(d.dpi + 'dpi');
+  if (d.rotation && d.rotation.rotation != null) chips.push('rot=' + d.rotation.rotation);
+  if (d.rotation && d.rotation.userRotationMode) chips.push('mode=' + d.rotation.userRotationMode.replace('USER_ROTATION_', ''));
+  if (d.policy && d.policy.awake != null) chips.push(d.policy.awake === 'true' ? '唤醒' : '息屏');
+  if (displayDump && displayDump.displays.length > 1) chips.push('共 ' + displayDump.displays.length + ' 屏');
+  html += '<div class="win-typefmt">' + chips.map(function (c) { return '<span class="ty-badge">' + weEsc(c) + '</span>'; }).join('') + '</div>';
+  html += '<div class="details-section"><div class="details-section-title">📐 DisplayFrames 嵌套矩形（整屏→状态栏→导航栏→安全区→挖孔）</div>';
+  html += displayOverlaySVG(d);
+  html += '<div class="symptom-desc">红=状态栏占用区，蓝=导航栏占用区，灰=configFrame 安全内容区，黑=挖孔(punch-hole)。内容被状态栏/刘海挡住、沉浸式失效时看这里。</div></div>';
+  const terSvg = displayTouchExcludeSVG(d);
+  html += '<div class="details-section"><div class="details-section-title">🖐 触摸排除区 mTouchExcludeRegion</div>';
+  if (terSvg) {
+    html += terSvg;
+    html += '<div class="symptom-desc">橙色矩形=触摸输入被排除的区域（系统栏 / 窗口装饰 / freeform·分屏窗口边界常在此出现非状态栏矩形）。应用可点区被这些矩形盖住时，会出现「点不动 / 点不准」——对比状态栏(红)与导航栏(蓝)可定位是哪块挡了。</div></div>';
+  } else {
+    html += '<div class="symptom-desc">未解析到 mTouchExcludeRegion。</div></div>';
+  }
+  const diags = diagnoseDisplay(d, (displayDump && displayDump.displays) || [d]);
+  html += '<div class="details-section"><div class="details-section-title">🔧 自动体检（6 场景字段矛盾检测）</div>';
+  if (diags.length === 0) {
+    html += '<div class="diag-empty">未检测到异常或需关注的字段组合。</div>';
+  } else {
+    html += '<div class="diag-list">';
+    diags.forEach(function (g) {
+      const ic = g.level === 'error' ? '⛔' : (g.level === 'warn' ? '⚠️' : (g.level === 'ok' ? '✅' : 'ℹ️'));
+      html += '<div class="diag-row diag-' + g.level + '"><span class="diag-ic">' + ic + '</span>'
+        + '<span class="diag-scen">' + weEsc(g.scenario) + '</span>'
+        + '<span class="diag-msg">' + weEsc(g.msg) + '</span></div>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  html += '<div class="details-section"><div class="details-section-title">🔴 核心</div>';
+  html += dRow('DisplayId', d.displayId, DISPLAY_PARAM_DICT.DisplayId);
+  html += dRow('Resolution', d.initW ? (d.initW + '×' + d.initH) : null, DISPLAY_PARAM_DICT.Resolution);
+  html += dRow('DensityDpi', d.dpi, DISPLAY_PARAM_DICT.DensityDpi);
+  html += dRow('AppSize', d.appW ? (d.appW + '×' + d.appH) : null, DISPLAY_PARAM_DICT.AppSize);
+  html += dRow('DisplayFrames', d.dfW ? ('w=' + d.dfW + ' h=' + d.dfH + ' r=' + d.dfR) : null, DISPLAY_PARAM_DICT.DisplayFrames);
+  html += dRow('Deferred', d.deferred, DISPLAY_PARAM_DICT.Deferred);
+  html += dRow('LayoutNeeded', d.layoutNeeded, DISPLAY_PARAM_DICT.LayoutNeeded);
+  html += dRow('TouchExcludeRegion', d.touchExcludeRegion ? (d.touchExcludeRegion.length + ' 块: ' + d.touchExcludeRegion.map(formatLTRB).join(' | ')) : null, DISPLAY_PARAM_DICT.TouchExcludeRegion);
+  html += dRow('CurrentFocus', d.currentFocus, DISPLAY_PARAM_DICT.CurrentFocus);
+  html += dRow('FocusedApp', d.focusedApp, DISPLAY_PARAM_DICT.FocusedApp);
+  html += dRow('Awake', d.policy ? d.policy.awake : null, DISPLAY_PARAM_DICT.Awake);
+  html += dRow('StatusBar', d.policy ? d.policy.statusBar : null, DISPLAY_PARAM_DICT.StatusBar);
+  html += dRow('NavigationBar', d.policy ? d.policy.navigationBar : null, DISPLAY_PARAM_DICT.NavigationBar);
+  html += dRow('Rotation', d.rotation ? d.rotation.rotation : null, DISPLAY_PARAM_DICT.Rotation);
+  html += dRow('DisplayCutout', d.cutout ? ('insets=' + formatLTRB(d.cutout.insets) + (d.cutout.boundingRects && d.cutout.boundingRects[0] ? ' notch=' + formatLTRB(d.cutout.boundingRects[0]) : '')) : null, DISPLAY_PARAM_DICT.DisplayCutout);
+  html += '</div>';
+  html += '<div class="details-section"><div class="details-section-title">🟡 辅助</div>';
+  html += dRow('ScreenOnFully', d.policy ? d.policy.screenOnFully : null, DISPLAY_PARAM_DICT.ScreenOnFully);
+  html += dRow('NavBarPosition', d.policy ? d.policy.navBarPosition : null, DISPLAY_PARAM_DICT.NavBarPosition);
+  html += dRow('TopIsFullscreen', d.policy ? d.policy.topIsFullscreen : null, DISPLAY_PARAM_DICT.TopIsFullscreen);
+  html += dRow('ForceShowNavBar', d.policy ? d.policy.forceShowNavBar : null, DISPLAY_PARAM_DICT.ForceShowNavBar);
+  html += dRow('LastOrientation', d.rotation ? d.rotation.lastOrientation : null, DISPLAY_PARAM_DICT.LastOrientation);
+  html += dRow('AppOrientation', d.rotation ? d.rotation.currentAppOrientation : null, DISPLAY_PARAM_DICT.AppOrientation);
+  html += dRow('UserRotation', d.rotation ? d.rotation.userRotation : null, DISPLAY_PARAM_DICT.UserRotation);
+  html += dRow('UserRotationMode', d.rotation ? d.rotation.userRotationMode : null, DISPLAY_PARAM_DICT.UserRotationMode);
+  html += dRow('RoundedCorners', d.roundedCorners ? (d.roundedCorners.length + ' 角, radius=' + d.roundedCorners[0].radius) : null, DISPLAY_PARAM_DICT.RoundedCorners);
+  html += dRow('InsetsPolicy', d.insetsPolicy ? ('status=' + d.insetsPolicy.status + ' nav=' + d.insetsPolicy.nav) : null, DISPLAY_PARAM_DICT.InsetsPolicy);
+  html += '</div>';
+  if (windowDump && windowDump.windows && windowDump.windows.length) {
+    const onScreen = windowDump.windows.filter(function (w) { return w.displayId === d.displayId; });
+    html += '<div class="details-section"><div class="details-section-title">🔗 该屏下的窗口（' + onScreen.length + '，点击跳回 Windows 视图）</div>';
+    if (onScreen.length === 0) html += '<div class="symptom-desc">当前 Windows 数据里没有挂在 Display #' + d.displayId + ' 的窗口（可能 displayId 未解析或数据不同源）。</div>';
+    onScreen.slice(0, 40).forEach(function (w) {
+      html += '<div class="corr-item"><div class="corr-head">' + weEsc(w.name || '(无名)') + (w.focused ? ' ★' : '') + '</div>'
+        + '<button class="btn tiny" onclick="jumpToWindow(\'' + w.id + '\')">看此窗口</button></div>';
+    });
+    html += '</div>';
+  }
+  html += '<div class="details-section"><div class="details-section-title">📘 参数速查</div><div class="param-dict">';
+  for (const k in DISPLAY_PARAM_DICT) { const dd = DISPLAY_PARAM_DICT[k]; html += '<div class="dict-row"><code class="dict-key">' + weEsc(k) + '</code><span class="dict-label">' + weEsc(dd.label) + '</span><span class="dict-desc">' + weEsc(dd.desc) + '</span></div>'; }
+  html += '</div></div>';
+  content.innerHTML = html;
+}
+
+function onJumpToDisplay(displayId) {
+  if (!displayDump || !displayDump.displays || !displayDump.displays.some(function (x) { return x.displayId === displayId; })) {
+    showToast('请先加载 dumpsys window displays 数据', 'error'); return;
+  }
+  switchDataSource('display');
+  currentView = 'displaylist';
+  renderDisplayDump();
+  selectDisplay('disp-' + displayId);
+}
+function jumpToWindow(wid) {
+  switchDataSource('window');
+  currentView = 'windowlist';
+  const vl = document.getElementById('view-windowlist'); if (vl) vl.style.display = '';
+  renderWindowDump();
+  if (typeof selectWindow === 'function') selectWindow(wid);
+}
 
 function parseInput() {
   const text = document.getElementById('input-textarea').value;
@@ -5080,8 +5875,13 @@ function parseInput() {
       showToast('解析成功！共 ' + (vtMeta ? vtMeta.nodeCount : nodeIndex.size) + ' 个 View 节点', 'success');
     } else if (dataSource === 'surfaceflinger') {
       parseSurfaceFlinger(text);
-      if (hwcLayers.length === 0 && (sfForest || []).length === 0) {
-        showToast('未从输出中解析到任何 Layer，请确认是 dumpsys SurfaceFlinger 输出', 'error');
+      // 同一份 dumpsys SurfaceFlinger 同时喂给 VSync 解析器 —— 全量输出里含 vsync 段，
+      // 这样「HWC 图层 / 层级树 / 离屏层级 / VSync」四个视图共用一次抓取
+      parseVsyncDump(text);
+      const hasLayers = hwcLayers.length > 0 || (sfForest || []).length > 0;
+      const hasVsync = vsyncDump && vsyncDump.schedules.length > 0;
+      if (!hasLayers && !hasVsync) {
+        showToast('未从输出中解析到任何 Layer 或 VSync 数据，请确认是 dumpsys SurfaceFlinger 输出', 'error');
         return;
       }
       currentView = 'hwc';
@@ -5095,8 +5895,14 @@ function parseInput() {
       const inputPanel = document.getElementById('input-panel');
       if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
       const headerInfo = document.getElementById('header-info');
-      if (headerInfo) headerInfo.textContent = '已解析 ' + hwcLayers.length + ' 个合成图层';
-      showToast('解析成功！共 ' + hwcLayers.length + ' 个 HWC 合成图层', 'success');
+      if (headerInfo) {
+        headerInfo.textContent = hasLayers
+          ? ('已解析 ' + hwcLayers.length + ' 个合成图层' + (hasVsync ? ' + ' + vsyncDump.schedules.length + ' 个 VsyncSchedule' : ''))
+          : ('已解析 ' + vsyncDump.schedules.length + ' 个 VsyncSchedule（本输出无 Layer，请点工具条「⏱ VSync」）');
+      }
+      showToast('解析成功！' + (hasLayers ? ('共 ' + hwcLayers.length + ' 个 HWC 合成图层') : '本输出不含图层，仅可查看 VSync')
+        + (hasVsync ? '，VSync 视图可用' : ''), 'success');
+      if (!hasLayers) { currentView = 'vsyncpanel'; renderVsyncDump(); }
     } else if (dataSource === 'window') {
       windowDump = parseWindowDump(text);
       if (windowDump.windows.length === 0) {
@@ -5120,6 +5926,22 @@ function parseInput() {
       const headerInfo = document.getElementById('header-info');
       if (headerInfo) headerInfo.textContent = '已解析 ' + windowDump.windows.length + ' 个窗口';
       showToast('解析成功！共 ' + windowDump.windows.length + ' 个窗口（' + windowDump.windows.filter(function (w) { return w.drawState === 'HAS_DRAWN'; }).length + ' 个已绘制）', 'success');
+    } else if (dataSource === 'display') {
+      parseDisplayDump(text);
+      if (!displayDump || !displayDump.displays || displayDump.displays.length === 0) {
+        showToast('未检测到有效的 Display 数据，请确认是 dumpsys window displays 输出', 'error');
+        return;
+      }
+      currentView = 'displaylist';
+      zoom = 1; panX = 0; panY = 0; applyPan(); applyZoomUI();
+      renderDisplayDump();
+      const vizPanel = document.getElementById('viz-panel');
+      if (vizPanel) vizPanel.classList.add('active');
+      const inputPanel = document.getElementById('input-panel');
+      if (inputPanel) { inputPanel.classList.add('collapsed'); syncInputToggleLabel(true); }
+      const headerInfo = document.getElementById('header-info');
+      if (headerInfo) headerInfo.textContent = '已解析 ' + displayDump.displays.length + ' 个 Display';
+      showToast('解析成功！共 ' + displayDump.displays.length + ' 个 Display', 'success');
     } else if (dataSource === 'input') {
       parseInputDump(text);
       if (!parsedInput || (parsedInput.focusedApps.length === 0 && parsedInput.focusedWindows.length === 0 && parsedInput.connections.length === 0)) {
@@ -5425,6 +6247,75 @@ function inputEventRowHtml(ev, q, connIdx, itemIdx) {
   return '<div class="q-item" ' + attr + '><span class="' + cls + '">' + esc(ev.type) + '</span><span class="q-sum">' + esc(summary) + '</span>' + (ev.age != null ? '<span class="q-age">age ' + ev.age + 'ms</span>' : '') + '</div>';
 }
 
+// ===== input 窗口解析辅助（容错分词，不依赖字段顺序/数量，适配不同设备 dumpsys input 格式）=====
+const INPUT_CONFIG_FLAGS = {
+  NOT_FOCUSABLE: '不可获得焦点（不接收输入焦点/按键）',
+  NOT_TOUCHABLE: '不接收触摸事件（触摸穿透到下层窗口）',
+  TRUSTED_OVERLAY: '可信叠加层（系统级，可覆盖并拦截输入）',
+  SLIPPERY: '滑动边界：触摸滑出本区域后转交相邻窗口',
+  WATCH_OUTSIDE_TOUCH: '接收区域外的 ACTION_OUTSIDE 触摸（区域内不拦截）',
+  SPY: '间谍窗口：可见所有触摸但不消费（用于手势监听）',
+  PREVENT_SPLITTING: '阻止多窗口分屏切割该窗口',
+  INTERCEPT_FINISHED: '已完成拦截',
+  DUPLICATE_TOUCH_TO_WALLPAPER: '触摸同时复制到壁纸',
+  NON_APPLICATION_OVERLAY: '非应用层叠加'
+};
+// 按逗号切分键值对，但尊重 [ ] 与 < > 内的逗号（frame / touchableRegion / token 含逗号或尖括号）
+function splitInputKV(line) {
+  const parts = []; let depth = 0, cur = '', inAng = false;
+  for (let i = 0; i < line.length; i++) {
+    const ch = line[i];
+    if (ch === '[') depth++;
+    else if (ch === ']') depth--;
+    else if (ch === '<') inAng = true;
+    else if (ch === '>') inAng = false;
+    if (ch === ',' && depth === 0 && !inAng) { parts.push(cur); cur = ''; }
+    else cur += ch;
+  }
+  if (cur.trim()) parts.push(cur);
+  const map = {};
+  parts.forEach(function (p) {
+    const eq = p.indexOf('=');
+    if (eq > 0) { const k = p.slice(0, eq).trim(); if (k) map[k] = p.slice(eq + 1).trim(); }
+  });
+  return map;
+}
+function parseInputWindowLine(wl, idx) {
+  const eq = wl.indexOf(':');
+  const rest = (eq >= 0 ? wl.slice(eq + 1) : wl).trim();
+  const kv = splitInputKV(rest);
+  const num = function (k) { const v = kv[k]; return (v == null || v === '') ? null : parseInt(v, 10); };
+  return {
+    idx: idx,
+    name: (kv['name'] || '').trim(),
+    id: num('id'),
+    displayId: num('displayId'),
+    inputConfig: (kv['inputConfig'] || '').trim(),
+    alpha: kv['alpha'] || '',
+    frame: (kv['frame'] || '').trim(),
+    globalScale: kv['globalScale'] || '',
+    appName: (kv['applicationInfo.name'] || '').trim(),
+    appToken: (kv['applicationInfo.token'] || '').trim(),
+    touchableRegion: (kv['touchableRegion'] || '').trim(),
+    ownerPid: num('ownerPid'),
+    ownerUid: num('ownerUid'),
+    dispatchTimeout: kv['dispatchingTimeout'] ? parseInt((kv['dispatchingTimeout'] + '').replace(/ms.*$/, ''), 10) : null,
+    token: (kv['token'] || '').trim(),
+    touchOcclusionMode: (kv['touchOcclusionMode'] || '').trim(),
+    transformRaw: ''
+  };
+}
+function parseRectList(str) {
+  if (!str || str === '<empty>') return [];
+  const re = /\[(\d+),(\d+)\]\[(\d+),(\d+)\]/g; let m, out = [];
+  while ((m = re.exec(str))) out.push({ x1: +m[1], y1: +m[2], x2: +m[3], y2: +m[4] });
+  return out;
+}
+function decodeInputConfig(str) {
+  if (!str) return [];
+  return str.split('|').map(function (s) { s = s.trim(); return { flag: s, desc: INPUT_CONFIG_FLAGS[s] || '（未知标志）' }; });
+}
+
 function parseInputDump(text) {
   parsedInput = null;
   const model = {
@@ -5435,7 +6326,7 @@ function parseInputDump(text) {
     pendingEvent: '', pendingEventItems: [], recentQueue: { length: 0, raw: '', items: [] },
     connections: [], devices: { count: 0, list: [] },
     monitors: { displayId: null, global: [], gesture: [] },
-    anr: { present: false }
+    anr: { present: false }, windowDisplays: []
   };
   let m;
   if ((m = text.match(/^\s*Interactive:\s*(true|false)/m))) model.interactive = (m[1] === 'true');
@@ -5551,6 +6442,46 @@ function parseInputDump(text) {
       waitDuration: ((a.match(/WaitDuration:\s*([^\n]+)/) || [])[1] || '').trim()
     };
   }
+  // 输入窗口清单（Input Dispatcher State 的 Windows: 段，每个 Display 一组；容错分词解析，适配不同设备 dumpsys input 格式）
+  const dispRe = /  Display: (\d+)\s*\n\s*logicalSize=([^\n]+)[\s\S]*?Windows:\s*\n([\s\S]*?)(?=\n  [A-Z][\w ]+?:|\n\s*$)/g;
+  let dpm;
+  while ((dpm = dispRe.exec(text))) {
+    const logicalSize = dpm[2].trim();
+    const wblock = dpm[3];
+    const lines = wblock.split('\n');
+    const wins = []; let cur = null;
+    lines.forEach(function (wl) {
+      const wm = wl.match(/^\s*(\d+):\s*name=/);
+      if (wm) {
+        if (cur) wins.push(cur);
+        cur = parseInputWindowLine(wl, parseInt(wm[1], 10));
+      } else if (cur) {
+        if (/^\s*transform\s*\(/.test(wl)) cur.transformRaw = (cur.transformRaw ? cur.transformRaw + '\n' : '') + wl.trim();
+        else if (/^\s*[\d.\-]+\s+[\d.\-]+\s+[\d.\-]+/.test(wl) && cur.transformRaw) cur.transformRaw += '\n' + wl.trim();
+      }
+    });
+    if (cur) wins.push(cur);
+    if (wins.length) model.windowDisplays.push({ displayId: parseInt(dpm[1], 10), logicalSize: logicalSize, windows: wins });
+  }
+  // 输入设备 Affine Transformation（Input Reader State 段，触摸设备才有 X/Y scale）
+  const irsM = text.match(/Input Reader State[^\n]*:\s*\n([\s\S]*?)(?=\n  NextTimeout:|\n  Configuration:|\nPointerChoreographer:|\nInput Processor State:)/);
+  if (irsM) {
+    const irsText = irsM[1];
+    const devHdr = /  Device (-?\d+):\s*(\S+)/g; let hm2;
+    const hdrs = [];
+    while ((hm2 = devHdr.exec(irsText))) hdrs.push({ idx: hm2.index, id: hm2[1], name: hm2[2] });
+    for (let hi = 0; hi < hdrs.length; hi++) {
+      const start = hdrs[hi].idx;
+      const end = (hi + 1 < hdrs.length) ? hdrs[hi + 1].idx : irsText.length;
+      const blk = irsText.slice(start, end);
+      const af = blk.match(/Affine Transformation:\s*\n\s*X scale:\s*([\d.]+)[\s\S]*?Y scale:\s*([\d.]+)/);
+      const vpt = blk.match(/Viewport INTERNAL: displayId=(\d+)/);
+      const xm = af ? parseFloat(af[1]) : null, ym = af ? parseFloat(af[2]) : null;
+      const dev = model.devices.list.find(function (d) { return d.name === hdrs[hi].name; });
+      if (dev) { dev.xScale = xm; dev.yScale = ym; dev.viewportDisplayId = vpt ? parseInt(vpt[1], 10) : null; }
+      else model.devices.list.push({ id: hdrs[hi].id, name: hdrs[hi].name, classes: '', xScale: xm, yScale: ym, viewportDisplayId: vpt ? parseInt(vpt[1], 10) : null });
+    }
+  }
   parsedInput = model;
   return model;
 }
@@ -5598,14 +6529,19 @@ function loadSelectedSample() {
           ? (WINDOWCONTAINER_SAMPLES[version] || WINDOWCONTAINER_SAMPLES['default'])
           : dataSource === 'viewtop'
             ? (VIEW_TOP_SAMPLES[version] || VIEW_TOP_SAMPLES['14'] || VIEW_TOP_SAMPLES['default'])
-            : (SAMPLES[version] || null);
+            : dataSource === 'display'
+              ? (DISPLAY_SAMPLES[version] || DISPLAY_SAMPLES['default'])
+              : (SAMPLES[version] || null);
   if (!sample) {
-    showToast(dataSource === 'surfaceflinger' ? '未找到 SurfaceFlinger 示例数据'
-      : (dataSource === 'window' ? '未找到 Window 示例数据'
-    : (dataSource === 'activities' ? '未找到 Activities 示例数据'
-        : (dataSource === 'amstack' ? '未找到 Stack List 示例数据'
-          : (dataSource === 'windowcontainers' ? '未找到 Window Containers 示例数据'
-            : (dataSource === 'viewtop' ? '未找到 View Top 示例数据' : '请先选择目标 Android 版本'))))), 'error');
+    let _msg = '请先选择目标 Android 版本';
+    if (dataSource === 'surfaceflinger') _msg = '未找到 SurfaceFlinger 示例数据';
+    else if (dataSource === 'window') _msg = '未找到 Window 示例数据';
+    else if (dataSource === 'activities') _msg = '未找到 Activities 示例数据';
+    else if (dataSource === 'amstack') _msg = '未找到 Stack List 示例数据';
+    else if (dataSource === 'windowcontainers') _msg = '未找到 Window Containers 示例数据';
+    else if (dataSource === 'viewtop') _msg = '未找到 View Top 示例数据';
+    else if (dataSource === 'display') _msg = '未找到 Display 示例数据';
+    showToast(_msg, 'error');
     return;
   }
   const ta = document.getElementById('input-textarea');
@@ -10491,6 +11427,11 @@ var DATA_SOURCE_GROUPS = [
         id: 'window', label: 'Windows', icon: '🖼', cmd: 'dumpsys window windows', view: 'windowlist',
         desc: '每个 Window 的布局与 5 种 mDrawState 绘制状态（NO_SURFACE → HAS_DRAWN）。适用：窗口绘制卡顿/未上屏。',
         paste: '在此粘贴 dumpsys window windows 输出...\n\n1. adb shell dumpsys window windows\n2. 复制含 “Window #N Window{...}” 的窗口段落\n3. 点击「解析」查看窗口图层与 5 种 mDrawState 状态\n4. 或点「加载示例数据」'
+      },
+      {
+        id: 'display', label: 'Display', icon: '📺', cmd: 'dumpsys window displays', view: 'displaylist',
+        desc: '每个 Display 的整屏级信息：分辨率/DPI、旋转/方向、挖孔屏与圆角、状态栏/导航栏、多屏、灭屏/唤醒。含 DisplayFrames 嵌套矩形叠加图与窗口视图双向联动。',
+        paste: '在此粘贴 dumpsys window displays 输出...\n\n1. adb shell dumpsys window displays\n2. 复制完整输出（含 WINDOW MANAGER DISPLAY CONTENTS 段）\n3. 点击「解析」查看整屏级调试信息\n4. 或点「加载示例数据」'
       }
     ]
   },
@@ -10501,7 +11442,7 @@ var DATA_SOURCE_GROUPS = [
       {
         id: 'surfaceflinger', label: 'SurfaceFlinger', icon: '🖥', cmd: 'dumpsys SurfaceFlinger', view: 'hwc',
         desc: '独立 native 进程的真实合成图层（扁平，无 task 嵌套）。HWC 合成预览 / 层级树（层级树 A14+）。',
-        paste: '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」'
+        paste: '在此粘贴 dumpsys SurfaceFlinger 输出...\n\n1. adb shell dumpsys SurfaceFlinger\n2. 复制含 “+ Layer” 的图层段落\n3. 点击「解析」查看真实 HWC 合成预览\n4. 或点「加载示例数据」\n\n提示：这份输出里同时含 HWC 图层、层级树与 VSync 调度信息，解析后可用工具条上的「🖥 HWC 合成预览 / 🌳 层级树 / 🌑 离屏层级 / ⏱ VSync」四个按钮切换查看。'
       }
     ]
   },
@@ -10694,11 +11635,14 @@ function updateDataSourceUI() {
   const vst = document.getElementById('view-sftree');
   const vso = document.getElementById('view-sfoff');
   const vl = document.getElementById('view-windowlist');
+  const vv = document.getElementById('view-vsync');
   if (vw) vw.style.display = (dataSource === 'amstack') ? 'none' : (isTreeDs ? '' : 'none');
-  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack' || dataSource === 'input') ? 'none' : ''; // HWC 合成预览：containers/windowcontainers 推导（仅容器树有几何）、surfaceflinger 真实；activities/window/amstack/input 无完整几何故隐藏
+  if (vh) vh.style.display = (dataSource === 'activities' || dataSource === 'window' || dataSource === 'amstack' || dataSource === 'input' || dataSource === 'display') ? 'none' : ''; // HWC 合成预览：仅 surfaceflinger 真实图层合成；containers/windowcontainers 由容器树推导几何；activities/window/amstack/input/display 无 HWC 合成语境故隐藏
   if (vst) vst.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vso) vso.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   if (vl) vl.style.display = (dataSource === 'window') ? '' : 'none';
+  // VSync 视图：与 HWC/层级树/离屏同属 SurfaceFlinger 数据的四种看法（一份全量 dump 两源复用）
+  if (vv) vv.style.display = (dataSource === 'surfaceflinger') ? '' : 'none';
   // 树工具（展开/折叠/定位 Resumed）：窗口树类数据源（containers/activities/windowcontainers）
   const showTreeTools = isTreeDs || (dataSource === 'surfaceflinger' && (currentView === 'sf-tree' || currentView === 'sf-offscreen'));
   const showWin = (dataSource !== 'amstack' && dataSource !== 'viewtop') && isTreeDs;
@@ -10730,6 +11674,9 @@ function updateDataSourceUI() {
   // View Top 模式下 tree-panel 不平移画布，游标恢复默认（Scroll bug 修复配套）
   const tp = document.getElementById('tree-panel');
   if (tp) tp.classList.toggle('vt-mode', dataSource === 'viewtop');
+  // 状态诊断浮层随数据源/视图同步显隐（switchDataSource 清数据后不会走 renderTree，
+  // 若不在此处调用，activities 的「状态诊断」会残留在其他数据源的画布上）
+  if (typeof renderActivitiesPanel === 'function') renderActivitiesPanel();
   // 同步 View Top 模式按钮（切入 viewtop 时回到大纲视图）
   if (dataSource === 'viewtop') {
     vtViewMode = 'outline';
@@ -11870,7 +12817,10 @@ function buildActivitiesPanelHtml(d) {
 
   h += '<div class="ad-anchors">';
   const card = function (k, v, cls) {
-    return '<div class="ad-anchor"><div class="ad-ak">' + k + '</div><div class="ad-av ' + (cls || '') + '">' + escHtml(String(v)) + '</div></div>';
+    const s = String(v);
+    // 锚点值（如 ResumedActivity 组件名）可能超过 3 行被截断：title 悬停看全文，点击展开/收起
+    const t = s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return '<div class="ad-anchor"><div class="ad-ak">' + k + '</div><div class="ad-av ' + (cls || '') + ' clamp" title="' + t + '（点击展开/收起全文）" onclick="this.classList.toggle(\'expanded\')">' + escHtml(s) + '</div></div>';
   };
   h += card('ResumedActivity', d.anchorResumedText, 'resumed');
   h += card('mFocusedApp', d.anchorFocusedText, 'focused');
@@ -12046,6 +12996,16 @@ function renderWindowCard(w) {
     badges.appendChild(vBadge);
   }
   body.appendChild(badges);
+
+  // 跨源联动：从窗口卡片一键跳到「整屏级 Display 调试视图」（需已加载 dumpsys window displays 数据）
+  if (w.displayId != null) {
+    const jb = document.createElement('button');
+    jb.className = 'btn tiny win-jump';
+    jb.textContent = '📺 看 Display ' + w.displayId;
+    jb.title = '跳转到整屏级 Display 调试视图（dumpsys window displays）';
+    jb.onclick = function (e) { e.stopPropagation(); onJumpToDisplay(w.displayId); };
+    body.appendChild(jb);
+  }
 
   // 在卡片上直接显示 ty(窗口类型) 与 fmt(像素格式) 的真实取值，无需点开详情（用户要求：卡片上显示 ty 类型值）
   if (w.attrsType || w.attrsFormat) {
@@ -12288,6 +13248,990 @@ function renderWindowStats() {
 }
 
 const SF_SAMPLES = {};
+
+
+/* ========================================================================
+   dumpsys SurfaceFlinger --vsync / --dispsync 解析（A14+ 与 A9–A13）
+   段归属靠「段名锚点」而非纯缩进：聊天/编辑器传输可能吃掉 tab，纯缩进会整段失配。
+   缩进只用于两处：①Callbacks 下线程名与字段的配对 ②无段名时的兜底归属。
+   ======================================================================== */
+let vsyncDump = { schedules: [], meta: {} };
+
+const VSYNC_SECTION_RE = [
+  ['controller', /^Vsync\s*(?:Controller|Reactor):?\s*$/i],   // A14 与 AOSP13 用 VsyncController；小米 13 的 --dispsync 用 VSyncReactor
+  ['tracker', /^VSync\s*Tracker:?\s*$/i],
+  ['rateMap', /^Refresh\s+Rate\s+Map:?\s*$/i],
+  ['dispatch', /^Vsync\s*Dispatch:?\s*$/i],                    // A14 打印 VsyncDispatch，A13 打印 VSyncDispatch（大小写不敏感已覆盖）
+  ['timer', /^Timer:?\s*$/i],
+  ['callbacks', /^Callbacks:?\s*$/i],
+  ['phase', /^Phases?:?\s*$/i]
+];
+const VSYNC_SCHEDULE_RE = /^VsyncSchedule\s+for\s+pacesetter\s+(\S+?):?\s*$/i;
+// AOSP 全量 dump 里 VsyncSchedule 块之后的固定分隔符 —— 见到就停止解析 vsync 段，
+// 否则后面的 Layer Hierarchy / Composition list 会被当成 vsync 字段吞进 Callbacks。
+// ⚠️ 实测只有 A14 全量打印它；A12/A13 全量没有 → 只能当补充边界，不能当唯一边界。
+const VSYNC_HARD_STOP_RE = /^SurfaceFlinger\s+New\s+Frontend\b/i;
+// A12/A13 全量里 vsync 段之后紧跟的段名（A12 实测第 129 行 `Static screen stats:`，
+// A13 全量同位置）。这些段名是「后续与 vsync 无关」的强信号，且比白名单更早生效 ——
+// 白名单只拦含 `=` 的行，而图层块的 `* Layer 0x... (Surface(name=...)` 之类行不含 `=`
+// 的变体、以及 Composition layers / HWC 表等裸文本会走裸行分支被塞进 rawLines。
+const VSYNC_AFTER_BLOCK_RE = /^(?:Static\s+screen\s+stats|Buffering\s+stats|Composition\s+layers|Visible\s+layers|Displays\s*\(|TimeStats\s+miniDump|Offscreen\s+Layers|GraphicBufferAllocator\s+buffers|ClientCache\s+state|SurfaceFlinger\s+global\s+state|TimeStats|Dumping\s+buffer\s+ids|Skia'?s?\s+\w+|RenderEngine\s+shaders|Texture\/RenderBuffer|Imported\s+gralloc\s+buffers)\b/i;
+const VSYNC_THREAD_SLOT = { app: 'app', appsf: 'appSf', sf: 'sf' };
+const VSYNC_SUFFIX_RE = /\s+(from now|ago|relative to now)$/i;
+
+// 跨版本字段别名：匹配用归一化槽位，显示用 nameRaw 里的数据原名。
+// 依据 6 份真实样本实测（A13 小米 / A13 AOSP / A14 LineageOS21，各含 --dispsync 与 --vsync）。
+const VSYNC_FIELD_ALIAS = {
+  mLastHWCVsyncState: 'hwVsyncState',        // A13（仅 AOSP 13 --vsync 打印）→ A14 的 hwVsyncState
+  mHWCVsyncPendingState: 'pendingHwVsyncState',
+  earliestVsync: 'vsyncRef',                 // A13 → A14 的 lastVsync
+  lastVsync: 'vsyncRef',
+  mPeriodTransitioningTo: 'modePtrTransitioningTo',  // A13 → A14 的 mModePtrTransitioningTo
+  mModePtrTransitioningTo: 'modePtrTransitioningTo',
+  mIdealPeriod: 'idealPeriodMs'              // A13 的当前周期 → A14 用 mDisplayModePtr.vsyncRate
+};
+// vsync 段内允许出现的 k=v 键白名单（全部来自 6 份真实样本，非猜测）。
+// 段内出现白名单外的键 → 判定该段已结束（这正是全量 dump 污染的来源：
+// Layer 块的 visible reason= / buffer= / bounds= 等会被误当成 vsync 字段）。
+const VSYNC_KEY_ALLOW = {
+  hwVsyncState: 1, pendingHwVsyncState: 1, mLastHWCVsyncState: 1, mHWCVsyncPendingState: 1,
+  mInternalIgnoreFences: 1, mExternalIgnoreFences: 1, mMoreSamplesNeeded: 1, mPeriodConfirmationInProgress: 1,
+  modePtrTransitioningTo: 1, mPeriodTransitioningTo: 1, mModePtrTransitioningTo: 1,
+  mDisplayModePtr: 1, idealPeriodMs: 1, mIdealPeriod: 1,
+  debugState: 1, DebugState: 1, mTimerSlack: 1, mMinVsyncDistance: 1, mIntendedWakeupTime: 1,
+  mLastTimerCallback: 1, mLastTimerSchedule: 1,
+  workDuration: 1, readyDuration: 1, vsyncRef: 1, lastVsync: 1, earliestVsync: 1, mLastDispatchTime: 1
+};
+// phase / duration 统计行：空格对齐的两列表格，不是 k=v
+//   "            app phase:      1000000 ns         SF phase:     -4000000 ns"
+//   "       present offset:         0 ns     VSYNC period:   8333333 ns"
+const VSYNC_STAT_RE = /^\s*([A-Za-z][A-Za-z0-9_ ]{0,24}?):\s+(-?\d+)\s*ns(?:\s+([A-Za-z][A-Za-z0-9_ ]{0,24}?):\s+(-?\d+)\s*ns)?\s*$/;
+const VSYNC_STAT_SLOT = {
+  'app phase': ['phase', 'app'], 'sf phase': ['phase', 'sf'],
+  'early app phase': ['phase', 'earlyApp'], 'early sf phase': ['phase', 'earlySf'],
+  'gl early app phase': ['phase', 'glEarlyApp'], 'gl early sf phase': ['phase', 'glEarlySf'],
+  'app duration': ['duration', 'app'], 'sf duration': ['duration', 'sf'],
+  'early app duration': ['duration', 'earlyApp'], 'early sf duration': ['duration', 'earlySf'],
+  'gl early app duration': ['duration', 'glEarlyApp'], 'gl early sf duration': ['duration', 'glEarlySf'],
+  'hwc min duration': ['hwcMinDurationNs', null], 'present offset': ['presentOffsetNs', null],
+  'vsync period': ['vsyncPeriodNs', null]
+};
+
+// AOSP 会把多个键值对写在一行，且值可带空格后缀：
+//   mTimerSlack: 0.50ms mMinVsyncDistance: 3.00ms
+//   workDuration: 16.57ms readyDuration: 0.00ms lastVsync: -1430186.88ms relative to now
+// 值 = 从本键起始到「下一个键起始」或行尾，故必须先定位全部键起点再切分。
+function vsyncScanKv(line) {
+  const re = /(^|\s)([A-Za-z_][A-Za-z0-9_.]*)\s*[:=]\s*/g;
+  const starts = [];
+  let m;
+  while ((m = re.exec(line)) !== null) {
+    starts.push({ key: m[2], at: m.index + m[1].length, valStart: m.index + m[0].length });
+    if (re.lastIndex === m.index) re.lastIndex++;
+  }
+  const out = [];
+  for (let i = 0; i < starts.length; i++) {
+    const end = (i + 1 < starts.length) ? starts[i + 1].at : line.length;
+    const raw = line.slice(starts[i].valStart, end).trim();
+    if (!raw) continue;
+    const o = { value: raw, num: null, unit: '', suffix: '' };
+    let v = raw;
+    const sf = v.match(VSYNC_SUFFIX_RE);
+    if (sf) { o.suffix = sf[1]; v = v.slice(0, sf.index).trim(); }
+    const nm = v.match(/^(-?[\d.]+)\s*(ms|ns|Hz|fps)?/);
+    if (nm) { o.num = parseFloat(nm[1]); o.unit = nm[2] || ''; }
+    out.push({ key: starts[i].key, o: o });
+  }
+  return out;
+}
+
+function vsyncNewNode(label) { return { label: label, fields: {}, rawLines: [] }; }
+
+function vsyncPut(node, key, o) {
+  let k = VSYNC_FIELD_ALIAS[key] || key;
+  if (!node.fields[k]) node.fields[k] = { nameRaw: key, value: o.value, num: o.num, unit: o.unit, suffix: o.suffix };
+  else { node.fields[k].value = o.value; node.fields[k].num = o.num; node.fields[k].unit = o.unit; node.fields[k].suffix = o.suffix; }
+  return node.fields[k];
+}
+
+function vsyncParseBrace(raw) {
+  // mDisplayModePtr={id=1, hwcId=1, resolution=1080x2400, vsyncRate=60.00 Hz, ...}
+  const out = {};
+  const m = String(raw).match(/=\s*\{([^}]*)\}/);
+  if (!m) return out;
+  m[1].split(',').forEach(function (seg) {
+    const i = seg.indexOf('=');
+    if (i < 0) return;
+    out[seg.slice(0, i).trim()] = seg.slice(i + 1).trim();
+  });
+  const dm = out['resolution'] ? String(out['resolution']).match(/^(\d+)x(\d+)$/) : null;
+  if (dm) { out['width'] = parseInt(dm[1], 10); out['height'] = parseInt(dm[2], 10); }
+  const vr = out['vsyncRate'] ? String(out['vsyncRate']).match(/^([\d.]+)/) : null;
+  // vsyncRateRaw 保留原值的数值字符串（'60.00'），渲染时拼单位 → 忠实显示 60.00 而不是 parse 后的 60
+  if (vr) { out['vsyncRateRaw'] = vr[1]; out['vsyncRate'] = parseFloat(vr[1]); }
+  return out;
+}
+
+// 字典查表：先精确、再忽略大小写（AOSP 里既有 debugState 也有 DebugState 这类大小写差异）
+function vsyncDictFor(key, nameRaw) {
+  if (VSYNC_PARAM_DICT[key]) return VSYNC_PARAM_DICT[key];
+  if (nameRaw && VSYNC_PARAM_DICT[nameRaw]) return VSYNC_PARAM_DICT[nameRaw];
+  const lower = String(key || '').toLowerCase();
+  const hit = Object.keys(VSYNC_PARAM_DICT).filter(function (k) { return k.toLowerCase() === lower; })[0];
+  return hit ? VSYNC_PARAM_DICT[hit] : null;
+}
+
+function parseVsyncDump(text) {
+  vsyncDump = { schedules: [], timing: {}, sourceStates: [], scheduler: { present: false, layerHistory: null }, screenOff: { present: false, byRate: {} }, meta: { indentDetected: null, callbackOrder: [], hasPhases: false, hasVsyncDispatch: false, hasTimingStats: false, inSchedulerSection: false, preamble: [] } };
+  const lines = String(text).split('\n');
+  let cur = null, sect = null, thread = null;
+  let sawAnyIndent = false, flatContent = false;
+
+  // A13 没有 VsyncSchedule 外壳，遇到第一个段名时开一个匿名块（pacesetterId 留 null）
+  const newSchedule = function (id, raw) {
+    cur = {
+      pacesetterId: id || null, pacesetterRaw: raw || null,
+      hwVsyncState: null, pendingHwVsyncState: null,
+      controller: vsyncNewNode('VsyncController'),
+      tracker: vsyncNewNode('VSyncTracker'),
+      refreshRateMap: [],
+      dispatch: { timer: vsyncNewNode('Timer'), callbacks: {} },
+      phases: vsyncNewNode('Phases'),
+      raw: ''
+    };
+    vsyncDump.schedules.push(cur);
+    sect = null; thread = null;
+  };
+  const putAll = function (node, pairs) {
+    pairs.forEach(function (p) { vsyncPut(node, p.key, p.o); });
+  };
+  const nodeOf = function () {
+    if (sect === 'timer') return cur.dispatch.timer;
+    if (sect === 'tracker') return cur.tracker;
+    if (sect === 'controller') return cur.controller;
+    if (sect === 'phase') return cur.phases;
+    if (sect === 'callbacks' && thread) return cur.dispatch.callbacks[thread];
+    return null;
+  };
+  // 开关字段是全局量，不属于任何段：任何段内都要先摘出来
+  const takeSwitchFields = function (pairs) {
+    const rest = [];
+    pairs.forEach(function (p) {
+      if (/^(hwVsyncState|pendingHwVsyncState|mLastHWCVsyncState|mHWCVsyncPendingState)$/i.test(p.key)) {
+        if (/pending/i.test(p.key)) cur.pendingHwVsyncState = p.o.value;
+        else cur.hwVsyncState = p.o.value;
+      } else rest.push(p);
+    });
+    return rest;
+  };
+  // phase / duration 统计行 → 全局 timing（AOSP 每个 dump 只打印一份，不属于单个 pacesetter）
+  const takeStatLine = function (t) {
+    const m = t.match(VSYNC_STAT_RE);
+    if (!m) return false;
+    const put = function (label, num) {
+      if (label == null) return;
+      const slot = VSYNC_STAT_SLOT[label.toLowerCase()];
+      if (!slot) return;
+      if (slot[1]) { if (!vsyncDump.timing[slot[0]]) vsyncDump.timing[slot[0]] = {}; vsyncDump.timing[slot[0]][slot[1]] = num; }
+      else vsyncDump.timing[slot[0]] = num;
+      vsyncDump.meta.hasTimingStats = true;
+    };
+    put(m[1], parseInt(m[2], 10));
+    if (m[3]) put(m[3], parseInt(m[4], 10));
+    return true;
+  };
+
+  // per-display vsync 源状态行（A9~A16 全版本实测，形如）
+  //   app: state=SyntheticVSync VSyncState={displayId=4630946480857061761, count=2542738, synthetic}
+  //   app: state=Idle           VSyncState={displayId=..., count=151369}   ← 无 synthetic 字段
+  // 打印处EventThread.cpp:737，取值定义 :766-776，状态迁移逻辑 :523-527：
+  //   mState = mVSyncState->synthetic ? State::SyntheticVSync : State::VSync;  有人要 vsync 时
+  //   mState = State::Idle;                                                     没人要时
+  // ⇒ **这是「硬件 vsync 是否真在跑」最权威、且跨版本覆盖最广的判据**：
+  //   有 synthetic 标记 ⇒ 软件合成，硬件 vsync 没在跑
+  //   无 synthetic 标记 ⇒ 真实硬件 vsync
+  //   state=Idle 只表示当前无客户端请求，不能据此断言硬件开关（count 是否在涨才是通道活跃度）
+  // A14/A13 才有显式 hwVsyncState 字段，A9~A13 全靠这一行。
+  const VSYNC_SRC_STATE_RE = /^(app|sf|display|compositor)\s*:\s*state=([A-Za-z]+)\s+VSyncState=\{([^}]*)\}\s*$/i;
+  const takeSourceState = function (t) {
+    const m = t.match(VSYNC_SRC_STATE_RE);
+    if (!m) return false;
+    const isSyn = /synthetic/i.test(m[3]);
+    const stateRaw = m[2];
+    // kind 归一：**synthetic 标记的有无是硬证据，优先于 stateRaw 字面值**
+    //   带synthetic → 软件合成（State::SyntheticVSync）
+    //   无 synthetic → 真实硬件 vsync（State::VSync）；即使 stateRaw 是 Idle 也如此
+    //   （Idle 只表示当前无客户端请求，不代表 vsync 源是软件合成的）
+    const kind = (/synthetic/i.test(stateRaw)) ? 'synthetic' : (isSyn ? 'synthetic' : 'hw');
+    const info = { source: m[1], state: stateRaw, stateRaw: stateRaw, kind: kind, raw: t, synthetic: isSyn };
+    const dc = m[3].match(/displayId=(\d+)/);
+    if (dc) info.displayId = dc[1];
+    const ct = m[3].match(/count=(\d+)/);
+    if (ct) info.count = parseInt(ct[1], 10);
+    vsyncDump.sourceStates.push(info);
+    return true;
+  };
+
+  // ── Scheduler: 段（A9~A14 都有，此前从未解析）──
+  // 两种形态（A12/A13 与 A14 完全不同，详见样本对照）：
+  //   A12/A13：`Scheduler:` + `+  Idle timer: off` / `+  Touch timer: 200 ms` / `+  Content detection: off LayerHistory{size=120, active=107}`
+  //   A14   ：`Scheduler:` + `Features`(PresentFences/KernelIdleTimer/ContentDetection) + `Policy`(pacesetterDisplayId/layerHistory/touchTimer/displayPowerTimer)
+  // 结束边界：`Frame Rate Overrides` / `Display identification data` / 下一个顶层段名
+  const takeSchedulerLine = function (t, S) {
+    // A12/A13 形态
+    let m = t.match(/^\+\s*Idle timer:\s*(.+)$/i);
+    if (m) { S.idleTimer = m[1].trim(); return true; }
+    m = t.match(/^\+\s*Touch timer:\s*(.+)$/i);
+    if (m) { S.touchTimer = m[1].trim(); return true; }
+    m = t.match(/^\+\s*Content detection:\s*(\S+)\s*(.*)$/i);
+    if (m) {
+      // A14: `ContentDetection=false`（布尔）；A12/A13: `Content detection: off`（字符串）。
+      // 同一开关的两种表示，落同一槽位；值形态不同由 UI 层 boolTxt 统一显示。
+      S.contentDetection = m[1].trim();
+      const lh = m[2] && m[2].match(/LayerHistory\{size=(\d+),\s*active=(\d+)\}/i);
+      if (lh) S.layerHistory = { size: parseInt(lh[1], 10), active: parseInt(lh[2], 10) };
+      return true;
+    }
+    // A14 Features 形态（键名保持驼峰，仅匹配时忽略大小写）
+    // ContentDetection 归一到 contentDetection —— A12 的 `Content detection: off`
+    // 与 A14 的 `ContentDetection=false` 是同一个开关，必须落同一槽位，否则 UI 会重复渲染两遍。
+    m = t.match(/^\s*(PresentFences|KernelIdleTimer|ContentDetection)\s*=\s*(\S+)\s*$/i);
+    if (m) {
+      const canon = { presentfences: 'presentFences', kernelidletimer: 'kernelIdleTimer', contentdetection: 'contentDetection' };
+      S[canon[m[1].toLowerCase()] || m[1]] = (m[2] === 'true');
+      return true;
+    }
+    // A14 Policy 形态
+    m = t.match(/^\s*pacesetterDisplayId\s*=\s*(\S+)\s*$/i);
+    if (m) { S.pacesetterDisplayId = m[1]; return true; }
+    m = t.match(/^\s*layerHistory\s*=\s*\{size=(\d+),\s*active=(\d+)\}\s*$/i);
+    if (m) { S.layerHistory = { size: parseInt(m[1], 10), active: parseInt(m[2], 10) }; return true; }
+    m = t.match(/^\s*touchTimer\s*=\s*(\S+\s*(?:ms|us|ns)?)\s*$/i);
+    if (m) { S.touchTimer = m[1].trim(); return true; }
+    m = t.match(/^\s*displayPowerTimer\s*=\s*(\S+)\s*$/i);
+    if (m) { S.displayPowerTimer = m[1]; return true; }
+    m = t.match(/^FrameRateOverrides\s*=\s*(\S+)\s*$/i);
+    if (m) { S.frameRateOverrides = m[1]; return true; }
+    return false;
+  };
+
+  // ScreenOff / 各刷新率累计时长（A14 全量实测；A12 真机也有 ScreenOff 行）
+  //   ScreenOff: 1d08:56:04.591
+  //   120.00 Hz: 0d00:00:07.353
+  const VSYNC_SCREENOFF_RE = /^ScreenOff:\s*(\S+)\s*$/i;
+  const VSYNC_RATE_ACC_RE = /^(\d+\.\d+)\s*(?:Hz|fps)\s*:\s*(\S+)\s*$/i;
+  const takeScreenOff = function (t) {
+    const S = vsyncDump.screenOff;
+    let m = t.match(VSYNC_SCREENOFF_RE);
+    if (m) { S.total = m[1]; return true; }
+    m = t.match(VSYNC_RATE_ACC_RE);
+    if (m) { S.byRate[m[1]] = m[2]; return true; }
+    return false;
+  };
+
+  for (let li = 0; li < lines.length; li++) {
+    const line = lines[li];
+    if (!line.trim()) continue;
+    // AOSP 全量 dump 的段分隔符：之后的内容与 vsync 无关，直接停止
+    if (VSYNC_HARD_STOP_RE.test(line.trim())) { vsyncDump.meta.hardStopped = true; break; }
+    // A12/A13 全量没有上面那个分隔符，但 vsync 段之后紧跟的段名同样可靠（A12 实测
+    // `Static screen stats:`），且比键白名单更早生效 —— 白名单只拦含 `=` 的键值行，
+    // 而后面的图层/HWC/buffer 表大量是不含 `=` 的裸文本，会走裸行分支堆进 rawLines。
+    if (cur && VSYNC_AFTER_BLOCK_RE.test(line.trim())) { vsyncDump.meta.afterBlockStopped = true; break; }
+    const tabs = (line.match(/^\t*/) || [''])[0].length;
+    const sp = (line.match(/^ */) || [''])[0].length;
+    if (tabs > 0 || sp >= 2) sawAnyIndent = true;
+    const t = line.trim();
+
+    const sm = t.match(VSYNC_SCHEDULE_RE);
+    if (sm) { newSchedule(sm[1], t); continue; }
+    // per-display vsync 源状态（SyntheticVSync / VSync / Idle）—— 必须先于段名与线程名判定，
+    // 因为它也以 `app:` 开头，误判成 Callbacks 线程名会污染槽位
+    if (takeSourceState(t)) continue;
+    // ScreenOff / 各刷新率累计时长（A14 全量在 phase 统计之后，A12 真机在更早位置）
+    if (takeScreenOff(t)) { vsyncDump.screenOff.present = true; continue; }
+
+    // ── Scheduler: 段（A9~A14 都有；A12/A13 与 A14 形态完全不同，见 takeSchedulerLine 注释）──
+    // 段起：`Scheduler:`；段止：`Frame Rate Overrides` / `Display identification data` / 等顶层段名。
+    // 这段落在 VsyncSchedule 之前（A12 第 43 行附近、A14 更早），与 vsync 段无嵌套关系。
+    if (/^Scheduler:?\s*$/i.test(t)) {
+      vsyncDump.scheduler.present = true; vsyncDump.meta.inSchedulerSection = true; continue;
+    }
+    if (vsyncDump.meta.inSchedulerSection) {
+      // 顶层新段出现（A12 是「Frame Rate Overrides (backdoor):」，A14 是「FrameRateOverrides=none」）
+      // `Features` / `Policy` 是 Scheduler 自身的子段名（A14 缩进 0），必须放行不能关段。
+      if (/^(Features|Policy|GameFrameRateOverrides)\s*$/i.test(t)) continue;
+      if (/^(Frame\s+Rate\s+Overrides|Display\s+identification|Sync\s+configuration|DesiredDisplayModeSpecs|Current\s+mode|Refresh\s+rates|app\s+phase|VsyncSchedule|SurfaceFlinger\s+global)/i.test(t)
+        || (/^[A-Za-z][A-Za-z0-9 \t_-]{2,40}:\s*$/.test(t) && !/^\s/.test(line))) {
+        vsyncDump.meta.inSchedulerSection = false;
+      } else if (takeSchedulerLine(t, vsyncDump.scheduler)) continue;
+    }
+    if (!cur) {
+      // A13 无外壳：见到第一个段名就开匿名块；此前的行归全局 timing 或 preamble
+      let isSection = false;
+      for (let i = 0; i < VSYNC_SECTION_RE.length; i++) { if (VSYNC_SECTION_RE[i][1].test(t)) { isSection = true; break; } }
+      if (isSection) newSchedule(null, null);
+      else {
+        if (!takeStatLine(t)) vsyncDump.meta.preamble.push(t);
+        continue;
+      }
+    }
+    cur.raw += line + '\n';
+
+    let matched = false;
+    for (let i = 0; i < VSYNC_SECTION_RE.length; i++) {
+      if (VSYNC_SECTION_RE[i][1].test(t)) {
+        sect = VSYNC_SECTION_RE[i][0]; thread = null;
+        if (sect === 'dispatch') vsyncDump.meta.hasVsyncDispatch = true;
+        if (sect === 'phase') vsyncDump.meta.hasPhases = true;
+        matched = true; break;
+      }
+    }
+    if (matched) continue;
+
+    // Refresh Rate Map 的条目行：For ideal period 16.67ms: period = 16.93ms, intercept = -478
+    if (sect === 'rateMap' || /^For\s+ideal\s+period/i.test(t)) {
+      const rm = t.match(/^For\s+ideal\s+period\s+(-?[\d.]+)ms:\s*period\s*=\s*(-?[\d.]+)ms\s*,\s*intercept\s*=\s*(-?[\d.]+)/i);
+      if (rm) { cur.refreshRateMap.push({ idealMs: parseFloat(rm[1]), periodMs: parseFloat(rm[2]), intercept: parseFloat(rm[3]) }); continue; }
+    }
+
+    // VsyncController 下的无 key 状态行
+    if (/^VsyncReactor\s+(in use|not in use)$/i.test(t)) { cur.controller.reactorInUse = /^VsyncReactor\s+in use$/i.test(t); continue; }
+    if (/^Has\s+(\d+)\s+unfired\s+fence/i.test(t)) { cur.controller.unfiredFences = parseInt(t.match(/^Has\s+(\d+)/)[1], 10); continue; }
+    if (/^No\s+Last\s+HW\s+vsync$/i.test(t)) { cur.controller.hasLastHwVsync = false; cur.controller.rawLines.push(t); continue; }
+    if (/^Last\s+HW\s+vsync/i.test(t)) { cur.controller.hasLastHwVsync = true; cur.controller.rawLines.push(t); continue; }
+
+    // Callbacks 下的线程名行。真实输出有三种形态，都要认：
+    //   "sf:"  /  "appSf:"                     —— 纯线程名（可有尾随空格）
+    //   "app:  [wake up in 6.92ms deadline …]"  —— A13/A14 部分实现会附带唤醒/截止提示
+    // 取「第一个 key:」的 key 作线程名判定；其后若还含 : 或 = 则不是线程名行。
+    if (sect === 'callbacks') {
+      const tm = t.match(/^([A-Za-z][A-Za-z0-9]*)\s*:/);
+      const rest = tm ? t.slice(tm[0].length) : '';
+      const slot = tm ? VSYNC_THREAD_SLOT[String(tm[1]).toLowerCase()] : null;
+      if (slot && !/[:=]/.test(rest)) {
+        thread = slot;
+        if (!cur.dispatch.callbacks[slot]) cur.dispatch.callbacks[slot] = vsyncNewNode(slot);
+        if (vsyncDump.meta.callbackOrder.indexOf(slot) < 0) vsyncDump.meta.callbackOrder.push(slot);
+        // 方括号里的唤醒/截止提示是有价值的数据，单独存一份（AOSP 文案：wake up in X deadline in Y for vsync Z）
+        const wm = rest.match(/\[([^\]]*)\]/);
+        if (wm) {
+          cur.dispatch.callbacks[slot].wakeup = wm[1].trim();
+          const w = wm[1].match(/wake up in\s+(-?[\d.]+)\s*ms/i);
+          const dl = wm[1].match(/deadline in\s+(-?[\d.]+)\s*ms/i);
+          const vs = wm[1].match(/for\s+vsync\s+(-?[\d.]+)\s*ms/i);
+          cur.dispatch.callbacks[slot].wakeupDetail = {
+            wakeUpMs: w ? parseFloat(w[1]) : null,
+            deadlineMs: dl ? parseFloat(dl[1]) : null,
+            vsyncMs: vs ? parseFloat(vs[1]) : null
+          };
+        }
+        continue;
+      }
+    }
+
+    // 花括号块（mDisplayModePtr={...}）必须先于通用扫描处理：
+    // 否则块内的 hwcId=1 / dpi=... 会被当成同行的新键，把值截断成 "{id=1, "
+    // 只在「明确处于某个段内」时才接收 —— 段外的花括号块（如全量 dump 里 DisplayDevice 的
+    // activeMode={...}）一律跳过，否则会污染 tracker 节点、把字段卡撑爆。
+    const braceM = t.match(/^([A-Za-z_][A-Za-z0-9_.]*)\s*=\s*\{[^}]*\}/);
+    if (braceM) {
+      const host = nodeOf();
+      if (host) {
+        if (/^mDisplayModePtr$/i.test(braceM[1])) cur.tracker.displayMode = vsyncParseBrace(braceM[0]);
+        else vsyncPut(host, braceM[1], { value: braceM[0], num: null, unit: '', suffix: '' });
+      }
+      continue;
+    }
+
+    let pairs = vsyncScanKv(t);
+
+    // 段结束判定：段内出现白名单外的键 → 该段已结束（防全量 dump 的图层字段污染）
+    if (pairs.length && sect && sect !== 'rateMap' && sect !== 'phase') {
+      const foreign = pairs.filter(function (p) { return !VSYNC_KEY_ALLOW[VSYNC_FIELD_ALIAS[p.key] || p.key]; });
+      if (foreign.length) {
+        if (sect === 'callbacks') {
+          if (!cur.dispatch.callbacks.__unassigned) cur.dispatch.callbacks.__unassigned = vsyncNewNode('unassigned');
+          foreign.forEach(function (p) { vsyncPut(cur.dispatch.callbacks.__unassigned, p.key, p.o); });
+          sect = null; thread = null; continue;      // 结束段，但原文仍留在 cur.raw
+        }
+        sect = null; thread = null;
+        // 原文已留在 cur.raw，字段不归 vsync（跨过段边界了）
+      }
+    }
+    pairs = takeSwitchFields(pairs);
+
+    if (!pairs.length) {
+      // 无 key 的裸行：按当前归属节点留存，不丢数据
+      const host = nodeOf();
+      if (host) host.rawLines.push(t);
+      else cur.controller.rawLines.push(t);
+      continue;
+    }
+
+    // 归属：段名优先；无段名时按 key 前缀兜底
+    if (sect === 'timer') { putAll(cur.dispatch.timer, pairs); continue; }
+    if (sect === 'callbacks' && thread) { putAll(cur.dispatch.callbacks[thread], pairs); continue; }
+    if (sect === 'tracker') { putAll(cur.tracker, pairs); continue; }
+    if (sect === 'phase') { putAll(cur.phases, pairs); continue; }
+    if (sect === 'controller' || sect === null) {
+      pairs.forEach(function (p) { if (sect === 'controller') vsyncPut(cur.controller, p.key, p.o); });
+      continue;
+    }
+  }
+
+  vsyncDump.meta.indentDetected = sawAnyIndent && !flatContent;
+  vsyncDump.meta.flatContentLines = flatContent;
+  vsyncDump.meta.versionNote = vsyncVersionNote();
+  vsyncDump.schedules.forEach(function (sc, i) { sc.vsyncIndex = 'vsync-' + i; });
+  buildVsyncIndex();
+  return vsyncDump;
+}
+
+// VSync 搜索索引：每个 VsyncSchedule 一个可搜索节点
+let vsyncIndex = new Map();
+function buildVsyncIndex() {
+  vsyncIndex = new Map();
+  (vsyncDump.schedules || []).forEach(function (s) {
+    vsyncIndex.set(s.vsyncIndex, {
+      id: s.vsyncIndex,
+      label: 'VsyncSchedule pacesetter ' + s.pacesetterId,
+      name: 'VsyncSchedule ' + s.pacesetterId,
+      rawContent: s.raw || '',
+      props: { hwVsyncState: s.hwVsyncState, pendingHwVsyncState: s.pendingHwVsyncState },
+      vsyncSchedule: s
+    });
+  });
+  return vsyncIndex;
+}
+
+function vsyncVersionNote() {
+  const v = parseInt(targetAndroidVersion, 10);
+  // 自 v1.54 起 VSync 不再单独发 --vsync / --dispsync，而是复用同一份全量
+  // dumpsys SurfaceFlinger 输出（与 HWC 图层共用一次抓取），按段名自适应解析，
+  // 不依赖具体命令或 Android 版本分支。
+  const base = '数据源 dumpsys SurfaceFlinger 全量输出（与 HWC 图层共用一份抓取），按段名自适应解析（A9–A16）';
+  return v ? ('A' + v + '：' + base) : ('未选择目标版本：' + base);
+}
+
+/* ── VSync 自动体检 ────────────────────────────────────────────────────────
+   阈值说明（务必与「vsync 开启态真实样本」复核后再改）：
+   VSYNC_SENTINEL_MS : nsecs_t 边界/哨兵值判定门限（1e9 ms ≈ 11.6 天）
+   VSYNC_IDLE_MS     : 关闭态下「定时器长期未触发」门限（60s）
+   VSYNC_CHAIN_TOL_* : 链路一致性容差（ok < 0.1ms，warn > 1ms）
+   VSYNC_FENCE_MAX   : unfired fences 堆积门限（≥3）
+   以上四值为初值，仅由 A14「vsync 关闭态」样本标定过；开启态样本到手前
+   不得对外声称「健康样本零误报」。缺字段一律跳过不报，不作猜测。            */
+const VSYNC_SENTINEL_MS = 1e9;
+const VSYNC_IDLE_MS = 60000;
+const VSYNC_CHAIN_TOL_OK = 0.1;
+const VSYNC_CHAIN_TOL_WARN = 1;
+const VSYNC_FENCE_MAX = 3;
+// 预算自洽校验容差：dump 只保留 2 位小数，且公式里 duration 有纳秒级取整，
+// 留 0.05ms 足以吸收纯格式误差而不掩盖真正的配置不同步。
+const VSYNC_BUDGET_TOL = 0.05;
+
+// ── workDuration / readyDuration 的真实语义（AOSP 21 源码核实，v1.55 起据此修正诊断）
+// VSyncDispatch.h:85-98 原文：
+//   @workDuration  The time needed for the client to perform its work
+//   @readyDuration The time needed for the client to be ready before a vsync event.
+//                  外部客户端还要算上 SF 处理其 buffer/transaction 的时间，故
+//                  readyDuration 被设为 SF 的时长；内部客户端不需要额外留白，
+//                  readyDuration 通常为 0。
+//   callback will be dispatched at 'workDuration + readyDuration' ns before a vsync.
+// VsyncConfiguration.cpp:150-158 的推导公式：
+//   sfOffsetToDuration(sfOff, dur)  = dur - sfOff
+//   appOffsetToDuration(aOff,sOff)  = dur + (sOff - aOff)，若 < dur 再 + dur
+// Scheduler.cpp:493-500 的槽位映射：
+//   Cycle::Render(work=appWorkDuration, ready=sfWorkDuration) → app 槽位
+//   Cycle::LastComposite(work=vsyncPeriod, ready=sfWorkDuration) → appSf 槽位
+//   sf 槽位 work=sfWorkDuration, ready=0
+// ⇒ 结论：这三个数是「预算/目标时长」而非实测耗时，合法值可以大于一个 vsync 周期。
+//   已用 6 份含相位数据的真实样本交叉验证，10 项比对全部逐位相等。
+const VSYNC_BUDGET_FORMULA = {
+  sf: 'dur - sfPhaseOffset',
+  appSf: 'vsyncPeriod',
+  app: 'dur + (sfPhaseOffset - appPhaseOffset)'
+};
+
+function vsyncEachField(s, fn) {
+  const nodes = [s.controller, s.tracker, s.phases, s.dispatch && s.dispatch.timer];
+  const cbs = (s.dispatch && s.dispatch.callbacks) || {};
+  Object.keys(cbs).forEach(function (k) { if (k !== '__unassigned') nodes.push(cbs[k]); });
+  nodes.forEach(function (n) {
+    if (!n || !n.fields) return;
+    Object.keys(n.fields).forEach(function (k) { fn(n.fields[k], k, n); });
+  });
+}
+
+function diagnoseVsync(s, all) {
+  const out = [];
+  const add = function (level, ruleId, msg, raw) { out.push({ level: level, rule: ruleId, msg: msg, raw: raw == null ? '' : String(raw) }); };
+  if (!s) return out;
+  const F = function (node, key) { return (node && node.fields && node.fields[key]) || null; };
+  const cbs = (s.dispatch && s.dispatch.callbacks) || {};
+  const closed = /^(Disabled|Disallowed|Disable|Off)$/i.test(String(s.hwVsyncState || ''));
+  // vsync 周期：A14 取 mDisplayModePtr.vsyncRate，A13 取 mIdealPeriod
+  let periodMs = (s.tracker && s.tracker.displayMode && s.tracker.displayMode.vsyncRate) ? (1000 / s.tracker.displayMode.vsyncRate) : null;
+  if (!periodMs) { const ip = F(s.tracker, 'idealPeriodMs'); if (ip && ip.num) periodMs = ip.num; }
+  // R3 与 R6 共用这几个观测量，先提到函数作用域
+  const lastCb = F(s.dispatch && s.dispatch.timer, 'mLastTimerCallback');
+  const hasHw = (s.controller && s.controller.hasLastHwVsync != null) ? s.controller.hasLastHwVsync : null;
+  const fenceN = (s.controller && s.controller.unfiredFences != null) ? s.controller.unfiredFences : null;
+
+  // R0 vsync 源状态 —— 跨版本主判据（v1.56 升级）
+  // 依据AOSP 21 源码 EventThread.cpp:523-527 / 737 / 766-776：
+  //   mState = mVSyncState->synthetic ? State::SyntheticVSync : State::VSync;  ← 有人请求 vsync 时
+  //   mState = State::Idle;                                                     ← 没人请求时
+  //   打印：`app: state=<X> VSyncState={displayId=…, count=…, [synthetic]}`
+  // ⇒ **synthetic 标记的有无才是硬件 vsync 的硬证据**，state 字面值不是：
+  //   · 带 synthetic → 软件合成 vsync，本机没有硬件 vsync 在驱动
+  //   · 无synthetic → 真实硬件 vsync（state=Idle 只说明当前无客户端请求）
+  // 这个字段 A9~A16 全版本都有；而 hwVsyncState 只有 A13+ 才有（且 A13 仅 --vsync 出口），
+  // 所以本规则比 hwVsyncState 覆盖更广，是 A9~A12 唯一的直接判据。
+  const srcStates = (vsyncDump.sourceStates || []);
+  if (srcStates.length) {
+    const syn = srcStates.filter(function (x) { return x.kind === 'synthetic'; });
+    if (syn.length) {
+      const ids = syn.map(function (x) { return x.displayId || x.source; }).join(', ');
+      add('warn', 'R0', 'vsync 源 = 软件合成（SyntheticVSync，displayId=' + ids + '）：本机没有硬件 vsync 在驱动，时钟由 SF 软件定时器给出 —— 此时所有时长都是软件预算，帧率上限受 CPU 调度与定时器精度影响，实测与预算偏差属正常', syn[0].raw);
+    } else {
+      add('ok', 'R0', 'vsync 源 = 硬件驱动（无 synthetic 标记；' + srcStates.map(function (x) { return x.source + ':' + x.stateRaw + (x.count != null ? (' count=' + x.count) : ''); }).join('，') + '）', srcStates[0].raw);
+    }
+  }
+
+  // R1 哨兵/溢出值：只报告，不参与任何时长计算。
+  // 注意：mIntendedWakeupTime 在全部 6 份跨版本真实样本里都是 ~9.22e12 ms
+  //       （= nsecs_t 上限 9223372036854775807ns / 1e6），是 AOSP「尚未安排唤醒」的常态哨兵，
+  //       **不是异常** —— 早期版本把它当 error 是误判，这里显式排除。
+  vsyncEachField(s, function (f, key) {
+    if (key === 'mIntendedWakeupTime') return;
+    if (f.num != null && f.num >= VSYNC_SENTINEL_MS) {
+      add('error', 'R1', key + ' = ' + f.value + ' 超过 ' + VSYNC_SENTINEL_MS + 'ms，疑似 nsecs_t 边界溢出，不作真实时长解读', f.value);
+    }
+  });
+
+  // R2 关闭态横幅
+  if (closed) {
+    add('info', 'R2', '硬件 vsync 处于关闭态：hwVsyncState=' + s.hwVsyncState + '，pendingHwVsyncState=' + (s.pendingHwVsyncState == null ? '该版本无此字段' : s.pendingHwVsyncState), s.hwVsyncState);
+  }
+
+  // R3 关闭态旁证自洽性（fence 堆积由 R6 单独报，此处仅作上下文展示，不重复计数）
+  if (closed) {
+    const idle = (lastCb && lastCb.num != null) ? (lastCb.num > VSYNC_IDLE_MS) : null;
+    const parts = [];
+    const bad = [];
+    if (hasHw === false) parts.push('No Last HW vsync');
+    else if (hasHw === true) { parts.push('有 Last HW vsync'); bad.push('已声明关闭却有 Last HW vsync'); }
+    if (lastCb) parts.push('mLastTimerCallback=' + lastCb.value);
+    if (idle === false) bad.push('定时器近期仍在回调（' + lastCb.value + '）');
+    if (fenceN != null) parts.push('unfired fences=' + fenceN);
+    if (bad.length) add('warn', 'R3', '关闭态与旁证矛盾：' + bad.join('；') + '（' + parts.join('，') + '）', '');
+    else if (parts.length) add('ok', 'R3', '关闭态旁证自洽：' + parts.join('，'), '');
+  }
+
+  // R4 传递链一致性 appSf.readyDuration ≈ sf.workDuration
+  const aR = (cbs.appSf && cbs.appSf.fields && cbs.appSf.fields.readyDuration) ? cbs.appSf.fields.readyDuration.num : null;
+  const sW = (cbs.sf && cbs.sf.fields && cbs.sf.fields.workDuration) ? cbs.sf.fields.workDuration.num : null;
+  if (aR != null && sW != null) {
+    const dl = Math.abs(aR - sW);
+    if (dl < VSYNC_CHAIN_TOL_OK) add('ok', 'R4', 'appSf.readyDuration=' + aR + 'ms 与 sf.workDuration=' + sW + 'ms 一致（Δ=' + dl.toFixed(2) + 'ms）', '');
+    else if (dl > VSYNC_CHAIN_TOL_WARN) add('warn', 'R4', 'appSf.readyDuration=' + aR + 'ms 与 sf.workDuration=' + sW + 'ms 相差 ' + dl.toFixed(2) + 'ms，app→SF 传递链可能断裂', '');
+  }
+
+// R5 预算自洽性校验（v1.55 语义修正）
+  // ⚠️ v1.52–1.54 的 R5 是「workDuration > vsync 周期即 warn」，这是**误判**：
+  // workDuration 不是实测耗时，而是「在 vsync 前多少 ms 就得开始工作」的预算，
+  // 由 VsyncConfiguration 的公式从 phase 偏移推导而来（见 VSYNC_BUDGET_FORMULA 注），
+  // 合法值本就可能大于一个周期。例如 A12 小米实测 120Hz 下
+  //   sf=12.33ms / appSf=8.33ms / app=11.67ms，全部 > 8.33ms 周期，但三个值
+  //   与公式推导**逐位相等**，是健康数据。
+  // 现改为：用同一份 timing.phase 反算预算并与 dump 值比对 —— 只有「算出来该是多少
+  // vs dump 说是多少」不一致时才是真问题（相位配置与预算不同步）。
+  const T0 = vsyncDump.timing || {};
+  const perNs = T0.vsyncPeriodNs;
+  const phApp = T0.phase && T0.phase.app;
+  const phSf = T0.phase && T0.phase.sf;
+  if (periodMs && perNs != null && phApp != null && phSf != null) {
+    // 全程在 ns 上做推导，只在最终比较与展示时转成 ms —— 中途混用单位会算出
+    // 「11666666ms vs 11.67ms」这种量纲错误（v1.55 初版真犯过，harness 抓出）。
+    const durNs = perNs;
+    const expSfNs = durNs - phSf;                                            // sfOffsetToDuration
+    let expAppNs = durNs + (phSf - phApp); if (expAppNs < durNs) expAppNs += durNs;   // appOffsetToDuration
+    const expAppSfNs = durNs;                                                // LastComposite.work = vsyncPeriod
+    const cmp = [['sf', expSfNs], ['app', expAppNs], ['appSf', expAppSfNs]];
+    let bad = [], okN = 0;
+    cmp.forEach(function (c) {
+      const f = cbs[c[0]] && cbs[c[0]].fields && cbs[c[0]].fields.workDuration;
+      if (!f || f.num == null) return;
+      const expMs = c[1] / 1e6;
+      const dd = Math.abs(f.num - expMs);
+      if (dd <= VSYNC_BUDGET_TOL) okN++;
+      else bad.push(c[0] + ' dump=' + f.num + 'ms 但按 phase 偏移应为 ' + expMs.toFixed(2) + 'ms（Δ' + dd.toFixed(2) + 'ms）');
+    });
+    if (bad.length) add('warn', 'R5', '预算与相位配置不同步：' + bad.join('；'), '');
+    else if (okN) add('ok', 'R5', '预算与相位自洽：workDuration 完全等于按 phase 偏移推导的值（sf=' + (expSfNs / 1e6).toFixed(2) + 'ms / appSf=' + (expAppSfNs / 1e6).toFixed(2) + 'ms / app=' + (expAppNs / 1e6).toFixed(2) + 'ms，周期 ' + periodMs.toFixed(2) + 'ms）—— 说明这三个数是预算而非实测耗时，超出周期属正常', '');
+  } else if (periodMs) {
+    add('info', 'R5', '缺少相位数据（app phase / SF phase），跳过「预算 vs 相位」自洽校验', '');
+  } else {
+    add('info', 'R5', 'tracker 未给出 vsyncRate / VSYNC period，跳过预算校验', '');
+  }
+
+  // R6 fence 堆积（无论关闭态与否都独立报出；关闭态下 R3 只把它列为上下文）
+  if (fenceN != null && fenceN >= VSYNC_FENCE_MAX) {
+    add('warn', 'R6', 'unfired fences=' + fenceN + '（≥' + VSYNC_FENCE_MAX + '），合成可能被 fence 卡住', '');
+  }
+
+  // R7 周期尚未确认
+  const msn = F(s.controller, 'mMoreSamplesNeeded');
+  const pci = F(s.controller, 'mPeriodConfirmationInProgress');
+  if ((msn && msn.num === 1) || (pci && pci.num === 1)) {
+    add('info', 'R7', 'vsync 周期仍在确认中（mMoreSamplesNeeded/mPeriodConfirmationInProgress=1），本段数据不宜作为结论依据', '');
+  }
+
+  // R8 显示模式切换中（字段已别名归一为 modePtrTransitioningTo，A13/A14 两种原名都落这个槽）
+  const mp = F(s.controller, 'modePtrTransitioningTo');
+  if (mp && mp.value && mp.value !== 'nullptr') add('info', 'R8', '正在切换显示模式（' + mp.nameRaw + '=' + mp.value + '），vsyncRate 可能即将变化', mp.value);
+
+  // R9 多 pacesetter 状态分歧
+  const list = (all && all.length) ? all : [s];
+  if (list.length > 1) {
+    const set = {}; list.forEach(function (x) { set[String(x.hwVsyncState)] = 1; });
+    if (Object.keys(set).length > 1) add('warn', 'R9', '多个 pacesetter 的 hwVsyncState 不一致：' + Object.keys(set).join(' / '), '');
+  }
+  return out;
+}
+
+// ── VSync 字段字典（tier: core=核心 / aux=辅助；点行展开中文解释）──
+const VSYNC_PARAM_DICT = {
+  hwVsyncState: { tier: 'core', label: '硬件 vsync 当前状态', desc: '是否允许使用硬件 vsync。Disabled=已关闭；Disallowed=被策略拒绝（如省电/低电量策略）；Enabled/Active=正常使用。排查「画面不跟手、帧率上不去」先看这里。' },
+  pendingHwVsyncState: { tier: 'core', label: '待生效的硬件 vsync 状态', desc: '已请求但尚未生效的目标态，与 hwVsyncState 不等价：一个是目标态，一个是当前态。两者不同说明切换尚未完成。' },
+  reactorInUse: { tier: 'aux', label: 'VsyncReactor 是否在用', desc: 'A14 起硬件 vsync 由 VsyncReactor（回调式）提供；为 false 说明走的是定时器模拟路径。' },
+  unfiredFences: { tier: 'core', label: '未触发的 fence 数', desc: '等待 GPU/显示硬件信号才继续。堆积（≥3）说明合成被硬件卡住。' },
+  mInternalIgnoreFences: { tier: 'aux', label: '内部忽略计数', desc: 'SF 内部决定忽略的 fence 数，非零会延迟合成。' },
+  mExternalIgnoreFences: { tier: 'aux', label: '外部忽略计数', desc: 'HWC 侧要求忽略的 fence 数。' },
+  mMoreSamplesNeeded: { tier: 'aux', label: '还需更多采样', desc: '为 1 表示 vsync 周期还在校准中，此阶段 vsync 时长数据不可作为结论依据。' },
+  mPeriodConfirmationInProgress: { tier: 'aux', label: '周期确认进行中', desc: '为 1 表示正在确认新的 vsync 周期，等待期间数据不稳定。' },
+  mModePtrTransitioningTo: { tier: 'aux', label: '正在切换到的显示模式', desc: '非 nullptr 说明正在切换显示模式，vsyncRate 即将变化。' },
+  hasLastHwVsync: { tier: 'core', label: '是否有 Last HW vsync', desc: '为 false（No Last HW vsync）说明没有收到过硬件 vsync 信号，是「硬件 vsync 不可用」的直接证据。' },
+  mDisplayModePtr: { tier: 'core', label: '当前显示模式', desc: 'SF 当前跟踪的显示模式：id/hwcId/分辨率/vsyncRate/dpi/分组/vrrConfig。vrrConfig=N/A 表示该模式不参与 VRR。' },
+  debugState: { tier: 'aux', label: '派发定时器状态', desc: 'Waiting=等待下一次 vsync 到期；Armed=已装填等待唤醒。' },
+  mTimerSlack: { tier: 'aux', label: '定时器松弛量', desc: '派发时故意提前的余量，避免刚好踩点导致丢帧。' },
+  mMinVsyncDistance: { tier: 'aux', label: '两次 vsync 最小间隔', desc: '防止过于密集地派发信号。' },
+  mIntendedWakeupTime: { tier: 'aux', label: '计划唤醒时刻', desc: '相对当前时间的偏移；出现极大值（≥1e9 ms）说明是 nsecs_t 边界溢出/哨兵值，不可当真实时长。' },
+  mLastTimerCallback: { tier: 'core', label: '上次定时器回调距今', desc: '距今很久（>60s）说明 vsync 定时器长期没被触发，与 vsync 关闭态一致。' },
+  mLastTimerSchedule: { tier: 'aux', label: '上次定时器装填距今', desc: '同上，判断派发链路是否停摆。' },
+  workDuration: { tier: 'core', label: '本信号的工作时长预算', desc: '该信号从触发到完成自身工作的理论时长。它与 readyDuration 一起决定下一个 vsync 的时间点。' },
+  readyDuration: { tier: 'core', label: '交接等待时长', desc: '自身工作完成后，把结果交给下一模块前的等待时长。app 的 readyDuration 约等于 SF 的 workDuration；sf 的 readyDuration 通常为 0。' },
+  vsyncRef: { tier: 'core', label: '参考 vsync 时间戳', desc: 'A14 为 lastVsync（最近一次 vsync 的相对时刻），A9–A13 为 earliestVsync（预计的下一个 vsync）。负值表示已过去。' },
+  mLastDispatchTime: { tier: 'aux', label: '上次派发距今', desc: '该信号上次被派发的时刻；极大值说明长时间没派发过。' },
+  idealMs: { tier: 'aux', label: '理想周期', desc: 'Refresh Rate Map 的键：理想 vsync 周期。' },
+  periodMs: { tier: 'aux', label: '实际预测周期', desc: '该理想周期对应的预测模型输出。与理想值的差值即相位漂移。' },
+  intercept: { tier: 'aux', label: '预测模型截距', desc: 'vsync 预测模型的线性修正量（微秒量级）。' },
+  // 以下为别名归一后的键（VSYNC_FIELD_ALIAS 归一，原名不固定，必须按归一键补条目）
+  modePtrTransitioningTo: { tier: 'aux', label: '正在切换到的显示模式', desc: '归一键（原字段 mModePtrTransitioningTo 或 mPeriodTransitioningTo）。非空说明正在切换显示模式，vsyncRate 即将变化。' },
+  idealPeriodMs: { tier: 'aux', label: '理想周期', desc: '归一键（原字段 mIdealPeriod）。SF 当前采用的理想 vsync 周期，如 16.667ms=60Hz。' }
+};
+
+// 字段行：英文原键名 + 原值同行右对齐；点行展开中文解释（缺字典条目时只显示原值，不编解释）
+// 哨兵值（≥1e9ms 的 nsecs_t 边界溢出，AOSP 常态）单独标色并加「常态哨兵」角标，避免被误读成真实时长
+function vsyncFieldRows(node, skip) {
+  if (!node || !node.fields) return '';
+  const skipKeys = skip || {};
+  return Object.keys(node.fields).filter(function (k) { return !skipKeys[k]; }).map(function (k) {
+    const f = node.fields[k];
+    const dict = vsyncDictFor(k, f.nameRaw);
+    const keyTxt = (f.nameRaw && f.nameRaw !== k) ? (f.nameRaw + ' → ' + k) : f.nameRaw;
+    const isSentinel = (k === 'mIntendedWakeupTime') || (f.num != null && f.num >= VSYNC_SENTINEL_MS);
+    const isAlias = !!(f.nameRaw && f.nameRaw !== k);
+    // 注意：f.value 本身就是完整原值（后缀 ago / from now / relative to now 已含在内），
+    // 不可再拼 f.suffix，否则会出现 "390.99ms ago ago" 这种重复
+    const val = (isSentinel && f.num != null ? f.num.toExponential(1).replace('e+', 'e') + ' ⚠常态哨兵' : f.value);
+    const tip = dict ? (dict.label + '：' + dict.desc) : '该字段暂无中文解释';
+    return '<div class="vs-fr' + (isAlias ? ' vs-fr-alias' : '') + '" onclick="this.classList.toggle(\'open\')" title="' + escHtml(tip) + '">'
+      + '<span class="vs-fk">' + escHtml(keyTxt) + '</span>'
+      + '<span class="vs-fv' + (isSentinel ? ' is-sentinel' : '') + '">' + escHtml(val) + '</span></div>'
+      + (dict ? '<div class="vs-fx"><b>' + escHtml(keyTxt) + '（' + escHtml(dict.label) + '）</b>（' + (dict.tier === 'core' ? '核心' : '辅助') + '）：' + escHtml(dict.desc) + '</div>' : '');
+  }).join('');
+}
+
+// 三信号时间预算：实心 = workDuration，空心 = readyDuration
+// 每行右侧标 work / ready；AOSP 部分实现会在线程名后附 [wake up in X deadline in Y for vsync Z]，一并显示
+function vsyncTimelineSVG(s) {
+  const cbs = (s.dispatch && s.dispatch.callbacks) || {};
+  const order = (vsyncDump.meta && vsyncDump.meta.callbackOrder && vsyncDump.meta.callbackOrder.length)
+    ? vsyncDump.meta.callbackOrder : Object.keys(cbs);
+  const rows = order.map(function (k) {
+    const node = cbs[k] || {};
+    const fl = node.fields || {};
+    return { key: k, work: fl.workDuration ? fl.workDuration.num : null, ready: fl.readyDuration ? fl.readyDuration.num : null, wake: node.wakeup || null };
+  }).filter(function (r) { return r.work != null || r.ready != null; });
+  if (!rows.length) return '';   // 三线程时长全缺失 → 整区不渲染，不留空框
+  let maxTotal = 0;
+  rows.forEach(function (r) { maxTotal = Math.max(maxTotal, (r.work || 0) + (r.ready || 0)); });
+  const axisMax = Math.max(5, Math.ceil((maxTotal || 1) * 1.2 / 5) * 5);
+  const W = 900, LBL = 76, X0 = 84, X1 = 700, VH = 22, TOP = 30, GAP = 10;
+  const H = TOP + rows.length * (VH + GAP) + 30;
+  const sx = function (v) { return X0 + (v / axisMax) * (X1 - X0); };
+  const axisBottom = TOP + rows.length * (VH + GAP);
+  let g = '<svg class="vs-timeline" viewBox="0 0 ' + W + ' ' + H + '" role="img" xmlns="http://www.w3.org/2000/svg">';
+  g += '<title>app / appSf / sf 三信号时间预算</title>';
+  const step = axisMax <= 20 ? 5 : (axisMax <= 40 ? 10 : 20);
+  for (let v = 0; v <= axisMax + 0.001; v += step) {
+    const x = sx(v).toFixed(1);
+    g += '<line class="vs-tl-axis" x1="' + x + '" y1="' + (TOP - 10) + '" x2="' + x + '" y2="' + axisBottom + '" stroke-dasharray="2 3"/>';
+    g += '<text class="vs-tl-tick" x="' + x + '" y="' + (axisBottom + 16) + '" text-anchor="middle">' + v + '</text>';
+  }
+  g += '<text class="vs-tl-tick" x="' + (W - 10) + '" y="16" text-anchor="end">单位：ms</text>';
+  g += '<text class="vs-tl-val" x="' + X0 + '" y="16">实心 = workDuration（预算），空心 = readyDuration（预算）</text>';
+  rows.forEach(function (r, i) {
+    const y = TOP + i * (VH + GAP);
+    g += '<g class="vs-tl-row">';
+    g += '<text class="vs-tl-name" x="' + LBL + '" y="' + (y + VH / 2) + '" text-anchor="end" dominant-baseline="central">' + escHtml(r.key) + '</text>';
+    let x = X0;
+    if (r.work != null) {
+      const w = Math.max(1, sx(r.work) - X0);
+      g += '<rect class="vs-tl-work" x="' + X0 + '" y="' + y + '" width="' + w.toFixed(1) + '" height="' + VH + '" rx="3"/>';
+      x = X0 + w;
+    }
+    if (r.ready != null && r.ready > 0) {
+      const w2 = Math.max(1, (r.ready / axisMax) * (X1 - X0));
+      g += '<rect class="vs-tl-ready" x="' + x.toFixed(1) + '" y="' + y + '" width="' + w2.toFixed(1) + '" height="' + VH + '" rx="3"/>';
+    }
+    const txt = (r.work == null ? '—' : r.work.toFixed(2)) + ' / ' + (r.ready == null ? '—' : r.ready.toFixed(2));
+    g += '<text class="vs-tl-val" x="' + (W - 10) + '" y="' + (y + VH / 2) + '" text-anchor="end" dominant-baseline="central">' + escHtml(txt) + '</text>';
+    // 唤醒 / 截止提示较长，只放在下方 Callbacks 窄卡里，避免与条形和数值重叠
+    g += '</g>';
+  });
+  g += '</svg>';
+  return g;
+}
+
+function renderVsyncDump() {
+  const host = document.getElementById('vsync-view');
+  if (!host) return;
+  if (dataSource !== 'surfaceflinger' || currentView !== 'vsyncpanel' || !vsyncDump || !vsyncDump.schedules.length) { host.style.display = 'none'; host.innerHTML = ''; return; }
+  host.style.display = '';
+  const M = vsyncDump.meta || {};
+  const dmDict = VSYNC_PARAM_DICT.mDisplayModePtr;
+  let h = '';
+  vsyncDump.schedules.forEach(function (s) {
+    const closed = /^(Disabled|Disallowed|Disable|Off)$/i.test(String(s.hwVsyncState || ''));
+    const open = /^(Enabled|Active|On)$/i.test(String(s.hwVsyncState || ''));
+    const hasSwitch = (s.hwVsyncState != null);
+    // A12/A13 的不少机器不打印 hwVsyncState，但会打印 per-display 的
+    // `app: state=<X> VSyncState={…}`（A9~A16 全版本都有）—— 其中 **synthetic 标记的
+    // 有无**才是「硬件 vsync 是否真在跑」的直接证据，比 state 字面值可靠
+    //（state=Idle 只表示当前无客户端请求）。详见 diagnoseVsync 的 R0。
+    const srcAll = vsyncDump.sourceStates || [];
+    const srcSyn = srcAll.filter(function (x) { return x.kind === 'synthetic'; });
+    //措辞分三档（不夸大：hwVsyncState 的源码初值就是 Disallowed，见 VsyncSchedule.h:151，
+    // 硬件 vsync 只在需要精确校准时临时打开，所以「未启用」是常态而非故障）
+    const main = srcSyn.length ? '硬件 vsync 未运行：SyntheticVSync（vsync 由软件定时器生成）'
+      : (!hasSwitch ? (srcAll.length ? '硬件 vsync 在运行（由 state 无 synthetic 标记判定）' : '硬件 vsync 状态：该版本无此字段')
+        : (closed ? '硬件 vsync 未启用（默认常态，精确同步时临时打开）'
+          : (open ? '硬件 vsync 已启用' : ('hwVsyncState=' + s.hwVsyncState))));
+    const cls = srcSyn.length ? 'bad' : (!hasSwitch ? (srcAll.length ? 'good' : 'unknown') : (closed ? 'unknown' : (open ? 'good' : 'unknown')));
+    const dm = s.tracker && s.tracker.displayMode ? s.tracker.displayMode : null;
+
+    h += '<div class="vs-panel">';
+    h += '<div class="vs-panel-head"><span class="vs-panel-title">VsyncSchedule</span><span class="vs-banner-kv">'
+      + (s.pacesetterId ? ('pacesetter ' + escHtml(s.pacesetterId)) : 'pacesetter 该版本无此字段')
+      + '</span></div>';
+
+    // ① 硬件 vsync 开关
+    h += '<div class="vs-sec"><div class="vs-sec-t">① 硬件 vsync 开关</div><div class="vs-banner ' + cls + '">';
+    h += '<span class="vs-banner-main">' + escHtml(main) + '</span>';
+    h += '<span class="vs-banner-kv" style="margin-left:6px">hwVsyncState=' + escHtml(s.hwVsyncState == null ? '该版本无此字段' : s.hwVsyncState)
+      + ' · pendingHwVsyncState=' + escHtml(s.pendingHwVsyncState == null ? '该版本无此字段' : s.pendingHwVsyncState) + '</span>';
+    const side = [];
+    // vsync 源状态：A9~A16 判断硬件 vsync 是否真在跑的跨版本主判据
+    if (srcAll.length) side.push('state=' + srcAll.map(function (x) { return x.stateRaw; }).join(' ') + (srcSyn.length ? ' (synthetic)' : ''));
+    if (s.controller && s.controller.hasLastHwVsync === false) side.push('No Last HW vsync');
+    if (s.controller && s.controller.unfiredFences != null) side.push('unfired fences=' + s.controller.unfiredFences);
+    h += '<span class="vs-banner-side" style="margin-left:auto">' + escHtml(side.join(' · ')) + '</span>';
+    h += '</div></div>';
+
+    // ② 三信号时间预算
+    const tl = vsyncTimelineSVG(s);
+    if (tl) {
+      const T = vsyncDump.timing || {};
+      const ns2ms = function (v) { return v == null ? '—' : (v / 1e6).toFixed(3) + ' ms'; };
+      h += '<div class="vs-sec"><div class="vs-sec-t">② 三信号时间预算（workDuration / readyDuration）</div>';
+      // 语义说明：这组数是「预算」不是「实测耗时」，且由 phase 偏移推导而来。
+      // 不写清楚这一点，看到 workDuration 大于 vsync 周期会误判成性能问题。
+      h += '<div class="vs-note"><b>这是预算，不是实测耗时。</b>' +
+        '按 AOSP 源码（<code>VSyncDispatch.h:85-98</code> / <code>VsyncConfiguration.cpp:150-158</code>），' +
+        '三个值由相位偏移推导：<code>sf = 周期 − SF 相位</code>、<code>appSf = 周期</code>、' +
+        '<code>app = 周期 + (SF 相位 − app 相位)</code>，含义是「要在 vsync 前多少毫秒开始工作」。' +
+        '因此<b>合法值可以大于一个 vsync 周期</b>，并非掉帧或性能异常。' +
+        '<br>当前相位：app ' + ns2ms(T.phase && T.phase.app) +
+        ' · SF ' + ns2ms(T.phase && T.phase.sf) +
+        ' · 周期 ' + ns2ms(T.vsyncPeriodNs) + '</div>';
+      h += tl + '</div>';
+    }
+
+    // ③ 字段分组
+    h += '<div class="vs-sec"><div class="vs-sec-t">③ 字段分组</div><div class="vs-cards">';
+    h += '<div class="vs-card"><div class="vs-card-t">VsyncController</div>' + vsyncFieldRows(s.controller) + '</div>';
+    h += '<div class="vs-card"><div class="vs-card-t">VSyncTracker</div>'
+      + (dm ? '<div class="vs-fr" onclick="this.classList.toggle(\'open\')" title="' + escHtml(dmDict.label + '：' + dmDict.desc) + '">'
+        + '<span class="vs-fk">mDisplayModePtr</span><span class="vs-fv">'
+        + escHtml(dm.width + 'x' + dm.height + ' @' + (dm.vsyncRateRaw || dm.vsyncRate) + 'Hz dpi=' + dm.dpi + ' vrr=' + dm.vrrConfig) + '</span></div>'
+        + '<div class="vs-fx"><b>mDisplayModePtr（' + escHtml(dmDict.label) + '，核心）：' + escHtml(dmDict.desc) + '</div>'
+        + vsyncFieldRows(s.tracker) : vsyncFieldRows(s.tracker)) + '</div>';
+    h += '<div class="vs-card"><div class="vs-card-t">Timer</div>' + vsyncFieldRows(s.dispatch && s.dispatch.timer) + '</div>';
+    const cbKeys = (M.callbackOrder && M.callbackOrder.length) ? M.callbackOrder : Object.keys((s.dispatch && s.dispatch.callbacks) || {});
+    h += '</div>';
+    h += '<div class="vs-sec vs-cb-wrap"><div class="vs-sec-t">④ Callbacks（app · appSf · sf 三信号）</div><div class="vs-cb-grid">';
+    cbKeys.filter(function (k) { return k !== '__unassigned'; }).forEach(function (k) {
+      const n = (s.dispatch.callbacks || {})[k] || {};
+      const fl = n.fields || {};
+      const g = function (key, label) {
+        const f = fl[key];
+        const dd = VSYNC_PARAM_DICT[key];
+        const tip = dd ? (key + '（' + dd.label + '）：' + dd.desc) : key;
+        return '<div class="vs-fr" title="' + escHtml(tip) + '"><span class="vs-fk">' + label + '</span><span class="vs-fv">'
+          + escHtml(f ? (f.num != null ? String(f.num) : f.value) : '该版本无此字段') + '</span></div>';
+      };
+      h += '<div class="vs-cb"><div class="vs-cb-t">' + escHtml(k) + '</div>';
+      h += g('workDuration', 'work') + g('readyDuration', 'ready') + g('vsyncRef', (fl.vsyncRef && fl.vsyncRef.nameRaw) || 'vsync') + g('mLastDispatchTime', 'dispatch');
+      if (n.wakeup) h += '<div class="vs-cb-wake" title="AOSP 附在线程名后的唤醒/截止提示">⏰ ' + escHtml(n.wakeup) + '</div>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+    if (s.refreshRateMap && s.refreshRateMap.length) {
+      h += '<table class="vs-rmap"><thead><tr><th title="理想 vsync 周期（Refresh Rate Map 的键），如 16.667ms=60Hz">ideal period</th><th title="该理想周期对应的预测模型实际输出周期">period</th><th title="vsync 预测模型的线性修正截距（微秒量级）">intercept</th></tr></thead><tbody>';
+      s.refreshRateMap.forEach(function (r) {
+        h += '<tr><td>' + escHtml(String(r.idealMs)) + ' ms</td><td>' + escHtml(String(r.periodMs)) + ' ms</td><td>' + escHtml(String(r.intercept)) + '</td></tr>';
+      });
+      h += '</tbody></table>';
+    }
+    h += '</div>';
+
+    // ⑤ 相位统计 与 ⑥ 自动体检：两栏并排（AOSP 只在全量 dump / --vsync 里打印相位统计，
+    // --dispsync 纯段没有；没有数据时左栏整块不渲染，右栏自动占满）
+    const T = vsyncDump.timing || {};
+    const dg = diagnoseVsync(s, vsyncDump.schedules);
+    const hasTiming = !!(T.phase || T.duration || T.vsyncPeriodNs != null);
+    h += '<div class="vs-sec vs-two-col-sec"><div class="vs-two-col">';
+    if (hasTiming) {
+      const ns2ms = function (v) { return (v == null) ? '该版本无此字段' : (v / 1e6).toFixed(3) + ' ms'; };
+      h += '<div><div class="vs-sec-t">⑤ 相位与时长统计</div><div class="vs-cards">';
+      h += '<div class="vs-card"><div class="vs-card-t">相位 / 时长 Phase / duration</div>';
+      const P = T.phase || {}, D = T.duration || {};
+      [['app phase', 'app 相位', P.app, 'app 信号相对 vsync 参考点的相位偏移：正值=晚于参考点，负值=提前'],
+       ['SF phase', 'SF 相位', P.sf, 'SF 合成信号相对 vsync 的相位偏移；负值表示 SF 在 vsync 之后才醒来（预算跨周期，如 MIUI 配 -4ms）'],
+       ['early app phase', 'early 档 app 相位', P.earlyApp, '低帧率（early）模式下 app 使用的相位偏移'],
+       ['early SF phase', 'early 档 SF 相位', P.earlySf, '低帧率（early）模式下 SF 使用的相位偏移'],
+       ['GL early app phase', 'GL early 档 app 相位', P.glEarlyApp, 'GPU（GL）合成路径 early 档下 app 使用的相位偏移'],
+       ['GL early SF phase', 'GL early 档 SF 相位', P.glEarlySf, 'GPU（GL）合成路径 early 档下 SF 使用的相位偏移'],
+       ['app duration', 'app 时长', D.app, '由相位推导的 app 工作时长预算：app = 周期 + (SF 相位 − app 相位)，不足一个周期再 + 周期'],
+       ['SF duration', 'SF 时长', D.sf, '由相位推导的 SF 工作时长预算：sf = 周期 − SF 相位']].forEach(function (k) {
+        h += '<div class="vs-fr" title="' + escHtml(k[0] + '（' + k[1] + '）：' + k[3] + '。单位由 ns 换算为 ms') + '"><span class="vs-fk">' + k[0] + '（' + k[1] + '）</span><span class="vs-fv">' + escHtml(ns2ms(k[2])) + '</span></div>';
+      });
+      h += '</div>';
+      h += '<div class="vs-card"><div class="vs-card-t">合成余量 Composite margin</div>';
+      h += '<div class="vs-fr" title="当前 vsync 周期（60Hz≈16.667ms，90Hz≈11.111ms，120Hz≈8.333ms）"><span class="vs-fk">VSYNC period（vsync 周期）</span><span class="vs-fv">' + escHtml(ns2ms(T.vsyncPeriodNs)) + '</span></div>';
+      h += '<div class="vs-fr" title="从 vsync 信号到实际上屏（present）的偏移量"><span class="vs-fk">present offset（上屏偏移）</span><span class="vs-fv">' + escHtml(ns2ms(T.presentOffsetNs)) + '</span></div>';
+      h += '<div class="vs-fr" title="HWC 硬件合成所需的最短时长"><span class="vs-fk">HWC min duration（HWC 最小时长）</span><span class="vs-fv">' + escHtml(ns2ms(T.hwcMinDurationNs)) + '</span></div>';
+      h += '</div>';
+      h += '</div></div>';   // 关 .vs-cards 与 ④ 列
+    }
+    h += '<div><div class="vs-sec-t">⑥ 自动体检（字段矛盾 / 异常值检测）</div><div class="vs-diag">';
+    if (!dg.length) h += '<div class="vs-diag-row vs-diag-ok"><span class="vs-diag-ic">—</span><span>未发现异常</span></div>';
+    dg.forEach(function (x) {
+      h += '<div class="vs-diag-row vs-diag-' + x.level + '"><span class="vs-diag-ic">' + x.rule + '</span><span>' + escHtml(x.msg) + '</span></div>';
+    });
+    h += '</div></div>';
+    h += '</div></div>';
+
+    // ⑥ Scheduler 调度策略段（A9~A14 都有，此前从未解析）
+    //   A12/A13 形态：`+ Idle timer: off` / `+ Touch timer: 200 ms` / `+ Content detection: off LayerHistory{…}`
+    //   A14 形态：`Features`(PresentFences/KernelIdleTimer/ContentDetection) + `Policy`(pacesetterDisplayId/
+    //             layerHistory/touchTimer/displayPowerTimer) —— 两种形态字段名完全不同，故按存在与否分别渲染。
+    const SC = vsyncDump.scheduler || {};
+    if (SC.present) {
+      h += '<div class="vs-sec"><div class="vs-sec-t">⑦ Scheduler 调度策略</div><div class="vs-cards">';
+      if (SC.idleTimer != null || SC.touchTimer != null || SC.contentDetection != null) {
+        h += '<div class="vs-card"><div class="vs-card-t">定时器（A12/A13 形态）</div>';
+        [['Idle timer', SC.idleTimer], ['Touch timer', SC.touchTimer], ['Content detection', SC.contentDetection]].forEach(function (k) {
+          if (k[1] == null) return;
+          const tf = { 'Idle timer': '屏幕无操作多久后进入 idle，决定是否停止合成', 'Touch timer': '触摸后多久内保持高性能（越高越费电）', 'Content detection': '内容检测：自动判断当前内容是否需要高刷新率' }[k[0]] || '';
+          h += '<div class="vs-fr" title="' + escHtml(tf) + '"><span class="vs-fk">' + k[0] + '</span><span class="vs-fv">' + escHtml(String(k[1])) + '</span></div>';
+        });
+        if (SC.layerHistory) h += '<div class="vs-fr" title="图层历史：size=缓存的图层总数，active=被判定为持续产帧的图层数"><span class="vs-fk">LayerHistory</span><span class="vs-fv">size=' + SC.layerHistory.size + ' · active=' + SC.layerHistory.active + '</span></div>';
+        h += '</div>';
+      }
+      if (SC.presentFences != null || SC.kernelIdleTimer != null || SC.contentDetection != null || SC.pacesetterDisplayId) {
+        h += '<div class="vs-card"><div class="vs-card-t">Features / Policy（A14 形态）</div>';
+        // bool 归一：A14 用布尔 false，A12/A13 用字符串 'off' —— 语义都是「关」
+      const boolTxt = function (v) {
+        if (v === true) return '开';
+        if (v === false || v === 'off' || v === 'false') return '关';
+        return String(v);
+      };
+        // ContentDetection / touchTimer / layerHistory 三项 A12/A13 与 A14 都可能出现，
+        // 放在第一张卡里统一渲染，这张卡只补 A14 独有的项，避免同一字段显示两遍。
+        [['PresentFences', SC.presentFences, '呈现 fence：SF 每帧用 fence 向客户端同步呈现时机'],
+         ['KernelIdleTimer', SC.kernelIdleTimer, '内核 idle 定时器（需内核支持）'],
+         ['pacesetterDisplayId', SC.pacesetterDisplayId, '当前主 pacesetter 显示器'],
+         ['displayPowerTimer', SC.displayPowerTimer, '屏幕电源状态轮询间隔（nullopt = 不轮询）'],
+         ['FrameRateOverrides', SC.frameRateOverrides, '帧率覆盖来源']].forEach(function (k) {
+          if (k[1] == null) return;
+          const val = (typeof k[1] === 'boolean') ? boolTxt(k[1]) : k[1];
+          h += '<div class="vs-fr" title="' + escHtml(k[2]) + '"><span class="vs-fk">' + k[0] + '</span><span class="vs-fv">' + escHtml(String(val)) + '</span></div>';
+        });
+        if (SC.layerHistory) h += '<div class="vs-fr" title="图层历史：size=缓存总数，active=持续产帧数"><span class="vs-fk">layerHistory</span><span class="vs-fv">size=' + SC.layerHistory.size + ' · active=' + SC.layerHistory.active + '</span></div>';
+        h += '</div>';
+      }
+      if (SC.idleTimer == null && SC.touchTimer == null && SC.contentDetection == null && !SC.presentFences && !SC.pacesetterDisplayId) {
+        h += '<div class="vs-note">Scheduler 段存在但未识别出可展示字段（该版本格式未适配，原文见原始数据）</div>';
+      }
+      h += '</div></div>';
+    }
+
+    // ⑧ ScreenOff / 各刷新率累计时长（排查息屏与刷新率切换的关键统计）
+    const SO = vsyncDump.screenOff || {};
+    if (SO.present && (SO.total || Object.keys(SO.byRate || {}).length)) {
+      h += '<div class="vs-sec"><div class="vs-sec-t">⑧ ScreenOff 与各刷新率累计时长</div><div class="vs-cards"><div class="vs-card">';
+      if (SO.total) h += '<div class="vs-fr" title="屏幕累计熄灭时长"><span class="vs-fk">ScreenOff</span><span class="vs-fv">' + escHtml(SO.total) + '</span></div>';
+      Object.keys(SO.byRate || {}).forEach(function (r) {
+        h += '<div class="vs-fr" title="该刷新率档位累计处于活动状态的时长（格式 天 d 时:分:秒.毫秒）"><span class="vs-fk">' + escHtml(r) + ' Hz</span><span class="vs-fv">' + escHtml(SO.byRate[r]) + '</span></div>';
+      });
+      h += '</div></div></div>';
+    }
+
+    // ⑨ 旧版 Phases 段（仅 --dispsync 纯段会打印）
+    if (M.hasPhases && s.phases && Object.keys(s.phases.fields || {}).length) {
+      h += '<div class="vs-sec vs-phase"><div class="vs-sec-t">⑨ Phases 段（该版本存在）</div><div class="vs-cards"><div class="vs-card"><div class="vs-card-t">Phases</div>' + vsyncFieldRows(s.phases) + '</div></div></div>';
+    }
+
+    // ⑩ 跨源：vsyncRate ↔ SF HWC 合成表里图层出现过的 Frame Rate（SF 数据已载入才渲染）
+    // 为什么对照 SF 而不是 display：parseOneDisplay() 实测没有刷新率字段（dfR 取自
+    // DisplayFrames w/h/r，真机实测 r=0），按铁律不编字段名，故用已真实解析的 frameRate 列。
+    const rateKeys = [];
+    if (typeof hwcLayers !== 'undefined' && hwcLayers && hwcLayers.length && dm && dm.vsyncRate) {
+      const seen = {};
+      hwcLayers.forEach(function (l) { if (l && l.frameRate != null && l.frameRate !== '') seen[String(l.frameRate)] = 1; });
+      Object.keys(seen).forEach(function (k) { rateKeys.push(k); });
+    }
+    if (rateKeys.length && dm && dm.vsyncRate) {
+      const mismatch = rateKeys.filter(function (r) { return Math.abs(Number(r) - Number(dm.vsyncRate)) > 0.5; });
+      h += '<div class="vs-sec"><div class="vs-sec-t">⑩ 与 HWC 合成表图层帧率交叉核对（同一份输出）</div><div class="vs-xref">';
+      h += '<span>SF vsyncRate = <b>' + escHtml(String(dm.vsyncRateRaw || dm.vsyncRate)) + ' Hz</b></span>';
+      h += '<span>HWC 表图层出现过的 Frame Rate：<b>' + escHtml(rateKeys.join(' / ')) + '</b></span>';
+      if (mismatch.length) h += '<span class="vs-xref-warn">与 vsyncRate 不一致：' + escHtml(mismatch.join(' / ')) + '（图层请求的帧率与 vsync 速率不匹配，易出现掉帧/撕裂）</span>';
+      h += '</div></div>';
+    }
+
+    h += '<div class="vs-foot">本机格式识别为 <b>' + escHtml(M.versionNote || '未知') + '</b>'
+      + (M.indentDetected === false ? '；<b>本样本未检测到缩进</b>，字段归属依赖段名/线程名推断，精度受限' : '')
+      + '。缺失字段一律标注「该版本无此字段」，不作猜测。</div>';
+    h += '</div>';
+  });
+  host.innerHTML = h;
+}
 SF_SAMPLES['default'] = `SurfaceFlinger global state (dumpsys SurfaceFlinger)
 
 Display 0 (Built-in Screen):
@@ -12770,6 +14714,280 @@ Layer Hierarchy
    覆盖 NO_SURFACE / DRAW_PENDING / COMMIT_DRAW_PENDING / READY_TO_SHOW / HAS_DRAWN 五态，
    以及系统栏 / 应用 / IME / 壁纸 / 启动窗 / 对话框等典型窗口。后续可贴真实数据校准。
    ======================================================================== */
+const DISPLAY_SAMPLES = { 'default': `WINDOW MANAGER DISPLAY CONTENTS (dumpsys window displays)
+  Display: mDisplayId=0 (organized)
+    init=1080x2400 420dpi mMinSizeOfResizeableTaskDp=220 cur=1080x2400 app=1080x2249 rng=1080x943-2312x2249
+    deferred=false mLayoutNeeded=false mTouchExcludeRegion=SkRegion((0,0,1080,88)(111,88,802,1408))
+
+  mLastOrientationSource=WindowedMagnification:0:31@250533243
+  deepestLastOrientationSource=ActivityRecord{48ba9fd u0 com.android.launcher3/.uioverrides.QuickstepLauncher t44}
+  overrideConfig={1.0 ?mcc0mnc [zh_CN] ldltr sw411dp w411dp h857dp 420dpi nrml long hdr widecg port night finger -keyb/v/h -nav/h winConfig={ mBounds=Rect(0, 0 - 1080, 2400) mAppBounds=Rect(0, 88 - 1080, 2337) mMaxBounds=Rect(0, 0 - 1080, 2400) mDisplayRotation=ROTATION_0 mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=ROTATION_0} as.2 s.24 fontWeightAdjustment=0}
+  mLayoutSeq=238
+  mCurrentFocus=Window{9191492 u0 org.lineageos.jelly/org.lineageos.jelly.MainActivity}
+  mFocusedApp=ActivityRecord{2dab25e u0 org.lineageos.jelly/.MainActivity t41}
+
+  mHoldScreenWindow=null
+  mObscuringWindow=Window{4e5b69c u0 com.android.systemui.wallpapers.ImageWallpaper}
+  mLastWakeLockHoldingWindow=null
+  mLastWakeLockObscuringWindow=null
+
+  displayId=0
+  mWallpaperTarget=Window{957c24b u0 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
+  mLastWallpaperZoomOut=0.0
+  token WallpaperWindowToken{ee1967d token=android.os.Binder@6f1c4d4}:
+    canShowWhenLocked=true
+    mWallpaperX=0.0
+    mWallpaperY=0.5
+    mWallpaperXStep=NA
+    mWallpaperYStep=NA
+    mWallpaperDisplayOffsetX=NA
+    mWallpaperDisplayOffsetY=NA
+
+  mSystemGestureExclusion=SkRegion((0,88,33,1486)(880,88,1080,1486)(0,1486,1080,2400))
+
+  Display areas in top down Z order:
+    * Leaf:36:36
+    * HideDisplayCutout:32:35
+      * OneHanded:34:35
+        * FullscreenMagnification:34:35
+          * Leaf:34:35
+      * FullscreenMagnification:33:33
+        * Leaf:33:33
+      * OneHanded:32:32
+        * Leaf:32:32
+    * WindowedMagnification:0:31
+      * HideDisplayCutout:26:31
+        * OneHanded:26:31
+          * FullscreenMagnification:29:31
+            * Leaf:29:31
+          * Leaf:28:28
+          * FullscreenMagnification:26:27
+            * Leaf:26:27
+      * Leaf:24:25
+      * HideDisplayCutout:18:23
+        * OneHanded:18:23
+          * FullscreenMagnification:18:23
+            * Leaf:18:23
+      * OneHanded:17:17
+        * FullscreenMagnification:17:17
+          * Leaf:17:17
+      * HideDisplayCutout:16:16
+        * OneHanded:16:16
+          * FullscreenMagnification:16:16
+            * Leaf:16:16
+      * OneHanded:15:15
+        * FullscreenMagnification:15:15
+          * Leaf:15:15
+      * HideDisplayCutout:0:14
+        * OneHanded:0:14
+          * ImePlaceholder:13:14
+            * ImeContainer
+          * FullscreenMagnification:0:12
+            * Leaf:3:12
+            * DefaultTaskDisplayArea (organized)
+            * Leaf:0:1
+
+  Task display areas in top down Z order:
+    TaskDisplayArea DefaultTaskDisplayArea
+      overrideConfig={0.0 ?mcc0mnc ?localeList ?layoutDir ?swdp ?wdp ?hdp ?density ?lsize ?long ?ldr ?wideColorGamut ?orien ?uimode ?night ?touch ?keyb/?/? ?nav/? winConfig={ mBounds=Rect(0, 0 - 0, 0) mAppBounds=null mMaxBounds=Rect(0, 0 - 0, 0) mDisplayRotation=undefined mWindowingMode=fullscreen mDisplayWindowingMode=fullscreen mActivityType=undefined mAlwaysOnTop=undefined mRotation=undefined} ?fontWeightAdjustment}
+      mPreferredTopFocusableRootTask=Task{90b80e0 #41 type=undefined A=10139:org.lineageos.jelly}
+      mLastFocusedRootTask=Task{90b80e0 #41 type=undefined A=10139:org.lineageos.jelly}
+      Application tokens in top down Z order:
+      * Task{90b80e0 #41 type=undefined A=10139:org.lineageos.jelly U=0 visible=true visibleRequested=true mode=freeform translucent=false sz=1}
+        2 LocalInsetsSources
+          InsetsSource id=a3b60002 type=captionBar frame=[111,88][802,198] visible=true flags= sideHint=TOP boundingRects=null
+          InsetsSource id=a3b60005 type=mandatorySystemGestures frame=[111,88][802,198] visible=true flags= sideHint=TOP boundingRects=null
+        bounds=[111,88][802,1408]
+        * ActivityRecord{2dab25e u0 org.lineageos.jelly/.MainActivity t41}
+      * Task{7b66bd6 #1 type=undefined U=0 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+        bounds=[0,0][1080,2400]
+        * Task{1de403e #44 type=undefined U=0 rootTaskId=1 visible=true visibleRequested=true mode=fullscreen translucent=false sz=1}
+          bounds=[0,0][1080,2400]
+          * ActivityRecord{48ba9fd u0 com.android.launcher3/.uioverrides.QuickstepLauncher t44}
+      * Task{3bfaecf #2 type=undefined U=0 visible=false visibleRequested=false mode=fullscreen translucent=true sz=2}
+        bounds=[0,0][1080,2400]
+        * Task{8b268eb #4 type=undefined U=0 rootTaskId=2 visible=false visibleRequested=false mode=multi-window translucent=true sz=0}
+          bounds=[0,2400][1080,3600]
+        * Task{cfdc43a #3 type=undefined U=0 rootTaskId=2 visible=false visibleRequested=false mode=multi-window translucent=true sz=0}
+          bounds=[0,0][1080,2400]
+
+  no ScreenRotationAnimation 
+
+  rootHomeTask=Task=1
+
+  PinnedTaskController
+    mIsImeShowing=false
+    mImeHeight=0
+    mMinAspectRatio=0.41841003
+    mMaxAspectRatio=2.39
+
+  DisplayFrames w=1080 h=2400 r=0
+
+  DisplayPolicy
+    mCarDockEnablesAccelerometer=true mDeskDockEnablesAccelerometer=true
+    mDockMode=EXTRA_DOCK_STATE_UNDOCKED mLidState=LID_OPEN
+    mAwake=true mScreenOnEarly=true mScreenOnFully=true
+    mKeyguardDrawComplete=true mWindowManagerDrawComplete=true
+    mHdmiPlugged=false
+    mLastBehavior=DEFAULT
+    mShowingDream=false mDreamingLockscreen=false
+    mStatusBar=Window{2440514 u0 StatusBar}
+    mExpandedPanel=Window{d13d56f u0 NotificationShade}
+    isKeyguardShowing=false
+    mNavigationBar=Window{6eb69ec u0 NavigationBar0}
+    mNavBarOpacityMode=2
+    mNavigationBarCanMove=false
+    mNavigationBarPosition=4
+    mLeftGestureHost=Window{6eb69ec u0 NavigationBar0}
+    mTopGestureHost=Window{2440514 u0 StatusBar}
+    mRightGestureHost=Window{6eb69ec u0 NavigationBar0}
+    mBottomGestureHost=Window{6eb69ec u0 NavigationBar0}
+    mFocusedWindow=Window{9191492 u0 org.lineageos.jelly/org.lineageos.jelly.MainActivity}
+    mTopFullscreenOpaqueWindowState=Window{9191492 u0 org.lineageos.jelly/org.lineageos.jelly.MainActivity}
+    mSystemBarColorApps={ActivityRecord{48ba9fd u0 com.android.launcher3/.uioverrides.QuickstepLauncher t44}}
+    mNavBarColorWindowCandidate=Window{957c24b u0 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
+    mNavBarBackgroundWindowCandidate=Window{957c24b u0 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
+    mLastStatusBarAppearanceRegions=
+      AppearanceRegion{ bounds=[0,0][1080,2400]}
+    mLastLetterboxDetails=
+    mStatusBarBackgroundWindows=
+      Window{957c24b u0 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
+    mTopIsFullscreen=false
+    mImeInsetsConsumed=false
+    mForceShowNavigationBarEnabled=false mAllowLockscreenWhenOn=false
+    mRemoteInsetsControllerControlsSystemBars=false
+    mDecorInsetsInfo:
+      ROTATION_0={nonDecorInsets=[0,88][0,63], configInsets=[0,88][0,63], nonDecorFrame=[0,88][1080,2337], configFrame=[0,88][1080,2337]}
+      ROTATION_90={nonDecorInsets=[88,0][0,63], configInsets=[88,74][0,63], nonDecorFrame=[88,0][2400,1017], configFrame=[88,74][2400,1017]}
+      ROTATION_180={nonDecorInsets=[0,0][0,151], configInsets=[0,74][0,151], nonDecorFrame=[0,0][1080,2249], configFrame=[0,74][1080,2249]}
+      ROTATION_270={nonDecorInsets=[0,0][88,63], configInsets=[0,74][88,63], nonDecorFrame=[0,0][2312,1017], configFrame=[0,74][2312,1017]}
+    SystemGestures:
+      mDisplayCutoutTouchableRegionSize=32
+      mSwipeStartThreshold=Rect(63, 120 - 63, 63)
+      mSwipeDistanceThreshold=63
+
+  DisplayRotation
+    mCurrentAppOrientation=SCREEN_ORIENTATION_NOSENSOR
+    mLastOrientation=5
+    mRotation=0 mDeferredRotationPauseCount=0
+    mLandscapeRotation=ROTATION_90 mSeascapeRotation=ROTATION_270
+    mPortraitRotation=ROTATION_0 mUpsideDownRotation=ROTATION_180
+    mSupportAutoRotation=true
+    WindowOrientationListener
+      mEnabled=true
+      mCurrentRotation=ROTATION_0
+      mSensorType=null
+      mSensor={Sensor name="Screen Orientation Sensor", vendor="Samsung", version=2576, type=27, maxRange=255.0, resolution=1.0, power=0.001, minDelay=0}
+      mRate=2
+      OrientationSensorJudge
+        mDesiredRotation=-1
+        mProposedRotation=-1
+        mTouching=false
+        mTouchEndedTimestampNanos=2910943917898
+        mLastRotationResolution=-1
+
+    mCarDockRotation=-1 mDeskDockRotation=-1
+    mUserRotationMode=USER_ROTATION_LOCKED mUserRotation=ROTATION_0 mCameraRotationMode=0 mAllowAllRotations=unknown
+    mDemoHdmiRotation=ROTATION_90 mDemoHdmiRotationLock=false mUndockedHdmiRotation=-1
+    mLidOpenRotation=-1
+    mFixedToUserRotation=false
+
+    RotationLockHistory
+      09-21 09:09:17.124: mode=USER_ROTATION_LOCKED, rotation=ROTATION_0, caller=NavigationBar#onViewAttached
+
+  InputConsumers:
+    name=recents_animation_input_consumer pid=2347 user=UserHandle{0}
+
+  WindowInsetsStateController
+    InsetsState
+      mDisplayFrame=Rect(0, 0 - 1080, 2400)
+      mDisplayCutout=DisplayCutout{insets=Rect(0, 88 - 0, 0) waterfall=Insets{left=0, top=0, right=0, bottom=0} boundingRect={Bounds=[Rect(0, 0 - 0, 0), Rect(512, 0 - 568, 88), Rect(0, 0 - 0, 0), Rect(0, 0 - 0, 0)]} cutoutPathParserInfo={CutoutPathParserInfo{displayWidth=1080 displayHeight=2400 physicalDisplayWidth=1080 physicalDisplayHeight=2400 density={2.625} cutoutSpec={M 0,0 M 0,12.25101276465640 a 10.60613009248640,10.60613009248640 0 1,0 0,21.21226018497290 a 10.60613009248640,10.60613009248640 0 1,0 0,-21.21226018497290 Z @dp} rotation={0} scale={1.0} physicalPixelDisplaySizeRatio={1.0}}} sideOverrides={}}
+      mRoundedCorners=RoundedCorners{[RoundedCorner{position=TopLeft, radius=84, center=Point(84, 84)}, RoundedCorner{position=TopRight, radius=84, center=Point(996, 84)}, RoundedCorner{position=BottomRight, radius=84, center=Point(996, 2316)}, RoundedCorner{position=BottomLeft, radius=84, center=Point(84, 2316)}]}
+      mRoundedCornerFrame=Rect(0, 0 - 0, 0)
+      mPrivacyIndicatorBounds=PrivacyIndicatorBounds {static bounds=Rect(827, 0 - 1043, 88) rotation=0}
+      mDisplayShape=DisplayShape{ spec=-1893857183 displayWidth=1080 displayHeight=2400 physicalPixelDisplaySizeRatio=1.0 rotation=0 offsetX=0 offsetY=0 scale=1.0}
+        InsetsSource id=8f710001 type=navigationBars frame=[0,2337][1080,2400] visible=true flags=SUPPRESS_SCRIM|FORCE_CONSUMING sideHint=BOTTOM boundingRects=null
+        InsetsSource id=8f710004 type=systemGestures frame=[0,0][78,2400] visible=true flags= sideHint=LEFT boundingRects=null
+        InsetsSource id=8f710005 type=mandatorySystemGestures frame=[0,2316][1080,2400] visible=true flags= sideHint=BOTTOM boundingRects=null
+        InsetsSource id=8f710006 type=tappableElement frame=[0,0][0,0] visible=true flags= sideHint=NONE boundingRects=null
+        InsetsSource id=8f710024 type=systemGestures frame=[1002,0][1080,2400] visible=true flags= sideHint=RIGHT boundingRects=null
+        InsetsSource id=a4160000 type=statusBars frame=[0,0][1080,88] visible=true flags=FORCE_CONSUMING sideHint=TOP boundingRects=null
+        InsetsSource id=a4160005 type=mandatorySystemGestures frame=[0,0][1080,120] visible=true flags= sideHint=TOP boundingRects=null
+        InsetsSource id=a4160006 type=tappableElement frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+        InsetsSource id=3 type=ime frame=[0,0][0,0] visible=false flags= sideHint=NONE boundingRects=null
+        InsetsSource id=27 type=displayCutout frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+    Control map:
+      com.android.server.wm.DisplayContent$RemoteInsetsControlTarget@cf183c1:
+        InsetsSourceControl: {3 mType=ime mSurfacePosition=Point(120, 2274) mInsetsHint=Insets{left=0, top=0, right=0, bottom=0}}
+      PermanentControlTarget:
+        InsetsSourceControl: {8f710001 mType=navigationBars initiallyVisible mSurfacePosition=Point(0, 2274) mInsetsHint=Insets{left=0, top=0, right=0, bottom=63}}
+        InsetsSourceControl: {a4160000 mType=statusBars initiallyVisible mSurfacePosition=Point(0, 0) mInsetsHint=Insets{left=0, top=88, right=0, bottom=0}}
+    InsetsSourceProviders:
+      ImeInsetsSourceProvider
+        mSource=InsetsSource id=3 type=ime frame=[0,0][0,0] visible=false flags= sideHint=NONE boundingRects=null
+        mSourceFrame=Rect(120, 2400 - 960, 2400)
+        mControl=InsetsSourceControl mId=3 mType=ime mLeash=Surface(name=Surface(name=3670166 InputMethod)/@0x651cdf2 - animation-leash of insets_animation)/@0x2bcca8 mInitiallyVisible=false mSurfacePosition=Point(120, 2274) mInsetsHint=Insets{left=0, top=0, right=0, bottom=0} mSkipAnimationOnce=false
+        mInsetsHint=Insets{left=0, top=0, right=0, bottom=0} stale
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{3670166 u0 InputMethod}
+        mAdapter=ControlAdapter mCapturedLeash=Surface(name=Surface(name=3670166 InputMethod)/@0x651cdf2 - animation-leash of insets_animation)/@0x2bcca8
+        mControlTarget=com.android.server.wm.DisplayContent$RemoteInsetsControlTarget@cf183c1
+        mImeShowing=false
+      InsetsSourceProvider
+        mSource=InsetsSource id=a4160006 type=tappableElement frame=[0,0][1080,88] visible=true flags= sideHint=TOP boundingRects=null
+        mSourceFrame=Rect(0, 0 - 1080, 88)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{2440514 u0 StatusBar}
+      InsetsSourceProvider
+        mSource=InsetsSource id=a4160005 type=mandatorySystemGestures frame=[0,0][1080,120] visible=true flags= sideHint=TOP boundingRects=null
+        mSourceFrame=Rect(0, 0 - 1080, 120)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{2440514 u0 StatusBar}
+      InsetsSourceProvider
+        mSource=InsetsSource id=a4160000 type=statusBars frame=[0,0][1080,88] visible=true flags=FORCE_CONSUMING sideHint=TOP boundingRects=null
+        mSourceFrame=Rect(0, 0 - 1080, 88)
+        mControl=InsetsSourceControl mId=a4160000 mType=statusBars mLeash=Surface(name=Surface(name=2440514 StatusBar)/@0x8646fd - animation-leash of insets_animation)/@0x9214e9e mInitiallyVisible=true mSurfacePosition=Point(0, 0) mInsetsHint=Insets{left=0, top=88, right=0, bottom=0} mSkipAnimationOnce=false
+        mInsetsHint=Insets{left=0, top=88, right=0, bottom=0}
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{2440514 u0 StatusBar}
+        mAdapter=ControlAdapter mCapturedLeash=Surface(name=Surface(name=2440514 StatusBar)/@0x8646fd - animation-leash of insets_animation)/@0x9214e9e
+        mControlTarget=PermanentControlTarget
+      InsetsSourceProvider
+        mSource=InsetsSource id=8f710024 type=systemGestures frame=[1002,0][1080,2400] visible=true flags= sideHint=RIGHT boundingRects=null
+        mSourceFrame=Rect(1002, 0 - 1080, 2400)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{6eb69ec u0 NavigationBar0}
+      InsetsSourceProvider
+        mSource=InsetsSource id=8f710006 type=tappableElement frame=[0,0][0,0] visible=true flags= sideHint=NONE boundingRects=null
+        mSourceFrame=Rect(0, 0 - 0, 0)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{6eb69ec u0 NavigationBar0}
+      InsetsSourceProvider
+        mSource=InsetsSource id=8f710005 type=mandatorySystemGestures frame=[0,2316][1080,2400] visible=true flags= sideHint=BOTTOM boundingRects=null
+        mSourceFrame=Rect(0, 2316 - 1080, 2400)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{6eb69ec u0 NavigationBar0}
+      InsetsSourceProvider
+        mSource=InsetsSource id=8f710004 type=systemGestures frame=[0,0][78,2400] visible=true flags= sideHint=LEFT boundingRects=null
+        mSourceFrame=Rect(0, 0 - 78, 2400)
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{6eb69ec u0 NavigationBar0}
+      InsetsSourceProvider
+        mSource=InsetsSource id=8f710001 type=navigationBars frame=[0,2337][1080,2400] visible=true flags=SUPPRESS_SCRIM|FORCE_CONSUMING sideHint=BOTTOM boundingRects=null
+        mSourceFrame=Rect(0, 2337 - 1080, 2400)
+        mControl=InsetsSourceControl mId=8f710001 mType=navigationBars mLeash=Surface(name=Surface(name=6eb69ec NavigationBar0)/@0xc7555f9 - animation-leash of insets_animation)/@0x472c595 mInitiallyVisible=true mSurfacePosition=Point(0, 2274) mInsetsHint=Insets{left=0, top=0, right=0, bottom=63} mSkipAnimationOnce=false
+        mInsetsHint=Insets{left=0, top=0, right=0, bottom=63}
+        mIsLeashReadyForDispatching=true mHasPendingPosition=false
+        mWindowContainer=Window{6eb69ec u0 NavigationBar0}
+        mAdapter=ControlAdapter mCapturedLeash=Surface(name=Surface(name=6eb69ec NavigationBar0)/@0xc7555f9 - animation-leash of insets_animation)/@0x472c595
+        mControlTarget=PermanentControlTarget
+    mForcedConsumingTypes=statusBars navigationBars
+  InsetsPolicy
+    status: WINDOW_STATE_SHOWING
+    nav: WINDOW_STATE_SHOWING
+    mForcedShowingTypes=statusBars navigationBars
+
+` };
 WINDOW_SAMPLES = {};
 WINDOW_SAMPLES['default'] = `WINDOW MANAGER WINDOWS (dumpsys window windows)
     mCurrentFocus=Window{fff666 u0 com.android.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
@@ -13061,6 +15279,7 @@ function dataSourceToAdbCommand(ds) {
   if (ds === 'windowcontainers') return 'windowcontainers';
   if (ds === 'viewtop') return 'viewtop';
   if (ds === 'input') return 'input';
+  if (ds === 'display') return 'display';
   return 'containers';
 }
 function adbCommandLabel(cmd) {
@@ -13069,6 +15288,7 @@ function adbCommandLabel(cmd) {
   if (cmd === 'windowcontainers') return 'window containers';
   if (cmd === 'viewtop') return 'activity top';
   if (cmd === 'input') return 'input';
+  if (cmd === 'display') return 'window displays';
   return cmd === 'surfaceflinger' ? 'SurfaceFlinger' : (cmd === 'window' ? 'window windows' : 'activity containers');
 }
 

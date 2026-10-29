@@ -10,7 +10,7 @@
  *     GET /ping                                  -> { ok:true, port }
  *     GET /devices                               -> { devices:[{serial,state,model,product,transportId}] }
  *     GET /dump?device=<serial>&command=<cmd>    -> 原始 dumpsys 文本（text/plain）
- *   cmd 取值：containers | activities | viewtop | windowcontainers | surfaceflinger | window
+ *   cmd 取值：containers | activities | viewtop | amstack | windowcontainers | surfaceflinger | window | input | display
  *     viewtop 可附加 &target=<包名/类名>：有值时命令变为 `dumpsys activity <component>`（指定某个 Activity），否则为 `dumpsys activity top`（前台）
  *   cmd 取值：containers | surfaceflinger | window
  *
@@ -72,7 +72,8 @@ const COMMAND_MAP = {
   windowcontainers: ['shell', 'dumpsys', 'window', 'containers'],
   surfaceflinger: ['shell', 'dumpsys', 'SurfaceFlinger'],
   window: ['shell', 'dumpsys', 'window', 'windows'],
-  input: ['shell', 'dumpsys', 'input']
+  input: ['shell', 'dumpsys', 'input'],
+  display: ['shell', 'dumpsys', 'window', 'displays']
 };
 
 function sendJson(res, code, obj) {
@@ -240,7 +241,7 @@ const server = http.createServer(async (req, res) => {
       const command = (url.searchParams.get('command') || '').trim();
       const target = (url.searchParams.get('target') || '').trim();
       if (!COMMAND_MAP[command]) {
-        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|viewtop|amstack|windowcontainers|surfaceflinger|window|input）');
+        sendText(res, 400, '未知 command：' + command + '（应为 containers|activities|viewtop|amstack|windowcontainers|surfaceflinger|window|input|display）');
         return;
       }
       let args = COMMAND_MAP[command].slice();
